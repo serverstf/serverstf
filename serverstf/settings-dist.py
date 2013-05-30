@@ -188,6 +188,8 @@ SERVER_UPDATE_TD_INFO = {"seconds": 20}
 SERVER_UPDATE_TD_RULES = {"minutes": 2}
 SERVER_UPDATE_TD_GEOIP = {"days": 1}
 SERVER_UPDATE_TD_ONLINE = {"minutes": 10}
+GEOIP_CITY_DATA = ""
+
 API_UPDATE_TIMEOUT = 2.0
 
 # Put somewhere in project root (absolute path)

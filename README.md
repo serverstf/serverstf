@@ -9,6 +9,7 @@ Web-based TF2 server browser wrote in Python using Django.
 * Django 1.5
 * [pysteam](http://github.com/Holiverh/pysteam)
 * [python-openid](https://github.com/openid/python-openid)
+* [MaxMind GeoLite City database](http://dev.maxmind.com/geoip/legacy/geolite)
 
     #### Database
     * Preferably MySQL or PostgreSQL; both untested so far but should avoid issues with concurrency that SQLite experiences.

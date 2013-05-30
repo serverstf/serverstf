@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
 
 from browser.models import Server
-from steam_auth.settings import API_
+from steam_auth.settings import STEAM_API_KEY
 
 import datetime
 

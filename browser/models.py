@@ -12,7 +12,7 @@ import socket
 import browser.settings
 
 import pygeoip
-geoip = pygeoip.GeoIP("C:\\serverstf\\serverstf\\GeoLiteCity.dat")
+geoip = pygeoip.GeoIP(browser.settings.GEOIP_CITY_DATA)
 
 class Network(models.Model):
 	
