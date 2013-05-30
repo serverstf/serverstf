@@ -1,0 +1,42 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+	
+	<head>
+		<title>You will be redirected to Steam</title>
+		
+		<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/common.js' %}"></script>
+		<link rel="stylesheet"  type="text/css" href="{% static 'css/master.css' %}">
+		<link rel="stylesheet"  type="text/css" href="{% static 'css/page.css' %}">
+		<link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+	</head>
+
+	<body>
+		{% include 'header.html' %}
+		
+		<div class="centre-wrapper" id="content">
+			<p id="intro">
+				In order to log in to servers.tf you must sign in via Steam.
+				By clicking the link below you will be redirected to the 
+				Steam OpenID login page.
+			</p>
+			<img src="{% static 'img/login-notice.png' %}" style="width: 860px; display: block; margin: 0 auto;">
+			<a href="{{redirect_url}}">Proceed to login</a>
+			<p>
+				Now is good time to read servers.tf's <a href="#">privacy policy</a> in
+				regards to how we use data collected from Steam.
+			</p>
+			<p>
+				Depending of the availability of Steam's services, it may
+				take a few moments after successful login for servers.tf
+				to syncronise profiles.
+			</p>
+			
+		</div>
+		
+		{% include 'footer.html' %}
+		
+	</body>
+</html>

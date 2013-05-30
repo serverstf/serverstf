@@ -1,0 +1,9 @@
+[
+	{% for player in players %}
+	{
+		"name": "{{player|get_item:"name"}}",
+		"score": {{player|get_item:"score"}},
+		"duration": {{player|get_item:"duration"}}
+	}
+	{% endfor %}
+]
