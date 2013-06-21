@@ -12,7 +12,10 @@ import socket
 import browser.settings
 
 import pygeoip
-geoip = pygeoip.GeoIP(browser.settings.GEOIP_CITY_DATA)
+try:
+	geoip = pygeoip.GeoIP(browser.settings.GEOIP_CITY_DATA)
+except IOError:
+	geoip = None
 
 class Network(models.Model):
 	
@@ -52,8 +55,7 @@ class Server(models.Model):
 	
 	## Updates
 	last_update = models.DateTimeField(auto_now_add=True) # TODO: rename last_update_info
-	last_update_rules = models.DateTimeField(auto_now_add=True) 
-	last_update_geo = models.DateTimeField(auto_now_add=True)
+	last_update_rules = models.DateTimeField(auto_now_add=True)
 	last_update_online = models.DateTimeField(auto_now_add=True) # TODO: rename last_update
 	
 	## Voice chat
@@ -136,7 +138,6 @@ class Server(models.Model):
 		
 		update_info = datetime.datetime.now() >= self.last_update + browser.settings.SERVER_UPDATE_TD_INFO or force
 		update_rules = datetime.datetime.now() >= self.last_update_rules + browser.settings.SERVER_UPDATE_TD_RULES or force
-		update_geoip = datetime.datetime.now() >= self.last_update_geo + browser.settings.SERVER_UPDATE_TD_GEOIP or force
 		update_online = datetime.datetime.now() >= self.last_update_online + browser.settings.SERVER_UPDATE_TD_ONLINE or force
 		
 		self.last_update_online = datetime.datetime.now()
@@ -206,23 +207,28 @@ class Server(models.Model):
 		except NotImplementedError as exc:
 			log.error("Compressed response from {}:{}".format(self.host, self.port))
 		
-		if update_geoip:
-
-			geoip_record = geoip.record_by_addr(socket.gethostbyname(self.host))
-			try:
-				self.country_code = geoip_record["country_code"].upper()
-				self.continent_code = geoip_record["continent"].upper()
-				self.longitude = float(geoip_record["longitude"])
-				self.latitude = float(geoip_record["latitude"])
-			except KeyError:
-				# No reliable location data so null everything
-				self.country_code = None
-				self.continent_code = None
-				self.longitude = None
-				self.latitude = None
-				
-			self.last_update_geo = datetime.datetime.now()
-
+		self.save()
+	
+	def update_geoip(self):
+		
+		global geoip
+		
+		if geoip is None:
+			geoip = pygeoip.GeoIP(browser.settings.GEOIP_CITY_DATA)
+			
+		geoip_record = geoip.record_by_addr(socket.gethostbyname(self.host))
+		try:
+			self.country_code = geoip_record["country_code"].upper()
+			self.continent_code = geoip_record["continent"].upper()
+			self.longitude = float(geoip_record["longitude"])
+			self.latitude = float(geoip_record["latitude"])
+		except KeyError:
+			# No reliable location data so null everything
+			self.country_code = None
+			self.continent_code = None
+			self.longitude = None
+			self.latitude = None
+			
 		self.save()
 	
 class ActivityLog(models.Model):

@@ -186,7 +186,6 @@ STEAM_API_KEY = ""
 # Fine tuning performance; should be fine as is
 SERVER_UPDATE_TD_INFO = {"seconds": 20}
 SERVER_UPDATE_TD_RULES = {"minutes": 2}
-SERVER_UPDATE_TD_GEOIP = {"days": 1}
 SERVER_UPDATE_TD_ONLINE = {"minutes": 10}
 GEOIP_CITY_DATA = ""
 
