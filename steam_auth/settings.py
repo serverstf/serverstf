@@ -2,4 +2,4 @@
 from django.conf import settings
 
 STEAM_API_KEY = settings.STEAM_API_KEY
-GEOIP_CITY_DATA = settings.GEOIP_CITY_DATA
+OPENID_FILESTORE_LOCATION = settings.OPENID_FILESTORE_LOCATION
