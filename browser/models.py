@@ -17,6 +17,8 @@ try:
 except IOError:
 	geoip = None
 
+class GeoIPUnavailableError(Exception): pass
+
 class Network(models.Model):
 	
 	name = models.CharField(max_length=128)
@@ -106,7 +108,22 @@ class Server(models.Model):
 	
 	def __unicode__(self):
 		return self.name
-	
+		
+	@classmethod
+	def create(cls, host, port):
+		
+		server = cls(host=host, port=port)
+		server.save()
+		
+		server.update(True)
+		try:
+			server.update_geoip()
+		except GeoIPUnavailableError:
+			pass
+		
+		server.save()
+		return server
+		
 	def update(self, force=False, timeout=5.0):
 		
 		mod_cvar_map = {
@@ -135,7 +152,7 @@ class Server(models.Model):
 						"soap_spawnrandom",
 						]
 			}
-		
+
 		update_info = datetime.datetime.now() >= self.last_update + browser.settings.SERVER_UPDATE_TD_INFO or force
 		update_rules = datetime.datetime.now() >= self.last_update_rules + browser.settings.SERVER_UPDATE_TD_RULES or force
 		update_online = datetime.datetime.now() >= self.last_update_online + browser.settings.SERVER_UPDATE_TD_ONLINE or force
@@ -214,7 +231,10 @@ class Server(models.Model):
 		global geoip
 		
 		if geoip is None:
-			geoip = pygeoip.GeoIP(browser.settings.GEOIP_CITY_DATA)
+			try:
+				geoip = pygeoip.GeoIP(browser.settings.GEOIP_CITY_DATA)
+			except Exception as exc:
+				raise GeoIPUnavailableError(exc)
 			
 		geoip_record = geoip.record_by_addr(socket.gethostbyname(self.host))
 		try:

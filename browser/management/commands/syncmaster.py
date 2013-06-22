@@ -94,12 +94,7 @@ class Command(BaseCommand):
 							Server.objects.get(host=sv_addr[0], port=sv_addr[1])
 							sv_exists_count += 1
 						except Server.DoesNotExist:
-							svr = Server(
-									host=sv_addr[0],
-									port=sv_addr[1]
-									)
-							svr.update()
-							svr.save()
+							svr = Server.create(*sv_addr)
 						
 						sv_count += 1
 						if sv_count % 250 == 0:
