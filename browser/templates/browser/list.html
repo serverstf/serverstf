@@ -1,0 +1,110 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{% block title %}{% endblock%} &mdash; servers.tf</title>
+		{% include "common_head.html" %}
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="{% static 'js/moment.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/api.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+		<script type="text/javascript">
+			google.load("visualization", "1", {packages: ["annotatedtimeline"]});
+		
+			ServerEntry.region = "{% block region %}~{% endblock %}".toLowerCase();
+			ServerEntry.batch_size = {% block batch_size %}10{% endblock %};
+			ServerEntry.allow_relist = {% block allow_relist %}false{% endblock %};
+			
+			$(document).ready(function () {
+				ServerEntry.initialise({% block initial_ids %}[]{% endblock %}, $("#servers"));
+				searchServers($("#servers"), $("#search .tags"));
+			});
+		</script>
+	</head>
+	
+	<body>
+		
+		{% include 'header_wide.html' %}
+		
+		<div id="template" class="server-entry">
+			<span class="id"></span>
+			
+			<div class="margin">
+				<span class="player-count"></span><span class="max-player-count"></span>
+				<br>
+				{% if user.is_authenticated %}
+					<span class="fav-icon icon-star"></span>
+				{% else %}
+					<span class="hide"><span class="fav-icon icon-star"></span></span>
+				{% endif %}
+			</div>
+			
+			<div class="main">
+				<span class="server-name"></span>
+				<ul class="tags"></ul>
+				<div class="clear"></div>
+				<div class="modules">
+					
+					<div class="module">
+					<!-- START module.overview -->
+						<h6><span class="icon-globe"></span> Server Location</h6>
+						<img class="server-location-map" src="">
+						
+						<h6><span class="icon-bar-chart"></span> Activity</h6>
+						<div class="activity-chart"></div>
+						
+						<h6><span class="icon-certificate"></span> Server Details</h6>
+						<p class="server-description"></p>
+						
+						<ul>
+							<li>Address: <span class="server-ip"></span></li>
+							<li>Map: <span class="server-map"></span></li>
+						</ul>
+						
+						<a class="connect-link button-esque">Connect <span class="icon-share-alt"></span></a>
+						
+					<!-- END module.overview -->
+					</div>
+					
+					<div class="module">
+					<!-- START module.players -->
+						<table class="player-table">
+							<tr>
+								<th>Name</th>
+								<th>Score</th>
+								<th>Time</th>
+							</tr>
+						</table>
+					<!-- END module.players -->
+					</div>
+					
+					<div class="clear"></div>
+					
+				</div>
+			</div>
+			
+			<div class="clear"></div>
+		</div>
+		
+		<div id="servers">
+		</div>
+		
+		<div id="search">
+			<div>
+				<div id="input-field">
+					<ul class="tags">
+						{% for tag in tags %}
+							<li>{{tag}}</li>
+						{% endfor %}
+					</ul>
+					<input type="text" value="type to add tags">
+					
+					<div class="clear"></div>
+				</div>
+			</div>
+		</div>
+		
+	</body>
+	
+</html>

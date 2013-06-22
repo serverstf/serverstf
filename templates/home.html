@@ -1,106 +1,96 @@
 
-{% load staticfiles %}
+{% extends "generic.html" %}
+
 {% load humanize %}
 {% load iso3166 %}
 
-<!DOCTYPE html>
-<html>
-	
-	<head>
-		<title>TF2 Server Browser &mdash; servers.tf</title>
+{% block title %}Home{% endblock %}
+{% block head %}
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+	google.load('visualization', '1', {'packages': ['geomap', "corechart"]});
+	google.setOnLoadCallback(drawMap);
+	google.setOnLoadCallback(drawOtherChart);
+	google.setOnLoadCallback(drawModChart);
 		
-		{% include 'common_head.html' %}
-		<link rel="stylesheet"  type="text/css" href="{% static 'css/page.css' %}">
+	function drawMap() {
+		var data = google.visualization.arrayToDataTable([
+		['Country', 'Server count'],
+		{% for country_code, pop in count_servers.items %}
+			{% if pop != 0 %}
+				["{{country_code}}", Math.log({{pop}})],
+			{% else %}
+				["{{country_code}}", {{pop}}],
+			{% endif %}
+		{% endfor %}
+		]);
+
+		var options = {
+			width: 940 + 20 * 2,
+			showLegend: false
+		};
+		options['dataMode'] = 'regions';
+
+		var container = document.getElementById("server-dist-map");
+		var geomap = new google.visualization.GeoMap(container);
+		geomap.draw(data, options);
+	};
 	
-		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-		<script type="text/javascript">
-			google.load('visualization', '1', {'packages': ['geomap', "corechart"]});
-			google.setOnLoadCallback(drawMap);
-			google.setOnLoadCallback(drawOtherChart);
-			google.setOnLoadCallback(drawModChart);
-				
-			function drawMap() {
-				var data = google.visualization.arrayToDataTable([
-				['Country', 'Server count'],
-				{% for country_code, pop in count_servers.items %}
-					{% if pop != 0 %}
-						["{{country_code}}", Math.log({{pop}})],
-					{% else %}
-						["{{country_code}}", {{pop}}],
-					{% endif %}
-				{% endfor %}
-				]);
+	function drawOtherChart() {
+		var data = google.visualization.arrayToDataTable([
+			["Country","Utilsation"],
+			{% for region, util in region_cap_usage.items %}
+				{% if util.0 > 0 %}
+					["{{region}}", {{util.1}} / {{util.0}}],
+				{% endif %}
+			{% endfor %}
+		]);
 
-				var options = {
-					width: 940 + 20 * 2,
-					showLegend: false
-				};
-				options['dataMode'] = 'regions';
+		var options = {
+			colors: ["#46B720", "#B3CD18"],
+			vAxis: {
+				gridlines: {
+					color: "#FFFFFF"
+				},
+				format: "#%"
+			},
+			hAxis: {
+				baselineColor: "#B2B2B2"
+			},
+			legend: {
+				position: "none"
+			},
+		};
 
-				var container = document.getElementById("server-dist-map");
-				var geomap = new google.visualization.GeoMap(container);
-				geomap.draw(data, options);
-			};
-			
-			function drawOtherChart() {
-				var data = google.visualization.arrayToDataTable([
-					["Country","Utilsation"],
-					{% for region, util in region_cap_usage.items %}
-						{% if util.0 > 0 %}
-							["{{region}}", {{util.1}} / {{util.0}}],
-						{% endif %}
-					{% endfor %}
-				]);
-
-				var options = {
-					colors: ["#46B720", "#B3CD18"],
-					vAxis: {
-						gridlines: {
-							color: "#FFFFFF"
-						},
-						format: "#%"
-					},
-					hAxis: {
-						baselineColor: "#B2B2B2"
-					},
-					legend: {
-						position: "none"
-					},
-				};
-
-				var chart = new google.visualization.ColumnChart(document.getElementById("cap-usage-chart"));
-				chart.draw(data, options);
-			}
-			
-			function drawModChart() {
-				
-				var data = google.visualization.arrayToDataTable([
-					["Mod", "Server Count"],
-					{% for mod, count in mod_servers.items %}
-						["{{mod}}", {{count}}],
-					{% endfor %}
-				]);
-				
-				var options = {
-					colors: ["#46B720", "#B3CD18", "#56C153", "#218A02", "#C2E93F"]
-				};
-
-				var chart = new google.visualization.PieChart(document.getElementById("mod-count-chart"));
-				chart.draw(data, options);
-				
-			}
-			
-			drawMap();
-			drawOtherChart();
-			drawModChart();
-		</script>
-	</head>
-
-	<body>
-		{% include 'header.html' %}
+		var chart = new google.visualization.ColumnChart(document.getElementById("cap-usage-chart"));
+		chart.draw(data, options);
+	}
+	
+	function drawModChart() {
 		
-		<div class="centre-wrapper" id="content">
-			
+		var data = google.visualization.arrayToDataTable([
+			["Mod", "Server Count"],
+			{% for mod, count in mod_servers.items %}
+				["{{mod}}", {{count}}],
+			{% endfor %}
+		]);
+		
+		var options = {
+			colors: ["#46B720", "#B3CD18", "#56C153", "#218A02", "#C2E93F"]
+		};
+
+		var chart = new google.visualization.PieChart(document.getElementById("mod-count-chart"));
+		chart.draw(data, options);
+		
+	}
+	
+	drawMap();
+	drawOtherChart();
+	drawModChart();
+</script>
+{% endblock %}
+{% block content %}
+
 			<p id="intro">
 				servers.tf is a web-based Team Fortress 2 server browser,
 				tracking {{server_count|intcomma}} servers worldwide
@@ -154,10 +144,4 @@
 			</div>
 			
 			<div class="clear"></div>
-			
-		</div>
-		
-		{% include 'footer.html' %}
-		
-	</body>
-</html>
+{% endblock %}

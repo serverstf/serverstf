@@ -1,33 +1,11 @@
 
-{% load staticfiles %}
-{% load humanize %}
-{% load iso3166 %}
+{% extends "generic.html" %}
 
-<!DOCTYPE html>
-<html>
-	
-	<head>
-		<title>Settings &mdash; servers.tf</title>
-		
-		{% include 'common_head.html' %}
-		<link rel="stylesheet"  type="text/css" href="{% static 'css/page.css' %}">
-
-	</head>
-
-	<body>
-		{% include 'header.html' %}
-		
-		<div class="centre-wrapper" id="content">
-
-			<form action="{% url 'settings' %}" method="post">
-				{% csrf_token %}
-				{{ form.as_p }}
-				<input type="submit" value="Submit" />
-			</form>
-						
-		</div>
-		
-		{% include 'footer.html' %}
-		
-	</body>
-</html>
+{% block title %}Settings{% endblock %}
+{% block content %}
+<form action="{% url 'settings' %}" method="post">
+	{% csrf_token %}
+	{{ form.as_p }}
+	<input type="submit" value="Submit" />
+</form>
+{% endblock %}
