@@ -28,7 +28,97 @@ class Network(models.Model):
 	def __unicode__(self):
 		return self.name
 
+class ServerManager(models.Manager):
+	
+	tags = {
+					"trade": ("map__startswith", "trade_"),
+					"mge": ("map__startswith", "mge_"),
+					"jump": ("map__startswith", "jump_"),
+					"surf": ("map__startswith", "surf_"),
+					"vsh": ("map__startswith", "vsh_"),
+					"vac": ("vac_enabled", True),
+					"lowgrav": ("lowgrav", True),
+					"alltalk": ("alltalk_enabled", True),
+					"teamtalk": ("teamtalk_enabled", True),
+					"active": ("player_count__gte", models.F("max_players") * 0.6),
+					"full": ("player_count__gte", models.F("max_players")),
+					"bots": ("bot_count__gt", 0),
+					"nocrit": ("has_random_crits", False),
+					"nobulletspread": ("has_bullet_spread", False),
+					"nospread": ("has_damage_spread", False),
+					"medieval": ("medieval_mode", True),
+					"password": ("password_protected", True),
+					
+					"smac": ("mod_smac", True),
+					"goomba": ("mod_goomba", True),
+					"robot": ("mod_robot", True),
+					"randomiser": ("mod_randomiser", True),
+					"quakesounds": ("mod_quakesounds", True),
+					"prophunt": ("mod_prophunt", True),
+					"hunted": ("mod_hunted", True),
+					"rtd": ("mod_rtd", True),
+					"dodgeball": ("mod_dodgeball", True),
+					"stats": ("mod_hlxce", True),
+					"soap": ("mod_soap", True),
+					}
+	
+	def search(self, tags, region="ALL"):
+		"""
+			Searches the servers by 'tags'.
+			
+			Each tag corresponds to some field on the model. Tags can
+			have prefixes which modify the way the query set is filtered.
+			Tags starting with + are required, meaning entires missing
+			those tags are filtered out. Those beginning with - are
+			ignored, so if they occur on a specific entry, that entry will
+			be dropped from the set.
+			
+			When no prefix is set the tag is considered to be prefered.
+			This is only concerns the client-side currently.
+		"""
+		
+		region = region.upper()
+		filters = []
+		excludes = []
+		for tag in tags:
+			
+			try:
+				if tag[0] == "-":
+					excludes.append(ServerManager.tags[tag[1:]])
+					
+				elif tag[0] == "+":
+					filters.append(ServerManager.tags[tag[1:]])
+					
+				elif tag[0] in ["<", ">"]:
+					
+					try:
+						count = int(tag[1:])
+					except ValueError:
+						continue
+					
+					filters.append(({
+									"<": "player_count__lt",
+									">": "player_count__gt",
+									}[tag[0]], count))
+			except KeyError:
+				pass
+		
+		if region != "ALL":
+			svs = self.filter(continent_code=region, is_online=True)
+		else:
+			svs = self.filter(is_online=True)
+		
+		for exclude in excludes:
+			svs = svs.exclude(**dict([exclude]))
+			
+		for filter_ in filters:
+			svs = svs.filter(**dict([filter_]))
+		
+		return svs
+		
 class Server(models.Model):
+	
+	objects = ServerManager()
 	
 	PURE_NONE = 0
 	PURE_WARN = 1

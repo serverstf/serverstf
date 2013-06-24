@@ -24,3 +24,13 @@ urlpatterns = patterns('',
 	url(r"^settings$", views.manage_settings, name="settings"),
 	url(r"^faq$", TemplateView.as_view(template_name="faq.html"), name="faq"),
 )
+
+
+## REST urls
+from rest_framework import routers
+import browser.views
+
+router = routers.SimpleRouter()
+router.register("servers", browser.views.ServerViewSet, "servers")
+
+urlpatterns += (url(r"^rest/", include(router.urls)),)

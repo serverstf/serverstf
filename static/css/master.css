@@ -159,6 +159,7 @@ input[type=text]:focus {
 }
 .server-entry .margin .player-count { font-size: 1.2em; }
 .server-entry .margin .max-player-count { color: #949494; }
+.server-entry .margin .max-player-count:before { content: "/"; }
 
 .server-entry .main {
 	/*border: 1px solid #0000ff;*/

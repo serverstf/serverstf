@@ -36,3 +36,29 @@ def browse_favourites(request):
 							})
 	
 	return HttpResponse(template.render(context))
+	
+	
+## REST interfaces
+from django.http import Http404
+from rest_framework import response
+from rest_framework import viewsets
+from rest_framework import status
+from rest_framework.decorators import link
+from browser.serialisers import ServerSerialiser
+
+class ServerViewSet(viewsets.ViewSet):
+	
+	def retrieve(self, request, pk):
+		
+		try:
+			sv = Server.objects.get(pk=pk)
+		except Server.DoesNotExist:
+			raise Http404
+		
+		return response.Response(ServerSerialiser(sv).data)
+	
+	@link()
+	def search(self, request, pk):
+		return response.Response(
+				[sv.id for sv in  Server.objects.search(pk.split(","),
+								request.QUERY_PARAMS.get("region", "all"))])

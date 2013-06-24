@@ -1,4 +1,8 @@
 
+String.prototype.startsWith = function (sub) {
+	return this.slice(0, sub.length) == sub;
+}
+
 $(document).ready(function () {
 	$("#header #user-controls a > span:last-child").hide();
 	

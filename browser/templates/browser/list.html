@@ -7,18 +7,67 @@
 		{% include "common_head.html" %}
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="{% static 'js/moment.js' %}"></script>
-		<script type="text/javascript" src="{% static 'js/api.js' %}"></script>
-		<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/serverstf.js' %}"></script>
 		<script type="text/javascript">
 			google.load("visualization", "1", {packages: ["annotatedtimeline"]});
-		
-			ServerEntry.region = "{% block region %}~{% endblock %}".toLowerCase();
-			ServerEntry.batch_size = {% block batch_size %}10{% endblock %};
-			ServerEntry.allow_relist = {% block allow_relist %}false{% endblock %};
+			
+			function search() {
+				
+				var tags = [];
+				$("#search .tags > li").each(function () {
+					tags.push($(this).text());
+				});
+				
+				serverstf.list(tags, collection.extend);
+				collection.filter(tags);
+				
+				window.location.hash = tags.join(",");
+			}
 			
 			$(document).ready(function () {
-				ServerEntry.initialise({% block initial_ids %}[]{% endblock %}, $("#servers"));
-				searchServers($("#servers"), $("#search .tags"));
+				serverstf.region = "{% block region %}~{% endblock %}";
+				serverstf.api_root = "/rest";
+				serverstf.allow_relist = {% block allow_relist %}false{% endblock %};
+				serverstf.ServerEntry.template.source = $(".server-entry#template");
+				serverstf.ServerEntry.template.fields = {
+					name: ".server-name",
+					player_count: ".player-count",
+					bot_count: ".bot-count",
+					max_players: ".max-player-count",
+					host: ".server-host",
+					port: ".server-port",
+					map: ".server-map",
+					tags: "ul.tags",
+					
+					detail: ".modules"
+				};
+				
+				collection = new serverstf.Collection($("#servers"));
+				tags = window.location.hash.slice(1).split(",");
+				for (var i = 0; i < tags.length; i++) {
+					serverstf.tag(tags[i], $("#search .tags"));
+				}
+				
+				var initial_ids = {% block initial_ids %}[]{% endblock %};
+				$.each(initial_ids, function (i, id) {
+					collection.add(id);
+				})
+			});
+			
+			$(document).ready(function () {
+				$("#search #input-field").click(function () { $(this).find("input[type=text]").focus() });
+				$("#search #input-field input[type=text]").focus(function () { $(this).val("") });
+				$("#search #input-field input[type=text]").blur(function () { if ($(this).val().length == 0) $(this).val("type to add tags") });
+				$("#search #input-field input[type=text]").keypress(function (event) {
+					if (event.which == 13) {
+						if ($(this).val().length == 0) { return; }
+						
+						serverstf.tag($(this).val(), $("#search .tags"));
+						$(this).val("");
+					}
+				});
+				$("#search .tags").on("click", "li", function () { $(this).remove(); search(); });
+				$(".server-entry .tags").on("click", "li", function () { serverstf.tag("+" + $(this).text(), $("#search .tags")); search(); });
 			});
 		</script>
 	</head>

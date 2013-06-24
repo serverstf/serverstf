@@ -20,11 +20,6 @@ function elementInViewport(el) {
 }
 
 
-String.prototype.startsWith = function (sub) {
-	return this.slice(0, sub.length) == sub;
-}
-
-
 function reportAjaxError(respone, status, err) {
 	console.log("AJAX request failed; " + status + " "+ err);
 }
