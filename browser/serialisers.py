@@ -54,5 +54,19 @@ class ServerSerialiser(serializers.Serializer):
 	config = ServerConfigSerialiser(source="*")
 	mods = ServerModsSerialiser(source="*")
 	location = ServerLocationSerialiser(source="*")
+
+## /players
+class PlayersSerialiser(serializers.Serializer):
 	
+	name = serializers.CharField()
+	score = serializers.IntegerField()
+	duration = serializers.FloatField()
+
+## /activity
+class ActivitySerialiser(serializers.Serializer):
+	
+	bot_count = serializers.IntegerField()
+	player_count = serializers.IntegerField()
+	timestamp = serializers.DateTimeField()
+
 # Don't repeat yourself they said
