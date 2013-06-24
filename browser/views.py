@@ -45,6 +45,7 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import link
 from browser.serialisers import ServerSerialiser
+import steam.servers
 
 class ServerViewSet(viewsets.ViewSet):
 	
@@ -62,3 +63,31 @@ class ServerViewSet(viewsets.ViewSet):
 		return response.Response(
 				[sv.id for sv in  Server.objects.search(pk.split(","),
 								request.QUERY_PARAMS.get("region", "all"))])
+								
+	@link()
+	def players(self, request, pk):
+		
+		try:
+			sv = Server.objects.get(pk=pk)
+		except Server.DoesNotExist:
+			raise Http404
+			
+		sq = steam.servers.ServerQuerier((sv.host, sv.port))
+		
+		try:
+			players = []
+			for player in sq.get_players()["players"]:
+				players.append({
+								"name": player["name"],
+								"score": player["score"],
+								"duration": player["duration"],
+								})
+
+			return response.Response(players)
+			
+		except steam.servers.NoResponseError:
+			return response.Response(status=status.HTTP_504_GATEWAY_TIMEOUT)
+			
+		except steam.servers.BadResponseError:
+			return response.Response(statis=HTTP_502_BAD_GATEWAY)
+		
