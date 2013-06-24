@@ -207,10 +207,8 @@ input[type=text]:focus {
 	display: block;
 }
 
-
-.activity-chart { width: 400px; height: 150px; }
-
-.connect-link {
+.server-entry .activity-chart { width: 400px; height: 150px; }
+.server-entry .connect-link {
 	padding: 10px;
 	
 	color: #1E1E1E;

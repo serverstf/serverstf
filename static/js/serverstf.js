@@ -1,4 +1,6 @@
 
+google.load("visualization", "1", {packages: ["annotatedtimeline"]});
+
 var serverstf = {
 	region: null,
 	api_root: null,
@@ -16,10 +18,9 @@ var serverstf = {
 			},
 			success: success,
 			complete: function (jqXHR) {
-				// FIXME: doesn't actually remove from active_requests
 				for (var i = 0; i < serverstf.active_requests.length; i++) {
 					if (serverstf.active_requests[i] === jqXHR) {
-						serverstf.active_requests.slice(i, 1);
+						serverstf.active_requests.splice(i, 1);
 						break;
 					}
 				}
@@ -57,12 +58,17 @@ var serverstf = {
 		else {
 			this.jq = jq;
 		}
+
+		this.jq.data("ServerEntry", this);
 		
 		this.fields = {};
 		for (var key in serverstf.ServerEntry.template.fields) {
 			this.fields[key] = this.jq.find(
 							serverstf.ServerEntry.template.fields[key]);
 		}
+		
+		this.display_mode = null;
+		this.display(serverstf.ServerEntry.NORMAL);
 		
 		this.name = null;
 		this.host = null;
@@ -72,6 +78,13 @@ var serverstf = {
 		this.max_players = null;
 		this.vac_enabled = null;
 		this.online = null;
+		
+		this.players = [];
+		this.activity_chart = null;
+		this.activity = new google.visualization.DataTable();
+		this.activity.addColumn("datetime", "Date");
+		this.activity.addColumn("number", "Player Count");
+		this.activity.addColumn("number", "Bot Count");
 		
 		this.config = {
 			alltalk: null,
@@ -164,7 +177,12 @@ var serverstf = {
 				update_queue.splice(0, 1);
 				update_queue.push(next);
 				
-				self[next].update();
+				se = self[next];
+				se.update();
+				if (active === self[next]) {
+					se.update_players();
+					se.update_activity();
+				}
 			}
 		}
 		setInterval(function () { update_next(self) }, 500);
@@ -177,15 +195,14 @@ var serverstf = {
 			if (event.target != this) { return; }
 			se = $(this).data("ServerEntry");
 			
-			if (active !== null) { active.fields.detail.slideUp(); }
-			se.fields.detail.slideDown();
+			if (active !== null) { active.display(serverstf.ServerEntry.NORMAL); }
+			se.display(serverstf.ServerEntry.EXPANDED);
 			active = se;
 		});
 		
 		var _add = function (self, id) {
 			self[id] = new serverstf.ServerEntry(id);
 			jq.append(self[id].jq);
-			self[id].jq.data("ServerEntry", self[id]);
 			update_queue.push(id);
 			
 			return self[id];
@@ -257,7 +274,43 @@ var serverstf = {
 	}
 }
 
+// serverstf.ServerEntry class properties
 serverstf.ServerEntry.template = {source: null, fields: null};
+serverstf.ServerEntry.activity_chart = {};
+
+// Display mode
+serverstf.ServerEntry.NORMAL = 1;
+serverstf.ServerEntry.EXPANDED = 2;
+
+// serverstf.ServerEntry methods
+serverstf.ServerEntry.prototype.display = function (mode) {
+	
+	if (mode === serverstf.ServerEntry.EXPANDED) {
+		this.fields.detail.slideDown();
+	}
+	else if (mode === serverstf.ServerEntry.NORMAL) {
+		this.fields.detail.slideUp();
+	}
+	
+	this.display_mode = mode;
+	return mode;
+}
+serverstf.ServerEntry.prototype.gmaps = function (params) {
+	
+	params.center = [this.location.latitude, this.location.longitude].join(",");
+	query = [];
+	for (var key in params) {
+		query.push(key + "=" + params[key]);
+	}
+	
+	return "http://maps.googleapis.com/maps/api/staticmap?" + query.join("&");
+}
+serverstf.ServerEntry.prototype.connect = function () {
+	window.open(this.connect_uri());
+}
+serverstf.ServerEntry.prototype.connect_uri = function () {
+	return "steam://connect/" + this.host + ":" + this.port;
+}
 serverstf.ServerEntry.prototype.update_fields = function () {
 	this.fields.name.text(this.name);
 	this.fields.player_count.text(this.player_count);
@@ -265,7 +318,16 @@ serverstf.ServerEntry.prototype.update_fields = function () {
 	this.fields.max_players.text(this.max_players);
 	this.fields.host.text(this.host);
 	this.fields.port.text(this.port);
+	this.fields.map.text(this.map);
 	
+	this.fields.connect.attr("href", this.connect_uri());
+	this.fields.location.attr("src", this.gmaps({
+														size: "400x200",
+														sensor: false,
+														zoom: 4
+														}));
+
+	// Tags
 	this.fields.tags.empty();
 	for (var tag in serverstf.tags) {
 		if (serverstf.tags[tag](this)) {
@@ -275,6 +337,55 @@ serverstf.ServerEntry.prototype.update_fields = function () {
 	
 	if (this.online) { this.jq.show(); }
 	else { this.jq.hide(); }
+	
+	if (this.display_mode !== serverstf.ServerEntry.EXPANDED) { return; }
+	// ~~~ EXPANDED view only ~~~
+	
+	// Players table
+	var players_table = this.fields.players;
+	players_table.find("tr").slice(1).remove();
+	$.each(this.players, function (i, player) {
+		$("<tr/>").append($("<td/>", {text: player.name}))
+			.append($("<td/>", {text: player.score}))
+			.append($("<td/>", {text: moment.duration(player.duration, "s").humanize()}))
+			.appendTo(players_table);
+	});
+	
+	// Activity chart
+	if (this.activity_chart === null) {
+		this.activity_chart = new google.visualization.AnnotatedTimeLine(
+												this.fields.activity.get(0));
+	}	
+	this.activity_chart.draw(this.activity,
+		serverstf.ServerEntry.activity_chart);
+}
+serverstf.ServerEntry.prototype.update_activity = function () {
+	
+	var self = this;
+	serverstf.request("GET", ["servers", this.id, "activity"],
+		function (response) {
+			self.activity.removeRows(0, self.activity.getNumberOfRows());
+			
+			$.each(response, function (i, al) {
+				self.activity.addRow(
+					[new Date(al.timestamp), al.player_count, al.bot_count]
+				);
+			});
+			
+			self.update_fields();
+		}
+	);
+}
+serverstf.ServerEntry.prototype.update_players = function () {
+	
+	var self = this;
+	serverstf.request("GET", ["servers", this.id, "players"], 
+		function (response) {
+			self.players = response;
+			self.players.sort(function (a, b) { return b.score - a.score; });
+			self.update_fields();
+		}
+	);
 }
 serverstf.ServerEntry.prototype.update = function () {
 	

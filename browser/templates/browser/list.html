@@ -9,8 +9,6 @@
 		<script type="text/javascript" src="{% static 'js/moment.js' %}"></script>
 		<script type="text/javascript" src="{% static 'js/serverstf.js' %}"></script>
 		<script type="text/javascript">
-			google.load("visualization", "1", {packages: ["annotatedtimeline"]});
-			
 			function search() {
 				
 				var tags = [];
@@ -38,10 +36,29 @@
 					port: ".server-port",
 					map: ".server-map",
 					tags: "ul.tags",
+					connect: "a.connect-link",
 					
-					detail: ".modules"
+					detail: ".modules",
+					location: "img.server-location-map",
+					activity: "div.activity-chart",
+					players: "table.player-table",
 				};
-				
+				serverstf.ServerEntry.activity_chart = {
+					allowRedraw: true,
+					displayAnnotations: false,
+					displayLegendDots: false,
+					displayLegendValues: false,
+					displayRangeSelector: false,
+					displayZoomButtons: false,
+					colors: [
+						"#404040",
+						"#9F9F9F"
+						],
+					fill: 35,
+					max: 32,
+					min: 0
+				};
+
 				collection = new serverstf.Collection($("#servers"));
 				tags = window.location.hash.slice(1).split(",");
 				for (var i = 0; i < tags.length; i++) {
@@ -107,7 +124,7 @@
 						<p class="server-description"></p>
 						
 						<ul>
-							<li>Address: <span class="server-ip"></span></li>
+							<li>Address: <span class="server-host"></span>:<span class="server-port"></span></li>
 							<li>Map: <span class="server-map"></span></li>
 						</ul>
 						
