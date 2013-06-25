@@ -18,7 +18,6 @@ urlpatterns = patterns('',
 	# Uncomment the next line to enable the admin:
 	url(r'^admin/', include(admin.site.urls)),
 	url(r"", include("browser.urls")),
-	url(r"^api/", include("api.urls")),
 	url(r"^openid/", include("steam_auth.urls")),
 	url(r"^home$", views.home, name="home"),
 	url(r"^settings$", views.manage_settings, name="settings"),

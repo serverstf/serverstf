@@ -1,8 +1,0 @@
-{% load json %}
-
-{"id": {{network.id}},
-	"name": "{{network.name}}",
-	"servers": [{% join_attrs servers 'id' ', ' %}],
-	"url": "{{network.url}}",
-	"link": "{% url 'browser.views.browse_network' network.slug %}"
-}
