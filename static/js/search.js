@@ -91,9 +91,6 @@ function searchServers(servers, search_tags) {
 			a = ServerEntry.fromElement(a);
 			b = ServerEntry.fromElement(b);
 			
-			if (typeof a == "undefined" || typeof b == "undefined") { return 0; }
-			//if (typeof a.data == "undefined" || typeof b.data == "undefined") { return 0; }
-			
 			if (a.preference < b.preference) { return 1; }
 			if (a.preference > b.preference) { return -1; }
 			else { return 0; }

@@ -49,6 +49,7 @@ var serverstf = {
 	// serverstf.ServerEntry(id, [jq])
 	ServerEntry: function (id, jq) {
 		this.id = id;
+		this.preference = null; // used by Collectiion
 		
 		if (jq === undefined) {
 			this.jq = serverstf.ServerEntry.template.source.clone(true);
@@ -202,6 +203,7 @@ var serverstf = {
 		
 		var _add = function (self, id) {
 			self[id] = new serverstf.ServerEntry(id);
+			self[id].preference = 0;
 			jq.append(self[id].jq);
 			update_queue.push(id);
 			
@@ -231,18 +233,23 @@ var serverstf = {
 				var prefix = tag.charAt(0);
 				var name = tag.slice(1);
 				
-				if (prefix === "+") { required.push(name); }
+				if (prefix === "+") { required.push(name); prefered.push(name); }
 				else if (prefix === "-") { ignored.push(name); }
 				else if (prefix === ">") { } // TODO:
 				else if (prefix === "<") { } // TODO:
 				else { prefered.push(tag); }
 				
 			});
-
+			
+			ordered = [];
 			$.each(self, function (i, se) {
 				if (typeof se == "function") { return; }
 				
+				ordered.push(se);
+				se.preference = se.player_count / se.max_players;
+				se.jq.detach();
 				se.jq.show();
+				
 				$.each(required, function (i, tag) {
 					if (tag in serverstf.tags) {
 						if (!serverstf.tags[tag](se)) {
@@ -261,10 +268,26 @@ var serverstf = {
 					}
 				});
 				
-				// TODO: prefered
 				// TODO: > <
 				
+				$.each(prefered, function (i, tag) {
+					if (tag in serverstf.tags) {
+						if (serverstf.tags[tag](se)) {
+							se.preference++;
+						}
+					}
+				});
+				
 			});
+			
+			ordered.sort(function (a, b) {
+				if (a.preference < b.preference) { return 1; }
+				if (a.preference > b.preference) { return -1; }
+				else { return 0; }
+			});
+			for (var i = 0; i < ordered.length; i++) {
+				jq.append(ordered[i].jq);
+			}
 		}
 		
 		this.add = function (id) { return _add(self, id) };
