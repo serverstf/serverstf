@@ -1,9 +1,10 @@
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template import RequestContext, loader
 from django.contrib.auth.decorators import login_required
 
 from browser.models import Server, Network, ActivityLog
+from browser.forms import NetworkForm
 from serverstf import iso3166
 
 import json
@@ -21,13 +22,53 @@ def browse_region(request, region, tags):
 	
 	return HttpResponse(template.render(context))
 
-def browse_network(request, network_slug):
-	return HttpResponse("nope")
+def browse_network(request, slug):
+	
+	try:
+		network = Network.objects.get(slug=slug)
+	except Network.DoesNotExist:
+		raise Http404
+	
+	ids = [sv.id for sv in network.servers.all()]
+	
+	template = loader.get_template("browser/network.html")
+	context = RequestContext(request, {
+							"network": network,
+							"tags": [],
+							"region": "~",
+							"initial_ids": ids,
+							})
+	
+	return HttpResponse(template.render(context))
+
+@login_required
+def manage_network(request, slug):
+	
+	try:
+		network = Network.objects.get(slug=slug)
+	except Network.DoesNotExist:
+		raise Http404
+	
+	if request.user not in network.admins.all():
+		return HttpResponse("You're not an admin of this network", status=401)
+	
+	if request.method == "POST":
+		form = NetworkForm(request.POST)
+	else:
+		form  = NetworkForm(instance=network)
+	
+	template = loader.get_template("browser/network_manage.html")
+	context = RequestContext(request, {
+							"network": network,
+							"form": form,
+							})
+	
+	return HttpResponse(template.render(context))
 
 @login_required
 def browse_favourites(request):
 	
-	ids = [sv.id for sv in request.user.favourites.all()];
+	ids = [sv.id for sv in request.user.favourites.all()]
 
 	template = loader.get_template("browser/favourites.html")
 	context = RequestContext(request, {
@@ -39,7 +80,6 @@ def browse_favourites(request):
 	
 	
 ## REST interfaces
-from django.http import Http404
 from rest_framework import response
 from rest_framework import viewsets
 from rest_framework import status

@@ -36,6 +36,13 @@ p#intro {
 }
  
 
+#content form { width: 100%; }
+#content form > div { margin-bottom: 10px; width: 100%; overflow: auto; }
+#content form > div > div.label { float: left; width: 20%; }
+#content form > div > div.field { float: right; width: 80%; }
+
+
+
 em { font-weight: bold; font-style: normal; }
 
 

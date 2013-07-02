@@ -9,6 +9,7 @@ from django.db import models
 import steam.servers
 import socket
 
+from django.conf import settings
 import browser.settings
 
 import pygeoip
@@ -24,6 +25,9 @@ class Network(models.Model):
 	name = models.CharField(max_length=128)
 	slug = models.SlugField(max_length=24)
 	url = models.URLField(blank=True)
+	steam_group = models.URLField(blank=True)
+
+	admins = models.ManyToManyField(settings.AUTH_USER_MODEL)
 	
 	def __unicode__(self):
 		return self.name
@@ -132,7 +136,11 @@ class Server(models.Model):
 	MODE_SD = 5
 	
 	## Core details
-	network = models.ForeignKey(Network, null=True, blank=True)
+	network = models.ForeignKey(Network,
+									null=True,
+									blank=True,
+									related_name="servers"
+								)
 	name = models.CharField(max_length=128)
 	host = models.CharField(max_length=128)
 	port = models.PositiveIntegerField()
@@ -197,7 +205,11 @@ class Server(models.Model):
 	continent_code = models.CharField(editable=False, null=True, max_length=2)
 	
 	def __unicode__(self):
-		return self.name
+		
+		if self.name:
+			return self.name
+		else:
+			return "{}:{}".format(self.host, self.port)
 		
 	@classmethod
 	def create(cls, host, port):

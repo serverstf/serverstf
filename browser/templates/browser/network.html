@@ -1,0 +1,18 @@
+
+{% extends "browser/list.html" %}
+
+{% block title %}{{network.name}} &mdash; Network{% endblock %}
+{% block initial_ids %}[{{initial_ids|join:","}}]{% endblock %}
+
+{% block list_info %}
+<div id="network">
+	<a id="network-name" href="{{network.url}}">{{network.name}}</a>
+	{% if user.is_authenticated and user in network.admins.all %}
+	<a class="icon-edit" href="{% url 'manage.network' network.slug %}"></a>
+	{% endif %}
+	<ul>
+		<li><a href="{{network.url}}">Website</a></li>
+		<li><a href="{{network.steam_group}}">Steam group</a></li>
+	</ul>
+</div>
+{% endblock %}
