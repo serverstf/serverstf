@@ -1,7 +1,7 @@
 serverstf
 =========
 
-Web-based TF2 server browser wrote in Python using Django.
+Web-based TF2 server browser written in Python using Django.
 
 ### Requirements
 
