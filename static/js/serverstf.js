@@ -5,21 +5,34 @@ var serverstf = {
 	region: null,
 	api_root: null,
 	allow_relist: null,
+	csrf_token: null,
 	
 	active_requests: [],
-	request: function (method, path, success) {
+	request: function (method, path, params, success) {
+		// serverstf.request(method, path, success)
+		// serverstf.request(method, path, params, success)
+		
+		if (typeof params === "function" &&
+			typeof success === "undefined") {
+			success = params;
+			params = {};
+		}
+		
+		if (path[0] === "servers") { params.region = serverstf.region; }
 		
 		request_config = {
 			type: method,
 			dataType: "json",
-			url: [serverstf.api_root].concat(path).join("/"),
-			data: {
-				region: serverstf.region
+			headers: {"X-CSRFToken": serverstf.csrf_token},
+			url: [serverstf.api_root].concat(path).join("/") + "/",
+			data: params,
+			error: function (xhr, status, error) {
+				console.error(error, xhr.responseText);
 			},
 			success: success,
-			complete: function (jqXHR) {
+			complete: function (xhr) {
 				for (var i = 0; i < serverstf.active_requests.length; i++) {
-					if (serverstf.active_requests[i] === jqXHR) {
+					if (serverstf.active_requests[i] === xhr) {
 						serverstf.active_requests.splice(i, 1);
 						break;
 					}
@@ -48,8 +61,10 @@ var serverstf = {
 	
 	// serverstf.ServerEntry(id, [jq])
 	ServerEntry: function (id, jq) {
+		
 		this.id = id;
 		this.preference = null; // used by Collectiion
+		this.ready = false;
 		
 		if (jq === undefined) {
 			this.jq = serverstf.ServerEntry.template.source.clone(true);
@@ -79,6 +94,7 @@ var serverstf = {
 		this.max_players = null;
 		this.vac_enabled = null;
 		this.online = null;
+		this.favourited = null;
 		
 		this.players = [];
 		this.activity_chart = null;
@@ -179,7 +195,7 @@ var serverstf = {
 				update_queue.push(next);
 				
 				se = self[next];
-				se.update();
+				se.update(se.ready);
 				if (active === self[next]) {
 					se.update_players();
 					se.update_activity();
@@ -298,6 +314,7 @@ var serverstf = {
 }
 
 // serverstf.ServerEntry class properties
+serverstf.ServerEntry.selector = null;
 serverstf.ServerEntry.template = {source: null, fields: null};
 serverstf.ServerEntry.activity_chart = {};
 
@@ -343,13 +360,16 @@ serverstf.ServerEntry.prototype.update_fields = function () {
 	this.fields.port.text(this.port);
 	this.fields.map.text(this.map);
 	
+	if (this.favourited) { this.fields.favourite.addClass("saved"); }
+	else { this.fields.favourite.removeClass("saved"); }
+	
 	this.fields.connect.attr("href", this.connect_uri());
 	this.fields.location.attr("src", this.gmaps({
 														size: "400x200",
 														sensor: false,
 														zoom: 4
 														}));
-
+														
 	// Tags
 	this.fields.tags.empty();
 	for (var tag in serverstf.tags) {
@@ -410,22 +430,62 @@ serverstf.ServerEntry.prototype.update_players = function () {
 		}
 	);
 }
-serverstf.ServerEntry.prototype.update = function () {
+serverstf.ServerEntry.prototype.update = function (fast) {
+	
+	if (typeof fast === "undefined") { fast = false; }
 	
 	var self = this;
-	serverstf.request("GET", ["servers", this.id], function (response) {
-		function _setProperties(object, source) {
-			for (var key in source) {
-				if (typeof source[key] === "object") {
-					_setProperties(object[key], source[key]);
-				}
-				else {
-					object[key] = source[key];
+	serverstf.request("GET", ["servers", this.id], {update: fast ? 1 : 0},
+		function (response) {
+			function _setProperties(object, source) {
+				for (var key in source) {
+					if (typeof source[key] === "object") {
+						_setProperties(object[key], source[key]);
+					}
+					else {
+						object[key] = source[key];
+					}
 				}
 			}
+			
+			_setProperties(self, response);
+			self.ready = true;
+			self.update_fields();
 		}
-		
-		_setProperties(self, response);
-		self.update_fields();
-	});
+	);
 }
+serverstf.ServerEntry.prototype.favourite = function () {
+	
+	var self = this;
+	serverstf.request("POST", ["servers", this.id, "favourite"],
+								function () { self.update(true); });
+}
+serverstf.ServerEntry.prototype.unfavourite = function () {
+	
+	var self = this;
+	serverstf.request("POST", ["servers", this.id, "unfavourite"], 
+								function () { self.update(true); });
+}
+
+
+// Setup
+$(window).on("load", function () {
+	
+	serverstf.ServerEntry.selector = "." + serverstf.ServerEntry.template.source.attr("class");
+	// ~~~ serverstf ready ~~~
+	
+	fav_selector = [
+		serverstf.ServerEntry.selector,
+		serverstf.ServerEntry.template.fields.favourite
+	].join(" ");
+	
+	$(document).on("click", fav_selector, function () {
+		se = $(this)
+				.parents(serverstf.ServerEntry.selector)
+				.data("ServerEntry");
+
+		if (se.favourited) { se.unfavourite(); }
+		else { se.favourite(); }
+	});
+	
+});

@@ -25,6 +25,7 @@
 				serverstf.region = "{% block region %}~{% endblock %}";
 				serverstf.api_root = "/rest";
 				serverstf.allow_relist = {% block allow_relist %}false{% endblock %};
+				serverstf.csrf_token = "{{csrf_token}}";
 				serverstf.ServerEntry.template.source = $(".server-entry#template");
 				serverstf.ServerEntry.template.fields = {
 					name: ".server-name",
@@ -36,6 +37,7 @@
 					map: ".server-map",
 					tags: "ul.tags",
 					connect: "a.connect-link",
+					favourite: ".fav-icon",
 					
 					detail: ".modules",
 					location: "img.server-location-map",
@@ -85,6 +87,8 @@
 				$("#search .tags").on("click", "li", function () { $(this).remove(); search(); });
 				$(".server-entry .tags").on("click", "li", function () { serverstf.tag("+" + $(this).text(), $("#search .tags")); search(); });
 			});
+			
+			setInterval(search, 20000);
 		</script>
 	</head>
 	

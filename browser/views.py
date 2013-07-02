@@ -83,10 +83,11 @@ def browse_favourites(request):
 from rest_framework import response
 from rest_framework import viewsets
 from rest_framework import status
-from rest_framework.decorators import link
+from rest_framework.decorators import link, action
 from browser.serialisers import ServerSerialiser, \
 									ActivitySerialiser, \
 									PlayersSerialiser
+from browser.settings import API_UPDATE_TIMEOUT
 import steam.servers
 
 class ServerViewSet(viewsets.ViewSet):
@@ -98,7 +99,16 @@ class ServerViewSet(viewsets.ViewSet):
 		except Server.DoesNotExist:
 			raise Http404
 		
-		return response.Response(ServerSerialiser(sv).data)
+		try:
+			update_flag = int(request.QUERY_PARAMS.get("update", 0))
+		except ValueError:
+			update_flag = 0
+		
+		if update_flag:
+			sv.update(timeout=API_UPDATE_TIMEOUT)
+		
+		return response.Response(ServerSerialiser(sv,
+									context={"user": request.user}).data)
 	
 	@link()
 	def search(self, request, pk):
@@ -153,3 +163,35 @@ class ServerViewSet(viewsets.ViewSet):
 			return Http404
 
 		return response.Response(ActivitySerialiser(als, many=True).data)
+	
+	# I'm somewhat concered that 'favourite' and 'unfavourite' may not
+	# be strictly "RESTful" and that the favourites list should be exposed
+	# as it's own 'resource'
+	
+	@action()
+	def favourite(self, request, pk):
+		
+		try:
+			sv = Server.objects.get(pk=pk)
+		except Server.DoesNotExist:
+			raise Http404
+		
+		if request.user.is_authenticated():
+			request.user.favourites.add(sv)
+			return response.Response(status=status.HTTP_204_NO_CONTENT)
+		
+		return response.Response(status=status.HTTP_401_UNAUTHORIZED)
+		
+	@action()
+	def unfavourite(self, request, pk):
+		
+		try:
+			sv = Server.objects.get(pk=pk)
+		except Server.DoesNotExist:
+			raise Http404
+			
+		if request.user.is_authenticated():
+			request.user.favourites.remove(sv)
+			return response.Response(status=status.HTTP_204_NO_CONTENT)
+			
+		return response.Response(status=status.HTTP_401_UNAUTHORIZED)

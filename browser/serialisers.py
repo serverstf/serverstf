@@ -50,11 +50,15 @@ class ServerSerialiser(serializers.Serializer):
 	vac_enabled = serializers.BooleanField()
 	password_protected = serializers.BooleanField()
 	online = serializers.BooleanField(source="is_online")
+	favourited = serializers.SerializerMethodField("is_favourited")
 	
 	config = ServerConfigSerialiser(source="*")
 	mods = ServerModsSerialiser(source="*")
 	location = ServerLocationSerialiser(source="*")
-
+	
+	def is_favourited(self, server):
+		return server in self.context["user"].favourites.all()
+	
 ## /players
 class PlayersSerialiser(serializers.Serializer):
 	
