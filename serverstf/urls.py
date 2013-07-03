@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from django.views.generic import RedirectView
 from django.views.generic.base import TemplateView
 
 # Uncomment the next two lines to enable the admin:
@@ -18,6 +19,7 @@ urlpatterns = patterns('',
 	# Uncomment the next line to enable the admin:
 	url(r'^admin/', include(admin.site.urls)),
 	url(r"", include("browser.urls")),
+	url(r"^$", RedirectView.as_view(url="/~")),
 	url(r"^openid/", include("steam_auth.urls")),
 	url(r"^home$", views.home, name="home"),
 	url(r"^settings$", views.manage_settings, name="settings"),

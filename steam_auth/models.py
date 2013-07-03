@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
 
 from browser.models import Server
+from serverstf.iso3166 import CONTINENT_CHOICES
 from steam_auth.settings import STEAM_API_KEY
 
 import datetime
@@ -77,9 +78,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
 	
 	profile_name = models.CharField(max_length=32, default="")
-	steam_id = SteamIDField(unique=True)
+	steam_id = SteamIDField(unique=True, editable=False)
 	last_sync = models.DateTimeField(default=datetime.datetime.fromtimestamp(0.0)) 
 	favourites = models.ManyToManyField(Server)
+	region = models.CharField(max_length=2, null=True, blank=True,
+									choices=CONTINENT_CHOICES)
 	
 	is_admin = models.BooleanField(default=False)
 	
@@ -129,7 +132,7 @@ class User(AbstractBaseUser):
 		self.last_sync = datetime.datetime.now()
 		
 		self.save()
-
+	
 ## South support
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^steam_auth\.models\.SteamIDField"])

@@ -6,17 +6,18 @@ from django.contrib.auth.decorators import login_required
 from browser.models import Server, Network, ActivityLog
 from browser.forms import NetworkForm
 from serverstf import iso3166
+from serverstf.util import get_region
 
 import json
 
-def browse_region(request, region, tags):
+def browse_region(request, region):
 	
 	region = region.upper()
-	tags = [tag for tag in tags.split(",") if tag]
-	
+	if region == "~":
+		region = get_region(request)
+
 	template = loader.get_template("browser/region.html")
 	context = RequestContext(request, {
-							"tags": tags,
 							"region": region,
 							})
 	
@@ -35,7 +36,7 @@ def browse_network(request, slug):
 	context = RequestContext(request, {
 							"network": network,
 							"tags": [],
-							"region": "~",
+							"region": "all",
 							"initial_ids": ids,
 							})
 	

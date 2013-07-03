@@ -1,48 +1,16 @@
-<!-- START header -->
-{% comment %}
-	<div class="left">
-		<a id="title" href="/">servers.tf</a>
-		<ul id="nav">
-			<li><a href="{% url 'browse.region' 'eu' '' %}">eu</a></li>
-			<li><a href="{% url 'browse.region' 'na' '' %}">na</a></li>
-			<li><a href="{% url 'browse.region' 'sa' '' %}">sa</a></li>
-			<li><a href="{% url 'browse.region' 'oc' '' %}">aus</a></li>
-			<li><a href="{% url 'browse.region' 'as' '' %}">asia</a></li>
-			<li><a href="{% url 'browse.region' 'af' '' %}">africa</a></li>
-		</ul>
-		
-		<div class="clear"></div>
-	</div>
-	
-	<div class="right">
-		{% if user.is_authenticated %}
-			<div id="user-overview">
-				<a href="{% url 'browse.favourites' %}" class="buttonesque"><span class="icon-star"></span><span> Favourites</span></a>
-				<a href="{% url 'settings' %}" class="buttonesque"><span class="icon-cogs"></span><span> Settings</span></a>
-				<a href="{% url 'logout' %}?next={{request.path}}" class="buttonesque"><span class="icon-off"></span><span> Logout</span></a>
-			</div>
-		{% else %}
-		<a href="{% url 'login' %}#}?continue={{request.path}}">
-			<img id="login" src="http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_small.png" alt="Sign in through Steam">
-		</a>
-		{% endif %}
-	</div>
-	
-	<div class="clear"></div>
-{% endcomment %}
-<!-- END header -->
 
+<!-- START header -->
 <div class="left">
 	<div id="title" class="left">
 		<a href="{% url 'home' %}">servers.tf</a>
 	</div>
 	<ul id="nav" class="left">
-		<li><a href="{% url 'browse.region' 'eu' '' %}">eu</a></li>
-		<li><a href="{% url 'browse.region' 'na' '' %}">na</a></li>
-		<li><a href="{% url 'browse.region' 'sa' '' %}">sa</a></li>
-		<li><a href="{% url 'browse.region' 'oc' '' %}">aus</a></li>
-		<li><a href="{% url 'browse.region' 'as' '' %}">asia</a></li>
-		<li><a href="{% url 'browse.region' 'af' '' %}">africa</a></li>
+		<li><a href="{% url 'browse.region' 'eu' %}">eu</a></li>
+		<li><a href="{% url 'browse.region' 'na' %}">na</a></li>
+		<li><a href="{% url 'browse.region' 'sa' %}">sa</a></li>
+		<li><a href="{% url 'browse.region' 'oc' %}">aus</a></li>
+		<li><a href="{% url 'browse.region' 'as' %}">asia</a></li>
+		<li><a href="{% url 'browse.region' 'af' %}">africa</a></li>
 	</ul>
 </div>
 
@@ -59,3 +27,4 @@
 </div>
 
 <div class="clear"></div>
+<!-- END header -->

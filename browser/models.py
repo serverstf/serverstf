@@ -10,6 +10,7 @@ import steam.servers
 import socket
 
 from django.conf import settings
+from serverstf.iso3166 import CONTINENT_CHOICES
 import browser.settings
 
 import pygeoip
@@ -202,7 +203,10 @@ class Server(models.Model):
 	longitude = models.FloatField(editable=False, null=True)
 	latitude = models.FloatField(editable=False, null=True)
 	country_code = models.CharField(editable=False, null=True, max_length=2)
-	continent_code = models.CharField(editable=False, null=True, max_length=2)
+	continent_code = models.CharField(editable=False,
+											null=True,
+											max_length=2,
+											choices=CONTINENT_CHOICES)
 	
 	def __unicode__(self):
 		

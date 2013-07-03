@@ -263,3 +263,5 @@ CONTINENTS = {
 	"AF": "AFRICA",
 	"AN": "ANTARTICA",
 }
+
+CONTINENT_CHOICES = [(k, v.title()) for k, v in CONTINENTS.iteritems()]
