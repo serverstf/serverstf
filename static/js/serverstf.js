@@ -46,19 +46,6 @@ var serverstf = {
 		return request;
 	},
 	
-	// serverstf.list(tags)
-	list: function (tags, cb) {
-		
-		if (serverstf.allow_relist) {
-			return serverstf.request("GET", 
-				["servers", tags.join(","), "search"], cb);
-		}
-		else {
-			cb([]);
-			return;
-		}
-	},
-	
 	// serverstf.ServerEntry(id, [jq])
 	ServerEntry: function (id, jq) {
 		
@@ -218,6 +205,9 @@ var serverstf = {
 		});
 		
 		var _add = function (self, id) {
+			
+			if (id in self) { return self[id]; } 
+			
 			self[id] = new serverstf.ServerEntry(id);
 			self[id].preference = 0;
 			jq.append(self[id].jq);
@@ -257,12 +247,13 @@ var serverstf = {
 				
 			});
 			
-			ordered = [];
+			var ordered = [];
 			$.each(self, function (i, se) {
 				if (typeof se == "function") { return; }
+				if (!se.ready) { return; }
 				
 				ordered.push(se);
-				se.preference = se.player_count / se.max_players;
+				se.preference = (se.player_count / se.max_players) + se.favourited ? 1 : 0;
 				se.jq.detach();
 				se.jq.show();
 				
@@ -321,6 +312,21 @@ serverstf.ServerEntry.activity_chart = {};
 // Display mode
 serverstf.ServerEntry.NORMAL = 1;
 serverstf.ServerEntry.EXPANDED = 2;
+
+// serverstf.ServerEntry.list(tags)
+serverstf.ServerEntry.list = function (tags, cb) {
+	
+	if (tags.length === 0) { tags = ["*"]; }
+	
+	if (serverstf.allow_relist) {
+		return serverstf.request("GET", 
+			["servers", tags.join(","), "search"], cb);
+	}
+	else {
+		cb([]);
+		return;
+	}
+}
 
 // serverstf.ServerEntry methods
 serverstf.ServerEntry.prototype.display = function (mode) {

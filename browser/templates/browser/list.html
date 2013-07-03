@@ -15,7 +15,7 @@
 					tags.push($(this).text());
 				});
 				
-				serverstf.list(tags, collection.extend);
+				serverstf.ServerEntry.list(tags, collection.extend);
 				collection.filter(tags);
 				
 				window.location.hash = tags.join(",");
