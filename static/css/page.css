@@ -35,28 +35,12 @@ p#intro {
 	font-weight: bold;
 }
  
-
 #content form { width: 100%; }
 #content form > div { margin-bottom: 10px; width: 100%; overflow: auto; }
 #content form > div > div.label { float: left; width: 20%; }
 #content form > div > div.field { float: right; width: 80%; }
 
-
-
 em { font-weight: bold; font-style: normal; }
-
-
-#server-dist-map {
-	width: 940px;
-	margin: 0 auto;
-	margin-left: -20px;
-}
-
-
-
-
-
-
 
 #footer {
 	background-color: #232323;
@@ -78,4 +62,4 @@ em { font-weight: bold; font-style: normal; }
 #footer ul {
 	list-style-type: none;
 	text-align: right;
-	}
+}

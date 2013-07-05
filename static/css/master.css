@@ -69,7 +69,7 @@ input[type=text]:focus {
 .small { font-size: 0.8em; }
 .large { font-size: 1.2em; }
 
-#header { font-size: 1.1em; z-index: 0; position: relative; }
+#header { font-size: 1.1em; z-index: 1; position: relative; }
 #header a { color: #EBEBEB; }
 #header a:hover { color: #FFFFFF; }
 #header-inner {
@@ -316,9 +316,16 @@ input[type=text]:focus { outline: none; }
 
 div#list-info {
 	background-color: #EEEEEE;
-	padding: 20px;
+	/* TODO: background-image: url(""); */
+	padding: 10px;
 }
 div#list-info > div { }
+div#list-info > div .panel {
+	padding: 10px;
+	margin: 10px 0;
+	background-color: rgba(0, 0, 0, 0.75);
+	}
+	
 div#list-info > div#network { }
 div#list-info > div#network #network-name {
 	font-size: 1.5em;
