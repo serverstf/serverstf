@@ -135,7 +135,6 @@ INSTALLED_APPS = (
 	"rest_framework",
 	
 	"browser",
-	"api",
 	"steam_auth",
 	
 	"tags",

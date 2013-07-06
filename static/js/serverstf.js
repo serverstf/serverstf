@@ -71,7 +71,7 @@ var serverstf = {
 		}
 		
 		this.display_mode = null;
-		this.display(serverstf.ServerEntry.NORMAL);
+		this.display(serverstf.ServerEntry.HIDDEN);
 		
 		this.name = null;
 		this.host = null;
@@ -253,29 +253,8 @@ var serverstf = {
 				if (!se.ready) { return; }
 				
 				ordered.push(se);
-				se.preference = (se.player_count / se.max_players) + se.favourited ? 1 : 0;
+				se.preference = (se.player_count / se.max_players) + (se.favourited ? 1 : 0);
 				se.jq.detach();
-				se.jq.show();
-				
-				$.each(required, function (i, tag) {
-					if (tag in serverstf.tags) {
-						if (!serverstf.tags[tag](se)) {
-							se.jq.hide();
-							return;
-						}
-					}
-				});
-				
-				$.each(ignored, function (i, tag) {
-					if (tag in serverstf.tags) {
-						if (serverstf.tags[tag](se)) {
-							se.jq.hide();
-							return;
-						}
-					}
-				});
-				
-				// TODO: > <
 				
 				$.each(prefered, function (i, tag) {
 					if (tag in serverstf.tags) {
@@ -285,6 +264,26 @@ var serverstf = {
 					}
 				});
 				
+				$.each(required, function (i, tag) {
+					if (tag in serverstf.tags) {
+						if (!serverstf.tags[tag](se)) {
+							se.preference = -1;
+							return;
+						}
+					}
+				});
+				
+				$.each(ignored, function (i, tag) {
+					if (tag in serverstf.tags) {
+						if (serverstf.tags[tag](se)) {
+							se.preference = -1;
+							return;
+						}
+					}
+				});
+				
+				// TODO: > <
+
 			});
 			
 			ordered.sort(function (a, b) {
@@ -294,6 +293,10 @@ var serverstf = {
 			});
 			for (var i = 0; i < ordered.length; i++) {
 				jq.append(ordered[i].jq);
+				ordered[i].display();
+				if (ordered[i].preference === -1) {
+					ordered[i].display(serverstf.ServerEntry.HIDDEN);
+				}
 			}
 		}
 		
@@ -310,6 +313,7 @@ serverstf.ServerEntry.template = {source: null, fields: null};
 serverstf.ServerEntry.activity_chart = {};
 
 // Display mode
+serverstf.ServerEntry.HIDDEN = 0;
 serverstf.ServerEntry.NORMAL = 1;
 serverstf.ServerEntry.EXPANDED = 2;
 
@@ -331,11 +335,23 @@ serverstf.ServerEntry.list = function (tags, cb) {
 // serverstf.ServerEntry methods
 serverstf.ServerEntry.prototype.display = function (mode) {
 	
+	if (this.ready && this.online && this.preference !== -1) {
+		this.jq.show();
+	}
+	else {
+		this.jq.hide();
+	}
+	
+	if (typeof mode === undefined) { return; }
+	
 	if (mode === serverstf.ServerEntry.EXPANDED) {
 		this.fields.detail.slideDown();
 	}
 	else if (mode === serverstf.ServerEntry.NORMAL) {
 		this.fields.detail.slideUp();
+	}
+	else if (mode === serverstf.ServerEntry.HIDDEN) {
+		this.jq.hide();
 	}
 	
 	this.display_mode = mode;
@@ -384,8 +400,7 @@ serverstf.ServerEntry.prototype.update_fields = function () {
 		}
 	}
 	
-	if (this.online) { this.jq.show(); }
-	else { this.jq.hide(); }
+	this.display();
 	
 	if (this.display_mode !== serverstf.ServerEntry.EXPANDED) { return; }
 	// ~~~ EXPANDED view only ~~~
@@ -479,7 +494,7 @@ $(window).on("load", function () {
 	
 	serverstf.ServerEntry.selector = "." + serverstf.ServerEntry.template.source.attr("class");
 	// ~~~ serverstf ready ~~~
-	
+
 	fav_selector = [
 		serverstf.ServerEntry.selector,
 		serverstf.ServerEntry.template.fields.favourite
