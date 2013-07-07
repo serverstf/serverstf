@@ -57,6 +57,10 @@ class ServerSerialiser(serializers.Serializer):
 	location = ServerLocationSerialiser(source="*")
 	
 	def is_favourited(self, server):
+		
+		if not self.context["user"].is_authenticated():
+			return False
+			
 		return server in self.context["user"].favourites.all()
 	
 ## /players
