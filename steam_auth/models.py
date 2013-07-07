@@ -7,12 +7,15 @@ from browser.models import Server
 from serverstf.iso3166 import CONTINENT_CHOICES
 from steam_auth.settings import STEAM_API_KEY
 
+from celery.contrib.methods import task
+
 import datetime
 
 import steam.id
 import steam.api
 import steam_auth.forms
 
+steam_api = steam.api.SteamAPI(STEAM_API_KEY)
 
 class SteamIDField(models.CharField):
 	
@@ -120,11 +123,10 @@ class User(AbstractBaseUser):
 	@property
 	def is_staff(self):
 		return self.is_admin
-		
+	
+	@task()
 	def syncronise(self):
 
-		steam_api = steam.api.SteamAPI(STEAM_API_KEY)
-		print steam_api.interfaces
 		player_summary = steam_api.user.get_player_summaries(
 							steamids=int(self.steam_id))["response"]["players"][0]
 		

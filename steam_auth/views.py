@@ -77,4 +77,4 @@ def auth_return(request):
 
 def logout_(request):
 	auth.logout(request)
-	return HttpResponseRedirect(request.GET["next"])
+	return HttpResponseRedirect(request.GET.get("next", "/"))
