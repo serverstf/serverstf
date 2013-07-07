@@ -1,7 +1,7 @@
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
-
+from django.contrib.sites.models import get_current_site
 from django.contrib import auth
 User = auth.get_user_model()
 
@@ -22,17 +22,17 @@ def auth_start(request):
 		Begins the OpenID login procedure by redirecting the user to the
 		Steam login page.
 	"""
-	# TODO: ?continue=/
+	
 	oid_cons = openid.consumer.consumer.Consumer(request.session, oid_store)
 	auth_request = oid_cons.begin("http://steamcommunity.com/openid")
+	site = get_current_site(request)
 	
-	template = loader.get_template("steam_auth/notice.html")
-	context = RequestContext(request, {
-					"redirect_url": auth_request.redirectURL("http://localhost:8000/", "http://localhost:8000/openid/handle"),
-					})
+	redirect = auth_request.redirectURL(
+							"http://" + site.domain,
+							"http://" + site.domain + "/openid/handle?next=" + request.GET.get("next", "/"))
 	
-	return HttpResponse(template.render(context))
-	
+	return HttpResponseRedirect(redirect)
+
 def auth_return(request):
 	"""
 		Handles the redirect from Steam back to the site. Takes the 

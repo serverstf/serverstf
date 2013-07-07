@@ -22,7 +22,7 @@
 		<a href="{% url 'logout' %}?next={{request.path}}" class="buttonesque"><span class="icon-off"></span><span class="small"> Logout</span></a>
 	</span>
 	{% else %}
-	<a href="{% url 'login' %}#}?continue={{request.path}}"><img id="login" src="http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_small.png" alt="Sign in through Steam"></a>
+	<a href="{% url 'login' %}?next={{request.path}}"><img id="login" src="http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_small.png" alt="Sign in through Steam"></a>
 	{% endif %}
 </div>
 
