@@ -5,19 +5,19 @@
 		<a href="{% url 'home' %}">servers.tf</a>
 	</div>
 	<ul id="nav" class="left">
-		<li><a href="{% url 'browse.region' 'eu' %}">eu</a></li>
-		<li><a href="{% url 'browse.region' 'na' %}">na</a></li>
-		<li><a href="{% url 'browse.region' 'sa' %}">sa</a></li>
-		<li><a href="{% url 'browse.region' 'oc' %}">aus</a></li>
-		<li><a href="{% url 'browse.region' 'as' %}">asia</a></li>
-		<li><a href="{% url 'browse.region' 'af' %}">africa</a></li>
+		<li><a class="filterable-list" href="{% url 'browse.region' 'eu' %}">eu</a></li>
+		<li><a class="filterable-list" href="{% url 'browse.region' 'na' %}">na</a></li>
+		<li><a class="filterable-list" href="{% url 'browse.region' 'sa' %}">sa</a></li>
+		<li><a class="filterable-list" href="{% url 'browse.region' 'oc' %}">aus</a></li>
+		<li><a class="filterable-list" href="{% url 'browse.region' 'as' %}">asia</a></li>
+		<li><a class="filterable-list" href="{% url 'browse.region' 'af' %}">africa</a></li>
 	</ul>
 </div>
 
 <div class="right">
 	{% if user.is_authenticated %}
 	<span id="user-controls">	
-		<a href="{% url 'browse.favourites' %}" class="buttonesque"><span class="icon-star"></span><span class="small"> Favourites</span></a>
+		<a class="filterable-list" href="{% url 'browse.favourites' %}" class="buttonesque"><span class="icon-star"></span><span class="small"> Favourites</span></a>
 		<a href="{% url 'settings' %}" class="buttonesque"><span class="icon-cogs"></span><span class="small"> Settings</span></a>
 		<a href="{% url 'logout' %}?next={{request.path}}" class="buttonesque"><span class="icon-off"></span><span class="small"> Logout</span></a>
 	</span>

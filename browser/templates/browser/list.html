@@ -14,11 +14,18 @@
 				$("#search .tags > li").each(function () {
 					tags.push($(this).text());
 				});
+				fragment = tags.join(",");
 				
 				serverstf.ServerEntry.list(tags, collection.extend);
 				collection.filter(tags);
 				
-				window.location.hash = tags.join(",");
+				$("a.filterable-list").each(function (i, anchor) {
+					anchor = $(anchor);
+					
+					url = anchor.attr("href").split("#")[0];
+					anchor.attr("href", url + "#" + fragment)
+				});
+				window.location.hash = fragment;
 			}
 			
 			$(document).ready(function () {
@@ -70,6 +77,8 @@
 				$.each(initial_ids, function (i, id) {
 					collection.add(id);
 				})
+				
+				search();
 			});
 			
 			$(document).ready(function () {
@@ -82,6 +91,7 @@
 						
 						serverstf.tag($(this).val(), $("#search .tags"));
 						$(this).val("");
+						search();
 					}
 				});
 				$("#search .tags").on("click", "li", function () { $(this).remove(); search(); });
