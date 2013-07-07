@@ -234,24 +234,66 @@ var serverstf = {
 					self[key].update();
 				}
 			}
-			console.log();
-		
 		}
 		var _filter = function (self, tags) {
-			var required = [];
-			var ignored = [];
-			var prefered = [];
+			var evaluators = []
 			
 			$.each(tags, function (i, tag) {
 				
 				var prefix = tag.charAt(0);
 				var name = tag.slice(1);
 				
-				if (prefix === "+") { required.push(name); prefered.push(name); }
-				else if (prefix === "-") { ignored.push(name); }
-				else if (prefix === ">") { } // TODO:
-				else if (prefix === "<") { } // TODO:
-				else { prefered.push(tag); }
+				function require(tag) {
+					function _require(se) {
+						if (!se.has_tag(tag)) {
+							se.preference = -1;
+						}
+					} return _require;
+				}
+				
+				function ignore(tag) {
+					function _ignore(se) {
+						if (se.has_tag(tag)) {
+							se.preference = -1;
+						}
+					} return _ignore;
+				}
+				
+				function prefer(tag) {
+					function _prefer(se) {
+						if (se.has_tag(tag) && se.preference !== -1) {
+							se.preference++;
+						}
+					} return _prefer;
+				}
+				
+				function gt(n) {
+					n = parseInt(n);
+					
+					if (isNaN(n)) { return function (se) {}; }
+					function _gt(se) {
+						if (!(se.player_count > n)) {
+							se.preference = -1;
+						}
+					} return _gt;
+				}
+				
+				function lt(n) {
+					n = parseInt(n);
+					
+					if (isNaN(n)) { return function (se) {}; }
+					function _lt(se) {
+						if (!(se.player_count < n)) {
+							se.preference = -1;
+						}
+					} return _lt;
+				}
+				
+				if (prefix === "+") { evaluators.push(require(name)); evaluators.push(prefer(name)); }
+				else if (prefix === "-") { evaluators.push(ignore(name)); }
+				else if (prefix === ">") { evaluators.push(gt(name)); } 
+				else if (prefix === "<") { evaluators.push(lt(name)) }
+				else { evaluators.push(prefer(tag)); }
 				
 			});
 			
@@ -268,34 +310,11 @@ var serverstf = {
 					se.preference = se.preference + (1 - (se.distance / (Math.PI * 6371)));
 				}
 				
-				$.each(prefered, function (i, tag) {
-					if (tag in serverstf.tags) {
-						if (serverstf.tags[tag](se)) {
-							se.preference++;
-						}
-					}
+				$.each(evaluators, function (i, evaluator) {
+					evaluator(se);
+					if (se.preference === -1) { return; }
 				});
 				
-				$.each(required, function (i, tag) {
-					if (tag in serverstf.tags) {
-						if (!serverstf.tags[tag](se)) {
-							se.preference = -1;
-							return;
-						}
-					}
-				});
-				
-				$.each(ignored, function (i, tag) {
-					if (tag in serverstf.tags) {
-						if (serverstf.tags[tag](se)) {
-							se.preference = -1;
-							return;
-						}
-					}
-				});
-				
-				// TODO: > <
-
 			});
 			
 			ordered.sort(function (a, b) {
@@ -525,6 +544,14 @@ serverstf.ServerEntry.prototype.unfavourite = function () {
 	var self = this;
 	serverstf.request("POST", ["servers", this.id, "unfavourite"], 
 								function () { self.update(true); });
+}
+serverstf.ServerEntry.prototype.has_tag = function (tag) {
+	
+	if (tag in serverstf.tags) {
+		return (serverstf.tags[tag](this));
+	}
+	
+	return false;
 }
 
 // Setup
