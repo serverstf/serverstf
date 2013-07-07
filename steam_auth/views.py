@@ -66,7 +66,7 @@ def auth_return(request):
 		user.backend = "django.contrib.auth.backends.ModelBackend"
 		auth.login(request, user)
 		
-		user.syncronise()
+		user.synchronise()
 
 		return HttpResponseRedirect(request.GET.get("next", "/"))
 		

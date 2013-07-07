@@ -133,6 +133,8 @@ INSTALLED_APPS = (
 	# Uncomment the next line to enable admin documentation:
 	# 'django.contrib.admindocs',
 	"rest_framework",
+	"djcelery",
+	"kombu.transport.django",
 	
 	"browser",
 	"steam_auth",
@@ -176,7 +178,11 @@ AUTH_USER_MODEL = "steam_auth.User"
 
 LOGIN_URL = "/openid/login"
 
+## Celery
+BROKER_URL = "django://"
 
+import djcelery
+djcelery.setup_loader()
 
 
 ## serverstf specific
