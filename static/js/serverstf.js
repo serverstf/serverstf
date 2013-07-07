@@ -2,7 +2,14 @@
 google.load("visualization", "1", {packages: ["annotatedtimeline"]});
 
 var serverstf = {
-	region: null,
+	has_geolocation: null,
+	
+	location: {
+		region: null,
+		latitude: null,
+		longitude: null
+	},
+	
 	api_root: null,
 	allow_relist: null,
 	csrf_token: null,
@@ -18,7 +25,7 @@ var serverstf = {
 			params = {};
 		}
 		
-		if (path[0] === "servers") { params.region = serverstf.region; }
+		if (path[0] === "servers") { params.region = serverstf.location.region; }
 		
 		request_config = {
 			type: method,
@@ -51,6 +58,7 @@ var serverstf = {
 		
 		this.id = id;
 		this.preference = null; // used by Collectiion
+		this.distance = -1;
 		this.ready = false;
 		
 		if (jq === undefined) {
@@ -253,8 +261,12 @@ var serverstf = {
 				if (!se.ready) { return; }
 				
 				ordered.push(se);
-				se.preference = (se.player_count / se.max_players) + (se.favourited ? 1 : 0);
 				se.jq.detach();
+				
+				se.preference = (se.player_count / se.max_players) + (se.favourited ? 1 : 0);
+				if (se.distance !== -1) {
+					se.preference = se.preference + (1 - (se.distance / (Math.PI * 6371)));
+				}
 				
 				$.each(prefered, function (i, tag) {
 					if (tag in serverstf.tags) {
@@ -470,6 +482,33 @@ serverstf.ServerEntry.prototype.update = function (fast) {
 			}
 			
 			_setProperties(self, response);
+			
+			if (self.location.latitude === null ||
+				self.location.longitude === null ||
+				serverstf.location.latitude === null ||
+				serverstf.location.longitude === null) {
+			
+				this.distance = -1;
+			}
+			
+			function toorad4u(degrees) { return degrees * Math.PI / 180; }
+			
+			var r = 6371;
+			
+			var slat = toorad4u(self.location.latitude); // 1
+			var slon = toorad4u(self.location.longitude); // 1
+			var ulat = toorad4u(serverstf.location.latitude); // 2
+			var ulon = toorad4u(serverstf.location.longitude); // 2
+			
+			self.distance = 2 * r * Math.asin(
+						Math.sqrt(
+							Math.pow(Math.sin((ulat - slat) / 2), 2) +
+							Math.cos(slat) *
+							Math.cos(ulat) * 
+							Math.pow(Math.sin((ulon - slon) / 2), 2)
+						)
+					);
+			
 			self.ready = true;
 			self.update_fields();
 		}
@@ -488,9 +527,16 @@ serverstf.ServerEntry.prototype.unfavourite = function () {
 								function () { self.update(true); });
 }
 
-
 // Setup
 $(window).on("load", function () {
+	
+	serverstf.has_geolocation = "geolocation" in navigator;
+	if (serverstf.has_geolocation) {
+		navigator.geolocation.getCurrentPosition(function (pos) {
+			serverstf.location.latitude = pos.coords.latitude;
+			serverstf.location.longitude = pos.coords.longitude;
+		});
+	}
 	
 	serverstf.ServerEntry.selector = "." + serverstf.ServerEntry.template.source.attr("class");
 	// ~~~ serverstf ready ~~~
