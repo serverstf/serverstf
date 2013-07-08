@@ -122,7 +122,12 @@ var serverstf = {
 			goomba: null,
 			smac: null,
 			hlxce: null,
-			soap: null
+			soap: null,
+			antif2p: null,
+			sodstats: null,
+			jetpack: null,
+			zf: null,
+			amplifier: null
 		};
 		
 		this.location = {
@@ -143,6 +148,7 @@ var serverstf = {
 		"mge": function (se) { return se.map.toLowerCase().startsWith("mge_") },
 		"jump": function (se) { return se.map.toLowerCase().startsWith("jump_") },
 		"surf": function (se) { return se.map.toLowerCase().startsWith("surf_") },
+		"mvm": function (se) { return se.map.toLowerCase().startsWith("mvm_") },
 		"alltalk": function (se) { return se.alltalk },
 		"teamtalk": function (se) { return se.teamtalk },
 		"nocrit": function (se) { return !se.crits },
@@ -151,7 +157,7 @@ var serverstf = {
 		
 		"soap": function (se) { return se.mods.soap === true },
 		"rtd": function (se) { return se.mods.rtd === true },
-		"stats": function (se) { return se.mods.hlxce === true },
+		"stats": function (se) { return se.mods.hlxce === true || se.mods.sodstats === true },
 		"robot": function (se) { return se.mods.robot === true },
 		"randomiser": function (se) { return se.mods.randomiser === true },
 		"prophunt": function (se) { return se.mods.prophunt === true },
@@ -159,6 +165,10 @@ var serverstf = {
 		"dodgeball": function (se) { return se.mods.dodgeball === true },
 		"quakesounds": function (se) { return se.mods.quakesounds === true },
 		"goomba": function (se) { return se.mods.goomba === true },
+		"nof2p": function (se) { return se.mods.antif2p === true },
+		"jetpack": function (se) { return se.mods.jetpack === true },
+		"zombiefortress": function (se) { return se.mods.zf === true },
+		"amplifier": function (se) { return se.mods.amplifier === true },
 		
 		"password": function (se) { return se.password_protected },
 		"vac": function (se) { return se.vac_enabled },
@@ -217,7 +227,7 @@ var serverstf = {
 			if (id in self) { return self[id]; } 
 			
 			self[id] = new serverstf.ServerEntry(id);
-			self[id].preference = 0;
+			self[id].preference = -1;
 			jq.append(self[id].jq);
 			update_queue.push(id);
 			

@@ -41,6 +41,8 @@ class ServerManager(models.Manager):
 					"jump": ("map__startswith", "jump_"),
 					"surf": ("map__startswith", "surf_"),
 					"vsh": ("map__startswith", "vsh_"),
+					"mvm": ("map__startswith", "mvm_"),
+					
 					"vac": ("vac_enabled", True),
 					"lowgrav": ("lowgrav", True),
 					"alltalk": ("alltalk_enabled", True),
@@ -63,8 +65,12 @@ class ServerManager(models.Manager):
 					"hunted": ("mod_hunted", True),
 					"rtd": ("mod_rtd", True),
 					"dodgeball": ("mod_dodgeball", True),
-					"stats": ("mod_hlxce", True),
+					"stats": (models.Q(mod_hlxce=True)|models.Q(mod_sodstats=True)),
 					"soap": ("mod_soap", True),
+					"nof2p": ("mod_antif2p", True),
+					"jetpack": ("mod_jetpack", True),
+					"zombiefortress": ("mod_zf", True),
+					"amplifier": ("mod_amplifier", True),
 					}
 	
 	def search(self, tags, region="ALL"):
@@ -193,6 +199,11 @@ class Server(models.Model):
 	mod_smac = models.BooleanField(default=False, editable=False)
 	mod_hlxce = models.BooleanField(default=False, editable=False)
 	mod_soap = models.BooleanField(default=False, editable=False)
+	mod_sodstats = models.BooleanField(default=False, editable=False)
+	mod_antif2p = models.BooleanField(default=False, editable=False)
+	mod_jetpack = models.BooleanField(default=False, editable=False)
+	mod_zf = models.BooleanField(default=False, editable=False)
+	mod_amplifier = models.BooleanField(default=False, editable=False)
 	
 	## Misc
 	lowgrav = models.BooleanField(default=False, editable=False) # sv_gravity < 800
@@ -256,7 +267,12 @@ class Server(models.Model):
 						"soap_showhp",
 						"soap_spawn_delay",
 						"soap_spawnrandom",
-						]
+						],
+			"mod_sodstats": ["sm_stats_enabled"], # probably isn't notify
+			"mod_antif2p": ["anti_f2p_version"],
+			"mod_jetpack": ["sm_jetpack_version"], # should assert _enabled = 1
+			"mod_zf": ["sm_zf_version"], # should assert _enabled = 1
+			"mod_amplifier": ["amplifier_version"],
 			}
 
 		update_info = datetime.datetime.now() >= self.last_update + browser.settings.SERVER_UPDATE_TD_INFO or force

@@ -25,6 +25,11 @@ class ServerModsSerialiser(serializers.Serializer):
 	smac = serializers.BooleanField(source="mod_smac")
 	hlxce = serializers.BooleanField(source="mod_hlxce")
 	soap = serializers.BooleanField(source="mod_soap")
+	antif2p = serializers.BooleanField(source="mod_antif2p")
+	sodstats = serializers.BooleanField(source="mod_sodstats")
+	jetpack = serializers.BooleanField(source="mod_jetpack")
+	zf = serializers.BooleanField(source="mod_zf")
+	amplifier = serializers.BooleanField(source="mod_amplifier")
 
 class ServerConfigSerialiser(serializers.Serializer):
 	
