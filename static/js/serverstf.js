@@ -60,8 +60,13 @@ var serverstf = {
 		this.preference = null; // used by Collectiion
 		this.distance = -1;
 		this.ready = false;
+		this.last_update = {
+			update: null,
+			activity: null,
+			players: null
+		};
 		
-		if (jq === undefined) {
+		if (typeof jq === "undefined") {
 			this.jq = serverstf.ServerEntry.template.source.clone(true);
 			this.jq.removeAttr("id");
 			this.jq.hide();
@@ -160,7 +165,8 @@ var serverstf = {
 		"stats": function (se) { return se.mods.hlxce === true || se.mods.sodstats === true },
 		"robot": function (se) { return se.mods.robot === true },
 		"randomiser": function (se) { return se.mods.randomiser === true },
-		"prophunt": function (se) { return se.mods.prophunt === true },
+		"prophunt": function (se) { return se.mods.prophunt === true ||
+										se.map.toLowerCase().startsWith("ph_") },
 		"hunted": function (se) { return se.mods.hunted === true },
 		"dodgeball": function (se) { return se.mods.dodgeball === true },
 		"quakesounds": function (se) { return se.mods.quakesounds === true },
@@ -184,7 +190,6 @@ var serverstf = {
 		return jq;
 	},
 	
-		
 	// serverstf.Collection(jq)
 	Collection: function (jq) {
 		
@@ -199,12 +204,13 @@ var serverstf = {
 				update_queue.splice(0, 1);
 				update_queue.push(next);
 				
-				se = self[next];
+				var se = self[next];
 				se.update(se.ready);
-				if (active === self[next]) {
-					se.update_players();
-					se.update_activity();
-				}
+			}
+			
+			if (active !== null) {
+				active.update_players();
+				active.update_activity();
 			}
 		}
 		setInterval(function () { update_next(self) }, 500);
@@ -229,7 +235,7 @@ var serverstf = {
 			self[id] = new serverstf.ServerEntry(id);
 			self[id].preference = -1;
 			jq.append(self[id].jq);
-			update_queue.push(id);
+			update_queue.splice(0, 0, id);
 			
 			return self[id];
 		}
@@ -352,6 +358,11 @@ var serverstf = {
 serverstf.ServerEntry.selector = null;
 serverstf.ServerEntry.template = {source: null, fields: null};
 serverstf.ServerEntry.activity_chart = {};
+serverstf.ServerEntry.update_after = {
+	update: 0,
+	activity: 0,
+	players: 0
+};
 
 // Display mode
 serverstf.ServerEntry.HIDDEN = 0;
@@ -383,7 +394,7 @@ serverstf.ServerEntry.prototype.display = function (mode) {
 		this.jq.hide();
 	}
 	
-	if (typeof mode === undefined) { return; }
+	if (typeof mode === "undefined") { return; }
 	
 	if (mode === serverstf.ServerEntry.EXPANDED) {
 		this.fields.detail.slideDown();
@@ -464,7 +475,27 @@ serverstf.ServerEntry.prototype.update_fields = function () {
 	this.activity_chart.draw(this.activity,
 		serverstf.ServerEntry.activity_chart);
 }
+serverstf.ServerEntry.prototype.should_update = function () {
+	
+	now = new Date().getTime();
+	o = new Object();
+	
+	if (!this.ready) { return {update: true, activity: true, players: true}; }
+	for (var key in this.last_update) {
+		if (this.last_update[key] === null) {
+			o[key] = true;
+		}
+		else {
+			o[key] = (now - this.last_update[key].getTime()) > 
+				(serverstf.ServerEntry.update_after[key] * 1000)
+		}
+	}
+	
+	return o;
+}
 serverstf.ServerEntry.prototype.update_activity = function () {
+	
+	if (!this.should_update().activity) { return; }
 	
 	var self = this;
 	serverstf.request("GET", ["servers", this.id, "activity"],
@@ -477,17 +508,21 @@ serverstf.ServerEntry.prototype.update_activity = function () {
 				);
 			});
 			
+			self.last_update.activity = new Date();
 			self.update_fields();
 		}
 	);
 }
 serverstf.ServerEntry.prototype.update_players = function () {
 	
+	if (!this.should_update().players) { return; }
+	
 	var self = this;
 	serverstf.request("GET", ["servers", this.id, "players"], 
 		function (response) {
 			self.players = response;
 			self.players.sort(function (a, b) { return b.score - a.score; });
+			self.last_update.players = new Date();
 			self.update_fields();
 		}
 	);
@@ -495,6 +530,8 @@ serverstf.ServerEntry.prototype.update_players = function () {
 serverstf.ServerEntry.prototype.update = function (fast) {
 	
 	if (typeof fast === "undefined") { fast = false; }
+	
+	if (!this.should_update().update) { return; }
 	
 	var self = this;
 	serverstf.request("GET", ["servers", this.id], {update: fast ? 1 : 0},
@@ -538,6 +575,7 @@ serverstf.ServerEntry.prototype.update = function (fast) {
 						)
 					);
 			
+			self.last_update.update = new Date();
 			self.ready = true;
 			self.update_fields();
 		}

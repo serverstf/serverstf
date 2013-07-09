@@ -66,6 +66,11 @@
 					max: 32,
 					min: 0
 				};
+				serverstf.ServerEntry.update_after = {
+					update: 30,
+					activity: 3600,
+					players: 90
+				};
 
 				collection = new serverstf.Collection($("#servers"));
 				tags = window.location.hash.slice(1).split(",");
