@@ -316,7 +316,9 @@ input[type=text]:focus { outline: none; }
 
 div#list-info {
 	background-color: #EEEEEE;
-	/* TODO: background-image: url(""); */
+	background-image: url("../img/v8.2.jpg");
+	background-position: topleft;
+	background-repeat: repeat-x;
 	padding: 10px;
 }
 div#list-info > div { }
