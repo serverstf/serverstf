@@ -240,7 +240,11 @@ class Server(models.Model):
 		
 		server.save()
 		return server
-		
+	
+	@property
+	def address(self):
+		return (self.host, self.port)
+	
 	def update(self, force=False, timeout=5.0):
 		
 		mod_cvar_map = {
