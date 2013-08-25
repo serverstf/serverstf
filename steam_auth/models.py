@@ -33,9 +33,14 @@ class SteamIDField(models.CharField):
 		if isinstance(value, steam.id.SteamID):
 			return value
 		
+		# This case occurs when you attempt to add a user manually
+		# via the admin interface.
+		if not value:
+			return steam.id.SteamID(0, 0, 0, 0)
+		
 		try:
 			return steam.id.SteamID.from_text(value)
-		except steam_id.SteamIDError as exc:
+		except steam.id.SteamIDError as exc:
 			raise ValidationError(str(exc))
 	
 	def get_prep_value(self, value):
@@ -77,9 +82,10 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
 	
 	profile_name = models.CharField(max_length=32, default="")
-	steam_id = SteamIDField(unique=True, editable=False)
+	steam_id = SteamIDField(unique=True)
 	last_sync = models.DateTimeField(default=datetime.datetime.fromtimestamp(0.0)) 
-	favourites = models.ManyToManyField(Server)
+	avatar = models.URLField(null=True, blank=True) # 64x64 
+	favourites = models.ManyToManyField(Server, blank=True)
 	region = models.CharField(max_length=2, null=True, blank=True,
 									choices=CONTINENT_CHOICES)
 	

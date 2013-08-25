@@ -1,8 +1,11 @@
 
 html, body {
 	margin: 0;
+	padding: 0;
 	font-family: "Noto Sans", "Verdana", sans-serif;
 	font-size: 17px;
+	
+	height: 100%;
 }
 
 a { color: #46B720; text-decoration: none; }
@@ -37,6 +40,15 @@ code {
 input, select, button {
 	font-size: 1em;
 	font-family: "Noto Sans", "Verdana", sans-serif;
+	
+	box-sizing: content-box;
+	border-radius: 4px;
+	
+	border: 1px solid #E8E8E8;
+	padding: 5px;
+	margin: 0;
+	
+	line-height: 1em;
 }
 button, input[type=submit] {
 	background-color: #E8E8E8;
@@ -48,17 +60,20 @@ button, input[type=submit] {
 	
 	cursor: pointer;
 }
-
-input[type=text] {
-	border: 1px solid #E8E8E8;
-	padding: 5px;
-	border-radius: 5px;
+input, select { color: #4E4E4E; }
+input:focus, select:focus { color: #000000; outline: none; } 
+button {
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
 	
-	color: #4E4E4E;
+	background-color: #EEEEEE;
+	box-shadow: inset 0px -25px 50px -25px #A0A0A0;
 }
-input[type=text]:focus {
-	border-color: #A0F071;
-}
+button:hover { background-color: #F3F3F3; }
+button:active {
+	background-color: #F3F3F3;
+	box-shadow: inset 0px 25px 50px -25px #A0A0A0;
+	}
 
 .left { float: left; }
 .right { float: right; }
@@ -265,15 +280,6 @@ input[type=text]:focus {
 .tags > li.vac, li.smac { border-style: dashed; border-color: #FFFFFF; }
 .tags > li.nocrit, li.nospread, li.nobulletspread { background-color: #710606; border-color: #710606; }
 */
-
-input[type=text] {
-	border: 1px solid #D4D4D4;
-	background-color: #FFFFFF;
-	border-radius: 5px;
-	padding: 3px;
-	color: #464646;
-}
-input[type=text]:focus { outline: none; }
 
 #search {
 	width: 100%;

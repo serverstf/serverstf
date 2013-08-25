@@ -22,6 +22,7 @@ def synchronise_profiles(user_id):
 						steamids=int(user.steam_id))["response"]["players"][0]
 	
 	user.profile_name = player_summary["personaname"]
+	user.avatar = player_summary["avatarmedium"]
 	user.last_sync = datetime.datetime.now()
 	
 	user.save()

@@ -10,7 +10,7 @@ class SteamIDField(forms.CharField):
 		
 		try:
 			return steam.id.SteamID.from_text(str(value))
-		except steam_id.SteamIDError as exc:
+		except steam.id.SteamIDError as exc:
 			raise ValidationError(str(exc))
 	
 	def clean(self, value):

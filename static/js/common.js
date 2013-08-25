@@ -4,6 +4,11 @@ String.prototype.startsWith = function (sub) {
 }
 
 $(document).ready(function () {
+	
+	if (typeof document.fixed_header == "undefined") {
+		document.fixed_header = false;
+	}
+	
 	$("#header #user-controls a > span:last-child").hide();
 	
 	$("#header #user-controls a").hover(
@@ -16,12 +21,14 @@ $(document).ready(function () {
 	);
 	
 	$(window).scroll(function () {
-		if ($(window).scrollTop() == 0) {
-			$("#header").removeClass("fixed");
+		if (!document.fixed_header) {
+			if ($(window).scrollTop() == 0) {
+				$("#header").removeClass("fixed");
 
-		}
-		else {
-			$("#header").addClass("fixed");
+			}
+			else {
+				$("#header").addClass("fixed");
+			}
 		}
 	});
 	

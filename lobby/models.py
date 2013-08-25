@@ -1,11 +1,25 @@
 
 from django.conf import settings
 from django.db import models
+from django.core import urlresolvers
+from django.contrib.sites.models import Site
 
 from browser.models import Server
 import lobby.configs
 
 class Lobby(models.Model):
+	
+	SCOUT = 1
+	SOLDIER = 2
+	PYRO = 3
+	DEMO = 4
+	HEAVY = 5
+	ENGY = 6
+	MEDIC = 7
+	SNIPER = 8
+	SPY = 9
+	POCKET = 10
+	ROAMER = 11
 	
 	SIXES = 1
 	HIGHLANDER = 2
@@ -135,6 +149,42 @@ class Lobby(models.Model):
 			},
 		}
 	
+	ALL_CLASS_CHOICES = {
+		SCOUT: "Scout",
+		SOLDIER: "Soldier",
+		PYRO: "Pyro",
+		DEMO: "Demoman",
+		HEAVY: "Heavy",
+		ENGY: "Engineer",
+		MEDIC: "Medic",
+		SNIPER: "Sniper",
+		SPY: "Spy",
+		ROAMER: "Roamer",
+		POCKET: "Pocket",
+	}.items()
+	SIXES_CLASS_CHOICES = (
+		(MEDIC, "Medic"),
+		(DEMO, "Demoman"),
+		(POCKET, "Pocket"),
+		(ROAMER, "Roamer"),
+		(SCOUT, "Scout"),
+	)
+	HL_CLASS_CHOICES = (
+		(SCOUT, "Scout"),
+		(SOLDIER, "Soldier"),
+		(PYRO, "Pyro"),
+		(DEMO, "Demoman"),
+		(HEAVY, "Heavy"),
+		(ENGY, "Engineer"),
+		(MEDIC, "Medic"),
+		(SNIPER, "Sniper"),
+		(SPY, "Spy"),
+	)
+	ULTIDUO_CLASS_CHOICES = (
+		(SOLDIER, "Solider"),
+		(MEDIC, "Medic"),
+	)
+	
 	type = models.SmallIntegerField(choices=TYPE_CHOICES)
 	state = models.SmallIntegerField(
 					choices=STATE_CHOICES,
@@ -160,3 +210,24 @@ class Lobby(models.Model):
 			self.map
 			)
 	
+class Party(models.Model):
+	
+	type = models.SmallIntegerField(choices=Lobby.TYPE_CHOICES,
+											null=True,
+											blank=True)
+	map = models.CharField(max_length=64, null=True, blank=True)
+	config = models.CharField(max_length=32,
+									choices=Lobby.CONFIG_CHOICES,
+									null=True,
+									blank=True)
+	
+	members = models.ManyToManyField(settings.AUTH_USER_MODEL)
+	
+	def __unicode__(self):
+		return unicode(hex(self.id)[2:])
+	
+	@property
+	def join_url(self):
+		return (Site.objects.get_current().domain + 
+				urlresolvers.reverse("lobby.party.join",
+										kwargs={"id": hex(self.id)[2:]}))

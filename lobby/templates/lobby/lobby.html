@@ -1,0 +1,191 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Lobbies &mdash; servers.tf</title>
+		{% include 'common_head.html' %}
+		<link rel="stylesheet"  type="text/css" href="{% static 'css/lobby.css' %}">
+		
+		<script type="text/javascript">
+			document.fixed_header = true;
+		
+			party_id = {{party.id}};
+			
+			$(document).ready(function () {
+				
+				$(window).resize(function () {
+					$("#main").height($(this).height() - $("#header").height());
+					$("#party-members").css("top", $("#party-config").height() + parseInt($("#party-config").css("margin-bottom")) + 6);
+				});
+				
+				$(window).trigger("resize");
+			});
+		</script>
+	</head>
+	
+	<body>
+		{% include 'header_wide.html'%}
+		
+		<div id="main">
+			<!-- START main -->
+			
+			<div id="party-panel">
+				<div>
+					
+					<div id="party-config" class="divide">
+						<form class="divide">
+							<div class="field-wrapper">
+								{{party_form.map.label_tag}}{{party_form.map}}
+							</div>
+							<div class="field-wrapper">
+								{{party_form.type.label_tag}}{{party_form.type}}
+							</div>
+							<div class="field-wrapper">
+								{{party_form.config.label_tag}}{{party_form.config}}
+							</div>
+							<div class="field-wrapper">
+								<label><span class="icon-spinne icon-spi"></span></label>
+								<button>Search</button>
+							</div>
+						</form>
+						<form>
+							<div id="role-selection" class="field-wrapper divide">
+								{{class_form.roles.label_tag}}{{class_form.roles}}
+							</div>
+						</form>
+						
+						<div class="field-wrapper">
+							<label>Invite</label><input type="text" value="{{party.join_url}}">
+						</div>
+					</div>
+					
+					<div id="party-members">
+						{% for member in party.members.all %}
+						<div class="user-card online">
+							<img class="avatar" src="{{member.avatar}}">
+							<a class="profile-name" target="_blank" href="{{member.steam_id.community_url}}">{{member.get_short_name}}</a>
+							<span style="float: right;">1684</span>
+						</div>
+						{% endfor %}
+						<p id="solo-hint">
+							You can invite friends to play with you by giving them
+							the link above
+						</p>
+					</div>
+					
+				</div>
+			</div>
+			
+			<div id="lobbies">
+				<div>
+				<!-- START lobbies -->
+				
+					<div class="lobby-entry">
+						<div class="overview">
+							<span class="fixed-span">EU</span><span class="fixed-span">6v6</span><span class="fixed-span">0/12</span>
+							cp_badlands
+						</div>
+						<div class="teams">
+						
+							<span class="versus">vs</span>
+							<div class="slots red">
+								
+								<div class="team">red</div>
+								
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Medic</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Demo</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Pocket</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Roamer</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Scout</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Scout</span>
+								</div>
+								
+							</div>
+							<!-- END red -->
+							<div class="slots blu">
+								
+								<div class="team">blu</div>
+								
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Medic</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Demo</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Pocket</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Roamer</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Scout</span>
+								</div>
+								<div class="slot">
+									<div class="join">
+										<span class="icon-plus"></span>
+									</div>
+									<span class="class-name">Scout</span>
+								</div>
+								
+							</div>
+							<!-- END blu -->
+							
+							<div class="clear"></div>
+						</div>
+					</div>
+				
+				<!-- END lobbies -->
+				</div>
+			</div>
+		
+		<!-- END main -->
+		</div>
+		
+	</body>
+</html>
