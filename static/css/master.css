@@ -341,3 +341,52 @@ div#list-info > div#network #network-name {
 	
 	color: #BABABA;
 	}
+	
+	
+	
+
+.modal { display: none; }
+#modal {
+	display: none;
+	
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	
+	background-color: rgba(0, 0, 0, .2);
+}
+#modal > div {
+	position: absolute;
+	width: 940px;
+	padding: 5px;
+	
+	background-color: #FFFFFF;
+	
+	border: 1px solid #999999;
+	border-radius: 3px;
+}
+#modal-controls-wrap {
+	background-color: #232323;
+	color: #FFFFFF;
+	
+	padding: 5px;
+	
+	border-radius: 3px;
+}
+#modal-controls {
+	overflow: hidden;
+	width: 100%;
+}
+#modal-controls #modal-icon { margin-right: 0.5em; }
+#modal-controls > #modal-title { float: left; font-weight: bold; }
+#modal-controls > #modal-close { float: right; color: #FFFFFF; cursor: pointer; }
+#modal-content {
+	margin: 1em 0;
+	color: #6E6E6E;
+	
+	max-height: 50%;
+	
+	padding: 5px;
+}

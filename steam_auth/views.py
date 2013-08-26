@@ -12,6 +12,8 @@ import openid.store.filestore
 
 import steam.id
 
+from steam_auth.forms import SettingsForm
+
 oid_store = openid.store.filestore.FileOpenIDStore(OPENID_FILESTORE_LOCATION)
 
 # Example:
@@ -78,3 +80,17 @@ def auth_return(request):
 def logout_(request):
 	auth.logout(request)
 	return HttpResponseRedirect(request.GET.get("next", "/"))
+
+def manage_settings(request):
+	
+	#if request.method == "POST":
+		#form = SettingsForm(request.POST)
+		
+	form =  SettingsForm()
+	
+	template = loader.get_template("settings.html")
+	context = RequestContext(request, {
+							"form": form,
+							})
+	
+	return HttpResponse(template.render(context))

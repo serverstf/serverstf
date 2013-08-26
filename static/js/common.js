@@ -32,4 +32,43 @@ $(document).ready(function () {
 		}
 	});
 	
+	// Modal
+	modal = $("#modal");
+	modal_win = $("#modal > div");
+	
+	$(window).resize(function () {
+		modal_win.css({
+			top: ($(this).height() / 4) - (modal_win.height() / 2),
+			left: ($(this).width() / 2) - (modal_win.width() / 2)
+		});
+	});
+	
+	modal.click(function () {
+		if (modal.is(":visible")) {
+			$("a#modal-close").click();
+		}
+	});
+	
+	$("a.modal-invoke").click(function () {
+		
+		modal_id = $(this).attr("href").split("#")[1];
+		modal_cfg = $(".modal#modal-" + modal_id);
+		if (modal_cfg.length !== 1) {
+			return;
+		}
+		
+		$("#modal-title").text(modal_cfg.find(".title").text());
+		$("#modal-icon").addClass(modal_cfg.find(".icon").text());
+		$("#modal-content").empty().append(modal_cfg.find(".content").clone());
+		
+		$(window).trigger("resize");
+		modal.fadeIn();
+		$(window).trigger("resize");
+		
+	});
+	
+	$("a#modal-close").click(function () {
+			$("#modal").hide();
+	});
+	
 });

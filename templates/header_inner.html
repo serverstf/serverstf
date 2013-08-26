@@ -18,7 +18,7 @@
 	{% if user.is_authenticated %}
 	<span id="user-controls">	
 		<a class="filterable-list" href="{% url 'browse.favourites' %}" class="buttonesque"><span class="icon-star"></span><span class="small"> Favourites</span></a>
-		<a href="{% url 'settings' %}" class="buttonesque"><span class="icon-cogs"></span><span class="small"> Settings</span></a>
+		<a href="#settings" class="modal-invoke buttonesque"><span class="icon-cogs"></span><span class="small"> Settings</span></a>
 		<a href="{% url 'logout' %}?next={{request.path}}" class="buttonesque"><span class="icon-off"></span><span class="small"> Logout</span></a>
 	</span>
 	{% else %}

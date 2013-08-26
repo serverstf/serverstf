@@ -23,7 +23,6 @@ urlpatterns = patterns('',
 	url(r"^$", RedirectView.as_view(url="/~")),
 	url(r"^openid/", include("steam_auth.urls")),
 	url(r"^home$", views.home, name="home"),
-	url(r"^settings$", views.manage_settings, name="settings"),
 	url(r"^faq$", TemplateView.as_view(template_name="faq.html"), name="faq"),
 )
 

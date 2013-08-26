@@ -3,11 +3,9 @@ import operator
 
 from django.http import HttpResponse
 from django.template import RequestContext, loader
-from django.contrib.auth.decorators import login_required
 
 from browser.models import Server, Network
 from serverstf import iso3166
-from serverstf.forms import SettingsForm
 
 def home(request):
 	
@@ -58,21 +56,6 @@ def home(request):
 							"server_count": Server.objects.all().count(),
 							"map_pops": sorted(map_pops.iteritems(), key=operator.itemgetter(1), reverse=True)[:7],
 							"mod_servers": mod_servers_pop,
-							})
-	
-	return HttpResponse(template.render(context))
-
-@login_required
-def manage_settings(request):
-	
-	#if request.method == "POST":
-		#form = SettingsForm(request.POST)
-		
-	form =  SettingsForm()
-	
-	template = loader.get_template("settings.html")
-	context = RequestContext(request, {
-							"form": form,
 							})
 	
 	return HttpResponse(template.render(context))

@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 
 import steam.id
 
+from serverstf.iso3166 import CONTINENTS
+
 class SteamIDField(forms.CharField):
 	
 	def to_python(self, value):
@@ -20,3 +22,7 @@ class SteamIDField(forms.CharField):
 		self.run_validators(str(value))
 		
 		return value
+
+class SettingsForm(forms.Form):
+	
+	default_region = forms.ChoiceField(choices=CONTINENTS.items())
