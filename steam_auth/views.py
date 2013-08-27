@@ -1,5 +1,5 @@
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext, loader
 from django.contrib.sites.models import get_current_site
 from django.contrib import auth
@@ -94,3 +94,21 @@ def manage_settings(request):
 							})
 	
 	return HttpResponse(template.render(context))
+
+
+## REST interfaces
+from rest_framework import response
+from rest_framework import viewsets
+
+from steam_auth.serialisers import UserSerialiser
+
+class UserViewSet(viewsets.ViewSet):
+	
+	def retrieve(self, request, pk):
+		
+		try:
+			user = User.objects.get(pk=pk)
+		except User.DoesNotExist:
+			raise Http404
+		
+		return response.Response(UserSerialiser(user).data)

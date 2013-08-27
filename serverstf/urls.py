@@ -30,8 +30,12 @@ urlpatterns = patterns('',
 ## REST urls
 from rest_framework import routers
 import browser.views
+import lobby.views
+import steam_auth.views
 
 router = routers.SimpleRouter()
 router.register("servers", browser.views.ServerViewSet, "servers")
+router.register("parties", lobby.views.PartyViewSet, "parties")
+router.register("users", steam_auth.views.UserViewSet, "users")
 
 urlpatterns += (url(r"^rest/", include(router.urls)),)

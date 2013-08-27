@@ -10,6 +10,7 @@ class PartyForm(forms.ModelForm):
 		fields = ["map", "type", "config"]
 
 class ClassSelectionForm(forms.Form):
+	type = 0
 	roles = forms.MultipleChoiceField(required=False,
 										choices=Lobby.ALL_CLASS_CHOICES,
-										widget=forms.SelectMultiple(attrs={"size": 9}))
+										widget=forms.SelectMultiple(attrs={"size": 11}))

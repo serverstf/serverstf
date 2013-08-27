@@ -181,7 +181,7 @@ class Lobby(models.Model):
 		(SPY, "Spy"),
 	)
 	ULTIDUO_CLASS_CHOICES = (
-		(SOLDIER, "Solider"),
+		(POCKET, "Pocket"),
 		(MEDIC, "Medic"),
 	)
 	
@@ -209,7 +209,7 @@ class Lobby(models.Model):
 			self.config,
 			self.map
 			)
-	
+
 class Party(models.Model):
 	
 	type = models.SmallIntegerField(choices=Lobby.TYPE_CHOICES,
@@ -224,10 +224,10 @@ class Party(models.Model):
 	members = models.ManyToManyField(settings.AUTH_USER_MODEL)
 	
 	def __unicode__(self):
-		return unicode(hex(self.id)[2:])
+		return unicode(self.id)
 	
 	@property
 	def join_url(self):
 		return (Site.objects.get_current().domain + 
 				urlresolvers.reverse("lobby.party.join",
-										kwargs={"id": hex(self.id)[2:]}))
+										kwargs={"id": self.id}))

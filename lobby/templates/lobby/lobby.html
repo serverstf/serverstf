@@ -6,26 +6,40 @@
 		<title>Lobbies &mdash; servers.tf</title>
 		{% include 'common_head.html' %}
 		<link rel="stylesheet"  type="text/css" href="{% static 'css/lobby.css' %}">
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="{% static 'js/serverstf.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/lobby.js' %}"></script>
 		
 		<script type="text/javascript">
 			document.fixed_header = true;
-		
-			party_id = {{party.id}};
 			
 			$(document).ready(function () {
+				serverstf.api_root = "/rest";
+				serverstf.csrf_token = "{{csrf_token}}";
 				
-				$(window).resize(function () {
-					$("#main").height($(this).height() - $("#header").height());
-					$("#party-members").css("top", $("#party-config").height() + parseInt($("#party-config").css("margin-bottom")) + 6);
-				});
+				lobby.User.template.source = $(".user-card.template");
+				lobby.User.template.fields = {
+					profile_name: ".profile-name",
+					avatar: "img.avatar",
+				};
+				lobby.party_overview = $("#party-panel");
+				lobby.party = new lobby.Party({{party.id}});
 				
-				$(window).trigger("resize");
+				lobby.init();
 			});
+
+			$(document).ready(function () { $(window).trigger("resize") });
 		</script>
 	</head>
 	
 	<body>
 		{% include 'header_wide.html'%}
+		
+		<div class="user-card online template">
+			<img class="avatar" src="">
+			<a class="profile-name" target="_blank" href=""></a>
+			<span style="float: right;">1684</span>
+		</div>
 		
 		<div id="main">
 			<!-- START main -->
@@ -61,13 +75,6 @@
 					</div>
 					
 					<div id="party-members">
-						{% for member in party.members.all %}
-						<div class="user-card online">
-							<img class="avatar" src="{{member.avatar}}">
-							<a class="profile-name" target="_blank" href="{{member.steam_id.community_url}}">{{member.get_short_name}}</a>
-							<span style="float: right;">1684</span>
-						</div>
-						{% endfor %}
 						<p id="solo-hint">
 							You can invite friends to play with you by giving them
 							the link above
@@ -79,7 +86,7 @@
 			
 			<div id="lobbies">
 				<div>
-				<!-- START lobbies -->
+				<!--
 				
 					<div class="lobby-entry">
 						<div class="overview">
@@ -131,7 +138,7 @@
 								</div>
 								
 							</div>
-							<!-- END red -->
+							
 							<div class="slots blu">
 								
 								<div class="team">blu</div>
@@ -174,13 +181,13 @@
 								</div>
 								
 							</div>
-							<!-- END blu -->
+							
 							
 							<div class="clear"></div>
 						</div>
 					</div>
 				
-				<!-- END lobbies -->
+				-->
 				</div>
 			</div>
 		

@@ -351,7 +351,7 @@ var serverstf = {
 		this.extend = function (ids) { return _extend(self, ids) };
 		this.update_all = function () { return _update_all(self) };
 		this.filter = function (tags) { return _filter(self, tags) };
-	}
+	},
 }
 
 // serverstf.ServerEntry class properties

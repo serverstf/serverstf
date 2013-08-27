@@ -1,8 +1,6 @@
 
 #main { height: 100%; }
 
-.class-selection { display: none; }
-
 #party-panel { 
 	height: 100%;
 	width: 400px;
@@ -26,6 +24,10 @@
 	padding-bottom: 3px;
 	width: 100%;
 	overflow: hidden;
+}
+#role-selection select > option[disabled] {
+	display: none;
+	color: #DDDDDD;
 }
 #party-panel label {
 	letter-spacing: 2px;
@@ -67,6 +69,7 @@
 	font-size: 0.8em;
 }
 
+.user-card.template { display: none; }
 .user-card {
 	margin: 5px;
 	padding: 5px;
