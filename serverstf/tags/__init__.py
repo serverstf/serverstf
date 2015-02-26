@@ -125,7 +125,7 @@ class Tagger:
     @classmethod
     def scan(cls, package):
         scanner = venusian.Scanner(taggers=[])
-        scanner.scan(package, categories=["serverstf.taggers"])
+        scanner.scan(__import__(package), categories=["serverstf.taggers"])
         return cls(*scanner.taggers)
 
     def evaluate(self, info, players, rules):
@@ -182,10 +182,3 @@ def mge(info, players, rules, tags):
 @tag("tf2")
 def tf2(info, players, rules, tags):
     return info["app_id"] == 440
-
-
-if __name__ == "__main__":
-    import sys
-
-    tagger = Tagger.scan(sys.modules[__package__])
-    print(tagger.evaluate({"app_id": 440, "map": "ctf_2fort"}, None, None))
