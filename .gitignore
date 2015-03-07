@@ -1,6 +1,9 @@
 __pycache__/
 htmlcov/
-client/external/
+node_modules/
 *.egg*/
+
+client/external/
+client/styles/*.css
 
 .coverage
