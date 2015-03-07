@@ -3,7 +3,9 @@
     <head>
         <title>Servers.tf</title>
         <base href="/">
+        <meta name="viewport" device="width=device-width">
         <link rel="stylesheet" type="text/css" href="external/normalize.css/normalize.css">
+        <link rel="stylesheet" type="text/css" href="external/font-awesome/css/font-awesome.css">
         <script src="external/lodash/lodash.js"></script>
         <script src="external/angular/angular.js"></script>
         <script src="external/angular-animate/angular-animate.js"></script>
@@ -18,7 +20,19 @@
         <script src="js/socket/serverstf.socket.js"></script>
         <script src="js/socket/services/Socket.js"></script>
     </head>
-    <body ng-controller="ServerController as server">
-        <h1>{{server.server.ip}}:{{server.server.port}}</h1>
+    <body>
+        <header>
+            <nav>
+                <ul>
+                    <li><a href="#">svtf</a></li>
+                    <li><a href="#"><i class="fa fa-line-chart"></i><span>Stats</span></a></li>
+                    <li><a href="#"><i class="fa fa-star-o"></i><span>Favourites</span></a></li>
+                    <li><a href="#">TF2</a></li>
+                    <li><a href="#">CS:GO</a></li>
+                    <li class="right"><a href="https://github.com/Holiverh/serverstf"><span>Contribute</span><i class="fa fa-github"></i></a></li>
+                    <li class="right"><a href="https://github.com/Holiverh/serverstf/issues/new"><span>Report Bug</span><i class="fa fa-bug"></i></a></li>
+                </ul>
+            </nav>
+        </header>
     </body>
 </html>
