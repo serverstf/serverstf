@@ -1,0 +1,11 @@
+{
+  "name": "serverstf",
+  "version": "0.0.0",
+  "homepage": "http://servers.tf/",
+  "authors": [
+    "Oliver Ainsworth <ottajay@googlemail.com>"
+  ],
+  "description": "A Source server browser.",
+  "license": "MIT",
+  "private": true
+}

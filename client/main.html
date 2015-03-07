@@ -1,0 +1,20 @@
+<!doctype html>
+<html ng-app="serverstf">
+    <head>
+        <title>Servers.tf</title>
+        <script src="external/lodash/lodash.js"></script>
+        <script src="external/angular/angular.js"></script>
+        <script src="external/angular-animate/angular-animate.js"></script>
+        <script src="external/angular-route/angular-route.js"></script>
+
+        <script src="js/serverstf.js"></script>
+        <script src="js/server/serverstf.server.js"></script>
+        <script src="js/server/controllers/Server.js"></script>
+        <script src="js/server/services/Server.js"></script>
+        <script src="js/socket/serverstf.socket.js"></script>
+        <script src="js/socket/services/Socket.js"></script>
+    </head>
+    <body ng-controller="ServerController as server">
+        <h1>{{server.server.ip}}:{{server.server.port}}</h1>
+    </body>
+</html>
