@@ -67,7 +67,7 @@ header.main {
     position: fixed;
     left: 0;
     right: 0;
-    z-index: 1;
+    z-index: 2;
     padding-bottom: 1px;  // TODO: no
     border-bottom: 5px solid @tf2-neutral-2;
     background-image: url("https://raw.githubusercontent.com/Holiverh/serverstf/d0b3c47e95d1649e9ed310e6b743b71a23f15690/static/img/v8.2.jpg");
@@ -252,6 +252,54 @@ ol.search-results {
                 text-transform: uppercase;
                 letter-spacing: 2px;
             }
+        }
+
+        .server-expand {
+            .row(2);
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+
+            &-left, &-right {
+                .column(1, 2);
+            }
+
+            &-right {
+                background-color: rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        .server-players {
+            width: 100%;
+
+            thead {
+                .font-emphasis();
+                border-width: 0;
+                border-bottom: 1px;
+                font-size: 1.2em;
+            }
+
+            td, th {
+                padding: 0.5em;
+            }
+
+            tbody tr {
+                &:nth-child(2n - 1) {
+                    background-color: rgba(255, 255, 255, 0.15);
+                }
+            }
+        }
+
+        .server-location {
+            height: 300px;
+            width: 100%;
+            background-color: #e0e0e0;
+            border: 0;
+        }
+
+        .server-location-wrong {
+            padding: 1em 0;
+            text-align: center;
+            font-style: italic;
         }
     }
 
