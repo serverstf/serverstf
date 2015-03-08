@@ -53,7 +53,10 @@ body {
 
 
 header {
+    padding-bottom: 1px;  // TODO: no
+    border-bottom: 5px solid @tf2-neutral-2;
     background-image: url("https://raw.githubusercontent.com/Holiverh/serverstf/d0b3c47e95d1649e9ed310e6b743b71a23f15690/static/img/v8.2.jpg");
+    box-shadow: inset 0px -200px 200px -200px #000000;
 
     nav {
         background-color: fade(@black, 40%);
@@ -107,4 +110,39 @@ header {
             }
         }
     }  // nav
+
+
+    .search {
+        position: relative;
+        max-width: @max-width;
+        margin: 60px auto;
+        box-sizing: border-box;
+        color: @white;
+        font-size: 2em;
+        background-color: rgba(0, 0, 0, 0.8);
+        box-shadow: inset 5px 5px 5px -5px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+
+        i.fa {
+            position: absolute;
+            top: 50%;
+            left: 0.5em;
+            transform: translateY(-50%);
+            opacity: 0.8;
+        }
+
+        input {
+            box-sizing: border-box;
+            .font-emphasis();
+            display: inline-block;
+            width: 100%;
+            background-color: transparent;
+            border: 0;
+            padding: 0.5em 2.25em;
+
+            &:focus {
+                outline: 0;
+            }
+        }
+    }  // .search
 }  // header
