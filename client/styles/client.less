@@ -8,6 +8,8 @@
 
 @max-width: 940px;
 
+@images: "../images";
+
 @tf2-neutral-0: #F6E7DE;
 @tf2-neutral-1: #DABDAB;
 @tf2-neutral-2: #C1A18A;
@@ -41,6 +43,12 @@
 
 .font-normal() {
     font-family: "Raleway", sans-serif;
+}
+
+
+body {
+    background-color: @tf2-neutral-0;
+    background-image: url("@{images}/background.png");
 }
 
 
