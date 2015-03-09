@@ -262,6 +262,10 @@ ol.search-results {
 
             &-left, &-right {
                 .column(1, 2);
+
+                ~ *:not(.server-expand-right) {
+                    .column(2, 2);
+                }
             }
 
             &-right {
@@ -302,6 +306,10 @@ ol.search-results {
             text-align: center;
             font-style: italic;
         }
+
+        .server-population-annual {
+            padding: 20px;
+        }
     }
 
 }  // .search-results
@@ -309,6 +317,7 @@ ol.search-results {
 
 .search-results-more {
     .font-emphasis();
+    margin: 20px 0;
     padding: 30px;
     background-color: @tf2-red-2;
     background-image: repeating-linear-gradient(

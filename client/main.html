@@ -19,6 +19,78 @@
         <script src="js/server/services/Server.js"></script>
         <script src="js/socket/serverstf.socket.js"></script>
         <script src="js/socket/services/Socket.js"></script>
+
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript">
+        google.load("visualization", "1.1", {packages:["calendar"]});
+        google.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var dataTable = new google.visualization.DataTable();
+            dataTable.addColumn({ type: 'date', id: 'Date' });
+            dataTable.addColumn({ type: 'number', id: 'Won/Loss' });
+            dataTable.addRows([
+                [ new Date(2015, 2, 4), 16 ],
+                [ new Date(2015, 2, 5), 18 ],
+                [ new Date(2015, 2, 12), 18 ],
+                [ new Date(2015, 2, 13), 24 ],
+                [ new Date(2015, 2, 19), 24 ],
+                [ new Date(2015, 2, 23), 23 ],
+                [ new Date(2015, 2, 24), 15 ],
+                [ new Date(2015, 2, 30), 17 ]
+            ]);
+
+            var chart = new google.visualization.Calendar(document.getElementById("calendar"));
+
+            var options = {
+                tooltip: {
+                    textStyle: {
+                        fontName: "Verdana",
+                    },
+                },
+                colorAxis: {
+                    minValue: 0,
+                    colors: ["#F8B98A", "#EF9849"],
+                },
+                noDataPattern: {
+                  backgroundColor: "#342F2C",
+                  color: "#342F2C"
+                },
+                calendar: {
+                    cellSize: 14,
+                    cellColor: {
+                        stroke: "#000000",      // Color the border of the squares.
+                        strokeOpacity: 0.2, // Make the borders half transparent.
+                    },
+                    focusedCellColor: {
+                        stroke: "#ffffff",
+                        strokeOpacity: 0.5,
+                        strokeWidth: 1,
+                    },
+                    yearLabel: {
+                        fontName: "Basic",
+                        color: "#F6E7DE",
+                    },
+                    monthLabel: {
+                        fontName: "Raleway",
+                        color: "#F6E7DE",
+                    },
+                    monthOutlineColor: {
+                        strokeWidth: 0,
+                    },
+                    unusedMonthOutlineColor: {
+                        strokeWidth: 0,
+                    },
+                    dayOfWeekLabel: {
+                        fontName: "Raleway",
+                        color: "#F6E7DE",
+                    },
+                }
+            };
+
+            chart.draw(dataTable, options);
+        }
+        </script>
     </head>
     <body>
         <header class="main">
@@ -45,7 +117,7 @@
                     <header>
                         <div class="server-player-count"><span class="server-player-count-current">24</span> <span class="server-player-count-max">/ 32</span></div>
                         <h2 class="server-name">2FORT+ | EU | Fast really looooooooooooooooooooooooooooooooooooooooooong</h2>
-                        <a class="server-connect" href="#">Connect <i class="fa fa-arrow-circle-o-right"></i></a>
+                        <a class="server-connect" href="#">Join <i class="fa fa-arrow-circle-o-right"></i></a>
                     </header>
                     <ul class="server-tags">
                         <li class="server-tag">map:ctf_2fort</li>
@@ -86,6 +158,9 @@
                             <p class="server-location-wrong">
                                 Did I get your location wrong? Try dealing with it.
                             </p>
+                        </div>
+                        <div class="server-population-annual">
+                            <div id="calendar"></div>
                         </div>
                     </div>
                 </li>
