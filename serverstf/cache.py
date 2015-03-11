@@ -86,13 +86,72 @@ ZSET tag:<tag>
 """
 
 
+import collections
+
+import formencode
+import redis
+
+
+Status = collections.namedtuple("Status", [
+    "address",
+    "name",
+    "map",
+    "app",
+    "players",
+    "bots",
+    "max",
+    "tags",
+])
+
+
+class _StatusSchema(formencode.Schema):
+
+    allow_extra_fields = True
+    filter_extra_fields = True
+
+    name = formencode.validators.String(if_missing="<Unknown>")
+    map = formencode.validators.String(if_missing="")
+    app = formencode.validators.Int(if_missing=0)
+    players = formencode.validators.Int(if_missing=0)
+    bots = formencode.validators.Int(if_missing=0)
+    max = formencode.validators.Int(if_missing=0)
+
+
 class Cache:
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, host, port=6379):
+        self._client = redis.StrictRedis(host, port)
+
+    def _encode_mapping(self, mapping):
+        return {str(key).encode():
+            str(value).encode() for key, value in mapping.items()}
+
+    def _decode_mapping(self, mapping):
+        return {key.decode():
+            value.decode() for key, value in mapping.items()}
+
+    def key(self, address):
+        return b"server:" + "{}:{}".format(*address).encode()
 
     def set(self, address, info, players, tags):
-        pass
+        info = _StatusSchema.to_python(info)
+        self._client.hmset(self.key(address), self._encode_mapping(info))
+        self._client.delete(self.key(address) + b":tags")
+        self._client.sadd(
+            self.key(address) + b":tags", *{tag.encode() for tag in tags})
 
     def get(self, address):
-        pass
+        raw_status = self._client.hgetall(self.key(address))
+        raw_tags = self._client.smembers(self.key(address) + b":tags")
+        status = _StatusSchema.to_python(self._decode_mapping(raw_status))
+        tags = {tag.decode() for tag in raw_tags}
+        return Status(address=address, tags=tags, **status)
+
+
+if __name__ == "__main__":
+    import rq
+
+    import serverstf.poll
+
+    queue = rq.Queue(connection=redis.StrictRedis())
+    queue.enqueue(serverstf.poll.poll, ("94.23.226.212", 2055))
