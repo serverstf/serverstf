@@ -78,6 +78,11 @@ SET server:<address>:tags
     A set maintaining the <tag>s that apply to the server.
 
 
+SET tags
+
+    A set containing all the <tag>s known to the cache.
+
+
 ZSET tag:<tag>
 
     These sets hold any number of <address>es. For the purpose of providing
