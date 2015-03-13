@@ -18,7 +18,15 @@ function Socket($rootScope, $timeout, $location) {
         buffer.length = 0;
     }
 
-    function onSocketMessage(message) {}
+    function onSocketMessage(message) {
+        var envelope = JSON.parse(message.data);
+        if (envelope.type === "error") {
+            console.error("ServiceError", envelope.entity)
+        } else {
+            // TODO: Dispatch message to handlers
+            console.debug(envelope);
+        }
+    }
 
     function onSocketClose() {
         console.warn("Socket closed, retrying in " + retry_delay / 1000);

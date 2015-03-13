@@ -35,6 +35,8 @@ function ServerService(Socket) {
     var self = this;
     var servers = {};
 
+    Socket.send("hello", "world");
+
     self.get = function getServer(address) {
         if (!(address in servers)) {
             servers[address] = new Server(address);
