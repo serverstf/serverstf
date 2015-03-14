@@ -36,6 +36,7 @@ function ServerService(Socket) {
     var servers = {};
 
     Socket.send("hello", "world");
+    Socket.send("subscribe", ["94.23.226.212", 2055]);
 
     self.get = function getServer(address) {
         if (!(address in servers)) {

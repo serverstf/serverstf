@@ -93,6 +93,7 @@ ZSET tag:<tag>
 
 import collections
 
+import asyncio_redis
 import formencode
 import redis
 
@@ -152,11 +153,29 @@ class Cache:
         tags = {tag.decode() for tag in raw_tags}
         return Status(address=address, tags=tags, **status)
 
+import asyncio
+
+def server_key(address):
+    return "server:{}:{}".format(*address)
+
+
+@asyncio.coroutine
+def get(address):
+    redis = yield from asyncio_redis.Connection.create()
+    status_future = yield from redis.hgetall(server_key(address))
+    raw_status = yield from status_future.asdict()
+    status = _StatusSchema.to_python(raw_status)
+    tags_future = yield from redis.smembers(server_key(address) + ":tags")
+    tags = yield from tags_future.asset()
+    return Status(address=address, tags=tags, **status)
+
 
 if __name__ == "__main__":
-    import rq
-
-    import serverstf.poll
-
-    queue = rq.Queue(connection=redis.StrictRedis())
-    queue.enqueue(serverstf.poll.poll, ("94.23.226.212", 2055))
+    # import rq
+    #
+    # import serverstf.poll
+    #
+    # queue = rq.Queue(connection=redis.StrictRedis())
+    # queue.enqueue(serverstf.poll.poll, ("94.23.226.212", 2055))
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(get(("94.23.226.212", 2055)))

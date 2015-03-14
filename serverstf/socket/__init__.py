@@ -4,6 +4,8 @@ import sys
 
 import venusian
 
+import serverstf.cache
+
 
 class ServiceError(Exception):
     pass
@@ -34,12 +36,13 @@ class Service:
             raise ServiceError("Message envelope missing 'entity' field")
         return parsed["type"], parsed["entity"]
 
+    @asyncio.coroutine
     def _dispatch(self, type_, entity):
         if type_ not in self._handlers:
             raise ServiceError("Unknown message type {!r}".format(type_))
         for handler in self._handlers[type_]:
-            for response in handler(entity):
-                self.send(*response)
+            response = yield from handler(entity)
+            self.send(*response)
 
     def send(self, type_, entity):
         self._buffer.append(json.dumps({"type": type_, "entity": entity}))
@@ -48,7 +51,7 @@ class Service:
     def handler(type_):
 
         def callback(scanner, name, obj):
-            scanner.service.register_handler(type_, obj)
+            scanner.service.register_handler(type_, asyncio.coroutine(obj))
 
         def wrapper(function):
             venusian.attach(function, callback, category="svtf.handlers")
@@ -64,9 +67,9 @@ class Service:
                 return
             type_, entity = self._parse_message(message)
             try:
-                self._dispatch(type_, entity)
+                yield from self._dispatch(type_, entity)
             except ServiceError as exc:
-                self.send(websocket, "error", str(exc))
+                self.send("error", str(exc))
             for outgoing in self._buffer:
                 yield from websocket.send(outgoing)
             del self._buffer[:]
@@ -74,4 +77,24 @@ class Service:
 
 @Service.handler("hello")
 def hello_handler(entity):
-    yield "hello", "world"
+    return "hello", "world"
+
+
+@Service.handler("subscribe")
+def subcribe(address):
+    state = yield from serverstf.cache.get(("94.23.226.212", 2055))
+    response = {
+        "address": {
+            "ip": state.address[0],
+            "port": state.address[1],
+        },
+        "name": state.name,
+        "map": state.map,
+        "players": {
+            "real": state.players,
+            "bots": state.bots,
+            "max": state.max,
+        },
+        "tags": list(state.tags),
+    }
+    return "status", response
