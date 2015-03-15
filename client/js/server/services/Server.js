@@ -31,15 +31,31 @@ function Server(address) {
 }
 
 
+Server.prototype.update = function update(status) {
+    var self = this;
+    self.name = status.name;
+    self.map = status.map;
+    self.max_player_count = status.players.max;
+    self.player_count = status.players.real;
+    self.bot_count = status.players.bots;
+    self.tags = new Set(status.tags);
+    console.log(status, self);
+}
+
+
 function ServerService(Socket) {
     var self = this;
     var servers = {};
 
-    Socket.send("hello", "world");
-    Socket.send("subscribe", ["94.23.226.212", 2055]);
+    Socket.on("status", function onStatusUpdate(status) {
+        var server_key = (status.address.ip
+                          + ":" + status.address.port.toString());
+        servers[server_key].update(status);
+    });
 
     self.get = function getServer(address) {
         if (!(address in servers)) {
+            Socket.send("subscribe", [address.ip, address.port]);
             servers[address] = new Server(address);
         }
         return servers[address];

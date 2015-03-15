@@ -1,15 +1,24 @@
 (function (module) { "use strict";
 
 
-function ServerController(Server) {
+function ServerController($scope, $timeout, Server) {
     var self = this;
-    self.server = Server.get("192.168.0.2:9001");
+    self.server = Server.get("94.23.226.212:2055");
+
+    $scope.$watch(
+        function () { return self.server; },
+        function (server) {
+            self.server = server;
+        }
+    );
 }
 
 
 module.controller(
     "ServerController",
     [
+        "$scope",
+        "$timeout",
         "Server",
         ServerController,
     ]
