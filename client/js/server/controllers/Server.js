@@ -3,14 +3,10 @@
 
 function ServerController($scope, $timeout, Server) {
     var self = this;
-    self.server = Server.get("94.23.226.212:2055");
+    self.servers = [];
 
-    $scope.$watch(
-        function () { return self.server; },
-        function (server) {
-            self.server = server;
-        }
-    );
+    var server = Server.get("94.23.226.212:2055", $scope);
+    self.servers.push(server);
 }
 
 

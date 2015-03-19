@@ -112,11 +112,44 @@
             </div>
         </header>
         <div class="wrapper">
-            <ol class="search-results">
-                <li ng-controller="ServerController as server">
+            <ol class="search-results" ng-controller="ServerController as search">
+                <li ng-repeat="server in search.servers">
+                    <header>
+                        <div class="server-player-count"><span class="server-player-count-current">{{server.player_count}}</span> <span class="server-player-count-max">/ {{server.max_player_count}}</span></div>
+                        <h2 class="server-name">{{server.name}}</h2>
+                        <a class="server-connect" href="#">Join <i class="fa fa-arrow-circle-o-right"></i></a>
+                    </header>
+                    <ul class="server-tags">
+                        <li ng-repeat="tag in server.tags" class="server-tag">{{tag}}</li>
+                    </ul>
+                    <div class="server-expand">
+                        <div class="server-expand-left">
+                            <table class="server-players">
+                                <thead class="server-players">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Score</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="server-expand-right">
+                            <iframe class="server-location"
+                                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyCeAMFICpM6MPz-zp5OoITTyynJvsxLGig&q=France">
+                            </iframe>
+                            <p class="server-location-wrong">
+                                Did I get your location wrong? Try dealing with it.
+                            </p>
+                        </div>
+                    </div>
+                </li>
+                <li>
                     <header>
                         <div class="server-player-count"><span class="server-player-count-current">24</span> <span class="server-player-count-max">/ 32</span></div>
-                        <h2 class="server-name">{{server.server}}</h2>
+                        <h2 class="server-name">Example Server Name</h2>
                         <a class="server-connect" href="#">Join <i class="fa fa-arrow-circle-o-right"></i></a>
                     </header>
                     <ul class="server-tags">
