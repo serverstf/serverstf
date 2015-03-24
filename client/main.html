@@ -93,7 +93,7 @@
         </script>
     </head>
     <body>
-        <header class="main">
+        <header class="main {{header.class}}" ng-controller="HeaderController as header">
             <nav>
                 <ul>
                     <li><a href="#">svtf</a></li>
@@ -108,7 +108,7 @@
             </nav>
             <div class="search">
                 <i class="fa fa-fw fa-search"></i>
-                <input type="text">
+                <input type="text" ng-model="header.query">
             </div>
         </header>
         <div class="wrapper">
