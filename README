@@ -1,0 +1,23 @@
+# Servers.tf #####
+
+Servers.tf is a browser-based server browser for Source games such as Team
+Fortress 2 and Garry's Mod. The goal is to be able to index servers so that
+far more sophisticated searches can be made that what is currently possible
+with the current Source/Steam server browser.
+
+The goal is that Servers.tf will be able to detect mods being ran by the
+server and be aware of community-made game modes (e.g. Balloon Race or
+Surfing) so that the user can perform richer searches to find more specific
+servers.
+
+
+## Developing ####
+
+For UI stuff:
+
+1. `cd local_repo`
+1. `npm install`
+1. `bower install`
+1. `grunt less`; there's also a `watch` task.
+1. `python3 -m http.server`
+1. Go to http://localhost:8000/client/main.html
