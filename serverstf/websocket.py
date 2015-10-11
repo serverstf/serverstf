@@ -1,10 +1,15 @@
 import asyncio
 import json
+import logging
 import sys
 
 import venusian
+import websockets
 
 import serverstf.cache
+
+
+log = logging.getLogger(__name__)
 
 
 class ServiceError(Exception):
@@ -98,3 +103,20 @@ def subcribe(address):
         "tags": list(state.tags),
     }
     return "status", response
+
+
+def websocket_args(parser):
+    parser.add_argument(
+        'port',
+        type=int,
+        help="The port the websocket service will listen on.",
+    )
+
+
+@serverstf.subcommand("websocket", websocket_args)
+def websocket_main(args):
+    log.info("Starting websocket server on port %i", args.port)
+    server = websockets.serve(Service(), "0.0.0.0", args.port)
+    asyncio.get_event_loop().run_until_complete(server)
+    asyncio.get_event_loop().run_forever()
+    log.info("Stopping websocket server")
