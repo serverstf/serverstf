@@ -10,7 +10,7 @@ import serverstf.tags
 
 
 log = logging.getLogger(__name__)
-cache = serverstf.cache.Cache("127.0.0.1")
+# cache = serverstf.cache.Cache("127.0.0.1")
 tagger = serverstf.tags.Tagger.scan(__package__ + ".tags")
 
 

@@ -90,92 +90,126 @@ ZSET tag:<tag>
     is opaque.
 """
 
-
-import collections
+import asyncio
+import logging
+import urllib.parse
 
 import asyncio_redis
-import formencode
-import redis
+
+import serverstf
 
 
-Status = collections.namedtuple("Status", [
-    "address",
-    "name",
-    "map",
-    "app",
-    "players",
-    "bots",
-    "max",
-    "tags",
-])
+log = logging.getLogger(__name__)
 
 
-class _StatusSchema(formencode.Schema):
-
-    allow_extra_fields = True
-    filter_extra_fields = True
-
-    name = formencode.validators.String(if_missing="<Unknown>")
-    map = formencode.validators.String(if_missing="")
-    app = formencode.validators.Int(if_missing=0)
-    players = formencode.validators.Int(if_missing=0)
-    bots = formencode.validators.Int(if_missing=0)
-    max = formencode.validators.Int(if_missing=0)
+class CacheError(Exception):
+    """Base exception for all cache related errors."""
 
 
 class Cache:
+    """Asynchronous access to a Redis state cache.
 
-    def __init__(self, host, port=6379):
-        self._client = redis.StrictRedis(host, port)
+    Do not instantiate this class directly. Instead use the :meth:`connect`
+    coroutine.
+    """
+    # :ivar _connection: the :class:`asyncio_redis.Connection` to use.
+    # :ivar _loop: the :mod:`asyncio` event loop to use.
 
-    def _encode_mapping(self, mapping):
-        return {str(key).encode():
-            str(value).encode() for key, value in mapping.items()}
+    def __init__(self, connection, loop):
+        self._connection = connection
+        self._loop = loop
 
-    def _decode_mapping(self, mapping):
-        return {key.decode():
-            value.decode() for key, value in mapping.items()}
+    @classmethod
+    @asyncio.coroutine
+    def connect(cls, url, loop):
+        """Establish a connection to a Redis database.
 
-    def key(self, address):
-        return b"server:" + "{}:{}".format(*address).encode()
+        :param str url: the URL of the Redis database to connect to.
+        :param loop: the :mod:`asyncio` event loop to use.
 
-    def set(self, address, info, players, tags):
-        info = _StatusSchema.to_python(info)
-        self._client.hmset(self.key(address), self._encode_mapping(info))
-        self._client.delete(self.key(address) + b":tags")
-        self._client.sadd(
-            self.key(address) + b":tags", *{tag.encode() for tag in tags})
+        :return: a new :class:`Cache` instance which is bound to a Redis
+            connection.
+        """
+        log.info("Connecting to cache at %s", url)
+        url = urllib.parse.urlsplit(url)
+        connection = yield from asyncio_redis.Connection.create(
+            host=url.hostname,
+            port=url.port,
+            db=int(url.path.split("/")[1]),
+            loop=loop,
+        )
+        return cls(connection, loop)
 
-    def get(self, address):
-        raw_status = self._client.hgetall(self.key(address))
-        raw_tags = self._client.smembers(self.key(address) + b":tags")
-        status = _StatusSchema.to_python(self._decode_mapping(raw_status))
-        tags = {tag.decode() for tag in raw_tags}
-        return Status(address=address, tags=tags, **status)
+    @property
+    def loop(self):
+        """Get the event loop used by this cache."""
+        return self._loop
 
-import asyncio
+    def close(self):
+        """Close the connection to Redis.
 
-def server_key(address):
-    return "server:{}:{}".format(*address)
-
-
-@asyncio.coroutine
-def get(address):
-    redis = yield from asyncio_redis.Connection.create()
-    status_future = yield from redis.hgetall(server_key(address))
-    raw_status = yield from status_future.asdict()
-    status = _StatusSchema.to_python(raw_status)
-    tags_future = yield from redis.smembers(server_key(address) + ":tags")
-    tags = yield from tags_future.asset()
-    return Status(address=address, tags=tags, **status)
+        Once the connection is closed the object is invalidated and can no
+        longer be used.
+        """
+        self._connection.close()
 
 
-if __name__ == "__main__":
-    # import rq
-    #
-    # import serverstf.poll
-    #
-    # queue = rq.Queue(connection=redis.StrictRedis())
-    # queue.enqueue(serverstf.poll.poll, ("94.23.226.212", 2055))
+class SynchronousCache(Cache):
+    """A synchronous layer on top of :class:`Cache`.
+
+    This effectively implements the exact same API as :class:`Cache`. Each
+    instance should be bound to an :mod:`asyncio` event loop which will be
+    used for executing the underlying asynchronous operations but will
+    block until they complete.
+
+    As with :class:`Cache` this class should not be instantiated directly.
+    Instead, :meth:`connect` must be used.
+    """
+
+    @classmethod
+    def connect(cls, url, loop):
+        return loop.run_until_complete(super().connect(url, loop))
+
+
+def redis_url(raw_url):
+    """Normalise a Redis URL.
+
+    Given a URL this will ensure that it's a valid Redis URL. The only
+    mandatory component is a network location.
+
+    The scheme will be forced to ``redis``. If no port is given it will
+    default to 6579. If no path is given it defaults to 0. The query and
+    fragments components are ignored.
+
+    :param str raw_url: the URL to normalise.
+
+    :return: the normalised URL as a string.
+    """
+    url = urllib.parse.urlsplit(raw_url)
+    if not url.hostname:
+        raise argparse.ArgumentTypeError('Missing hostname or IP from URL')
+    port = url.port or 6379
+    network_location = "{}:{}".format(url.hostname, port)
+    path = url.path or '0'
+    return urllib.parse.urlunsplit(
+        ('redis', network_location, path, None, None))
+
+
+def cache_main_args(parser):
+    parser.add_argument(
+        "url",
+        type=redis_url,
+        nargs="?",
+        default="//localhost",
+        help="The URL of the Redis database to connect to."
+    )
+
+
+@serverstf.subcommand("cache", cache_main_args)
+def cache_main(args):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(get(("94.23.226.212", 2055)))
+    cache = SynchronousCache.connect(args.url, loop)
+    try:
+        pass
+    finally:
+        cache.close()
