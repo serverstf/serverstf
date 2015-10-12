@@ -91,6 +91,7 @@ ZSET tag:<tag>
 """
 
 import asyncio
+import ipaddress
 import logging
 import urllib.parse
 
@@ -102,8 +103,51 @@ import serverstf
 log = logging.getLogger(__name__)
 
 
+class AddressError(ValueError):
+    """Exception for all errors related to :class:`Address`es."""
+
+
 class CacheError(Exception):
     """Base exception for all cache related errors."""
+
+
+class Address:
+    """Represents a server address.
+
+    Each server address is comprised of an IPv4 address and a port number.
+    Addresses are hashable.
+
+    :ivar ip: the :class:`ipaddress.IPv4Address` of the address.
+    :ivar port: the port number for the address as an integer.
+
+    :raises AddressError: if either the given IP address or port is invalid.
+    """
+
+    def __init__(self, ip, port):
+        try:
+            self.ip = ipaddress.IPv4Address(ip)
+        except ipaddress.AddressValueError as exc:
+            raise AddressError("Malformed IP address") from exc
+        try:
+            self.port = int(port)
+        except TypeError as exc:
+            raise AddressError("Port number is not an integer") from exc
+        if self.port < 1 or self.port > 65535:
+            raise AddressError("Port number is out of range")
+
+    def __repr__(self):
+        return "<{0.__class__.__name__} {0}>".format(self)
+
+    def __str__(self):
+        return "{0.ip}:{0.port}".format(self)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.ip == other.ip and self.port == other.port
 
 
 class Cache:
@@ -153,6 +197,10 @@ class Cache:
         """
         self._connection.close()
 
+    def get(self, address):
+        log.debug("Get %s", address)
+        yield
+
 
 class SynchronousCache(Cache):
     """A synchronous layer on top of :class:`Cache`.
@@ -169,6 +217,9 @@ class SynchronousCache(Cache):
     @classmethod
     def connect(cls, url, loop):
         return loop.run_until_complete(super().connect(url, loop))
+
+    def get(self, address):
+        return self.loop.run_until_complete(super().get(address))
 
 
 def redis_url(raw_url):
@@ -209,7 +260,8 @@ def cache_main_args(parser):
 def cache_main(args):
     loop = asyncio.get_event_loop()
     cache = SynchronousCache.connect(args.url, loop)
+    address = Address("94.23.226.212", 2055)
     try:
-        pass
+        cache.get(address)
     finally:
         cache.close()
