@@ -27,7 +27,6 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
     These hashes hold the current state of the server corresponding to the
     key. Each hash has the following keys:
 
-    * ``interest``
     * ``name``
     * ``map``
     * ``app_id``
@@ -49,6 +48,11 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 ``SET serverstf/servers/<ip>:<port>/tags``
     A set containing all the tags currently applied to the server referenced
     by the key. The tags themselves are UTF-8 encoded.
+
+``NUMBER serverstf/servers/<ip>:<port>/interest``
+    This is an integer key which is used to track how much interest there is
+    in a server. It is used by the interest queue to determine whether or not
+    items should be re-enqueued.
 
 ``ZSET serverstf/tags/<tag>``
     These sets hold any number of server addresses (formatted as described
@@ -196,7 +200,7 @@ class Status:
     def __init__(self, address, *, interest, name,
                  map_, application_id, players, tags):
         self._address = address
-        self._interest = interest if interest is None else int(interest)
+        self._interest = 0 if interest is None else int(interest)
         self._name = name if name is None else str(name)
         self._map = map_ if map_ is None else str(map_)
         self._application_id = application_id
@@ -337,28 +341,29 @@ class AsyncCache:
         log.debug("Get %s", address)
         key_hash = self._key("servers", address)
         key_tags = self._key("servers", address, "tags")
+        key_interest = self._key("servers", address, "interest")
         transaction = yield from self._connection.multi()
         f_hash_ = yield from transaction.hgetall_asdict(key_hash)
         f_tags = yield from transaction.smembers_asset(key_tags)
+        f_interest = yield from transaction.incrby(key_interest, 0)
         yield from transaction.exec()
         tags = {tag.decode(self.ENCODING) for tag in (yield from f_tags)}
         hash_ = {key.decode(self.ENCODING):
                  value.decode(self.ENCODING) for
                  key, value in (yield from f_hash_).items()}
         kwargs = {
-            "interest": None,
+            "interest": (yield from f_interest),
             "name": hash_.get("name"),
             "map_": hash_.get("map"),
             "application_id": None,
             "players": None,
             "tags": tags,
         }
-        for attribute in {"interest", "application_id"}:
-            try:
-                kwargs[attribute] = int(hash_.get(attribute))
-            except (ValueError, TypeError) as exc:
-                log.warning("Could not convert %r for %s "
-                            "to int: %s", attribute, address, exc)
+        try:
+            kwargs["application_id"] = int(hash_.get("application_id"))
+        except (ValueError, TypeError) as exc:
+            log.warning("Could not convert application_id "
+                        "for %s to int: %s", address, exc)
         return Status(address, **kwargs)
 
     @asyncio.coroutine
@@ -384,8 +389,9 @@ class AsyncCache:
         address = str(status.address).encode(self.ENCODING)
         key_hash = self._key("servers", status.address)
         key_tags = self._key("servers", status.address, "tags")
+        key_interest = self._key("servers", status.address, "interest")
         hash_ = {}
-        for attribute in {"interest", "name", "map", "application_id"}:
+        for attribute in {"name", "map", "application_id"}:
             value = getattr(status, attribute)
             if value is not None:
                 hash_[attribute] = str(value)
@@ -394,7 +400,8 @@ class AsyncCache:
         tags = {tag.encode(self.ENCODING) for tag in status.tags}
         transaction = yield from self._connection.multi()
         f_old_tags = yield from transaction.smembers(key_tags)
-        yield from transaction.delete([key_hash, key_tags])
+        yield from transaction.delete([key_hash, key_tags, key_interest])
+        yield from transaction.incrby(key_interest, status.interest)
         yield from transaction.hmset(key_hash, hash_)
         yield from transaction.sadd(key_tags, (t for t in tags))
         for tag in status.tags:
