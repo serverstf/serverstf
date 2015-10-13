@@ -58,9 +58,7 @@ def _poll_main_args(parser):
 @serverstf.subcommand("poll", _poll_main_args)
 def _poll_main(args):
     log.info("Starting poller")
-    cache = serverstf.cache.Cache.connect(args.url, asyncio.get_event_loop())
-    try:
+    loop = asyncio.get_event_loop()
+    with serverstf.cache.Cache.connect(args.url, loop) as cache:
         _watch(cache, args.passive)
-    finally:
-        cache.close()
     log.info("Stopping poller")

@@ -270,7 +270,8 @@ class AsyncCache:
         :param str url: the URL of the Redis database to connect to.
         :param loop: the :mod:`asyncio` event loop to use.
 
-        :return: a new :class:`AsyncCache` instance which is bound to a Redis
+        :return: a context manager that, when entered yields a newly
+            create :class:`AsyncCache` instance which is bound to a Redis
             connection.
         """
         log.info("Connecting to cache at %s", url)
@@ -282,7 +283,13 @@ class AsyncCache:
             loop=loop,
             encoder=asyncio_redis.encoders.BytesEncoder()
         )
-        return cls(connection, loop)
+
+        @contextlib.contextmanager
+        def cache_context(cache):
+            yield cache
+            cache.close()
+
+        return cache_context(cls(connection, loop))
 
     @property
     def loop(self):
@@ -580,8 +587,7 @@ def _cache_main_args(parser):
 @serverstf.subcommand("cache", _cache_main_args)
 def _cache_main(args):
     loop = asyncio.get_event_loop()
-    cache = Cache.connect(args.url, loop)
-    try:
+    with Cache.connect(args.url, loop) as cache:
         address = Address("0.0.0.0", 9001)
         status = Status(
             address,
@@ -594,5 +600,3 @@ def _cache_main(args):
         )
         cache.set(status)
         cache.get(address)
-    finally:
-        cache.close()
