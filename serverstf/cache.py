@@ -23,6 +23,12 @@ decimal format. For example: ``0.0.0.0:8000``.
 Each key is prefixed by ``serverstf`` in order to act as a kind of namespace.
 Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 
+``SET serverstf/servers``
+    A set containing the addresses of all the servers in the cache. This is
+    the authorative list of all servers tracked by the cache. The addresses
+    themselves are just UTF-8 encoded string representations of
+    :class:`Address`es.
+
 ``HASH serverstf/servers/<ip>:<port>``
     These hashes hold the current state of the server corresponding to the
     key. Each hash has the following keys:
@@ -329,6 +335,18 @@ class AsyncCache:
         return "/".join(key).encode(self.ENCODING)
 
     @asyncio.coroutine
+    def __ensure(self, address):
+        """Ensure the address exists in the authorative set.
+
+        The address is stringified and UTF-8 encoded before being added to
+        the authorative set.
+
+        :param Address address: the address to add to the cache.
+        """
+        yield from self._connection.sadd(
+            self._key("servers"), [str(address).encode(self.ENCODING)])
+
+    @asyncio.coroutine
     def __get(self, address):
         """Retrieve a server status from the cache.
 
@@ -398,6 +416,7 @@ class AsyncCache:
         hash_ = {key.encode(self.ENCODING):
                  value.encode(self.ENCODING) for key, value in hash_.items()}
         tags = {tag.encode(self.ENCODING) for tag in status.tags}
+        yield from self.__ensure(status.address)
         transaction = yield from self._connection.multi()
         f_old_tags = yield from transaction.smembers(key_tags)
         yield from transaction.delete([key_hash, key_tags, key_interest])
@@ -521,6 +540,7 @@ class AsyncCache:
                 log.warning("Bad interest queue item: %s", exc)
         return self._active_iq_item[1]
 
+    ensure = __ensure
     get = __get
     set = __set
 
