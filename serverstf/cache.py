@@ -27,6 +27,7 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
     These hashes hold the current state of the server corresponding to the
     key. Each hash has the following keys:
 
+    * ``interest``
     * ``name``
     * ``map``
     * ``app_id``
@@ -45,7 +46,7 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
     When one of these server status hashes is retrieved from the cache it
     translated to a :class:`Status` object.
 
-``SET serverstf/server/<ip>:<port>/tags``
+``SET serverstf/servers/<ip>:<port>/tags``
     A set containing all the tags currently applied to the server referenced
     by the key. The tags themselves are UTF-8 encoded.
 
@@ -67,6 +68,7 @@ import logging
 import urllib.parse
 
 import asyncio_redis
+import asyncio_redis.encoders
 
 import serverstf
 
@@ -116,9 +118,72 @@ class Address:
         return hash(str(self))
 
     def __eq__(self, other):
+        """Check another :class:`Address` for equality.
+
+        The other address is only considered equal if both the IP address
+        and port match.
+        """
         if not isinstance(other, self.__class__):
             return NotImplemented
         return self.ip == other.ip and self.port == other.port
+
+
+class Status:
+    """Immutable representation of the state of a server at a point in time.
+
+    :ivar address: the :class:`Address` that identifies the server.
+    :ivar interest: this is ammount of *interest* in the server's state as
+        expressed as an integer. The interest correlates to the number of
+        clients subscribed to the servers state. High interest levels means
+        the state is updated more frequently.
+    :ivar name: the display name of the server. Note that it may contain
+        non-printable characters.
+    :ivar map: the name of the map being played by the server.
+    :ivar application_id: the Steam application ID of the game being played
+        by the server. Note that this is the Steam application ID of the
+        game's client not the server. For example, in the case of TF2 it is
+        440 not 232250.
+    :ivar tags: a frozen set of all the tags applied to the server.
+    """
+
+    def __init__(self, address, *, interest, name, map, app_id, players, tags):
+        self._address = address
+        self._interest = int(interest)
+        self._name = str(name)
+        self._map = str(map)
+        self._application_id = int(app_id)
+        self._players = players
+        self.tags = frozenset(tags)
+
+    @property
+    def address(self):
+        """Get the address of the server."""
+        return self._address
+
+    @property
+    def interest(self):
+        """Get the current interest in the server."""
+        return self._interest
+
+    @property
+    def name(self):
+        """Get the server name."""
+        return self._name
+
+    @property
+    def map(self):
+        """Get the server map."""
+        return self._map
+
+    @property
+    def application_id(self):
+        """Get the server Steam application ID."""
+        return self._application_id
+
+    @property
+    def players(self):
+        """Get the current players."""
+        return self._players
 
 
 class AsyncCache:
@@ -129,6 +194,11 @@ class AsyncCache:
     """
     # :ivar _connection: the :class:`asyncio_redis.Connection` to use.
     # :ivar _loop: the :mod:`asyncio` event loop to use.
+
+    #: The encoding to use for Unicode strings.
+    ENCODING = "utf-8"
+    #: The root key namespace
+    NAMESPACE = "serverstf"
 
     def __init__(self, connection, loop):
         self._connection = connection
@@ -152,6 +222,7 @@ class AsyncCache:
             port=url.port,
             db=int(url.path.split("/")[1]),
             loop=loop,
+            encoder=asyncio_redis.encoders.BytesEncoder()
         )
         return cls(connection, loop)
 
@@ -168,13 +239,72 @@ class AsyncCache:
         """
         self._connection.close()
 
+    def _key(self, *parts):
+        """Construct a Redis key from contituent parts.
+
+        Each part of the key will be converted to a string before being
+        joined together separated by forward slashes. Each key has an
+        implicitly first part ``serverstf``. The key will be encoded as
+        UTF-8.
+
+        :return: a bytestring containing the encoded key.
+        """
+        key = [self.NAMESPACE]
+        for part in parts:
+            key.append(str(part))
+        return "/".join(key).encode(self.ENCODING)
+
     @asyncio.coroutine
     def get(self, address):
         log.debug("Get %s", address)
 
     @asyncio.coroutine
     def set(self, status):
-        log.debug("Set %s", address)
+        """Commit a server status to the cache.
+
+        This sets the primary server state HASH key and the tags SET for the
+        server. Both the HASH and SET are completely overridden in a MULTI
+        block. If any fields on the server status are ``None`` then they will
+        not be added to the hash.
+
+        All hash fields are converted to strings and encoded as UTF-8. The
+        tags are also UTF-8 encoded.
+
+        As well as updating server-specific keys this will update the global
+        tag SETs. The UTF-8 encoded stringified address is added to the new
+        global tag SETs as part of the MULTI transation. For tags that have
+        been removed by the new status the address is removed from the
+        corresponding tag SETs outside of the transaction.
+
+        :param Status status: the new status for the server.
+        """
+        address = str(status.address).encode(self.ENCODING)
+        key_hash = self._key("servers", status.address)
+        key_tags = self._key("servers", status.address, "tags")
+        hash_ = {}
+        for attribute in {"interest", "name", "map", "application_id"}:
+            value = getattr(status, attribute)
+            if value is not None:
+                hash_[attribute] = str(value)
+        hash_ = {key.encode(self.ENCODING):
+                 value.encode(self.ENCODING) for key, value in hash_.items()}
+        tags = {tag.encode(self.ENCODING) for tag in status.tags}
+        transaction = yield from self._connection.multi()
+        f_old_tags = yield from transaction.smembers(key_tags)
+        yield from transaction.delete([key_hash, key_tags])
+        yield from transaction.hmset(key_hash, hash_)
+        yield from transaction.sadd(key_tags, (t for t in tags))
+        for tag in status.tags:
+            key_tag = self._key("tags", tag)
+            yield from transaction.sadd(key_tag, [address])
+        yield from transaction.exec()
+        old_tags = (yield from (yield from f_old_tags).asset())
+        removed_tags = old_tags - tags
+        for old_tag in removed_tags:
+            key_old_tag = self._key("tags", old_tag)
+            yield from self._connection.srem(key_old_tag, [address])
+        log.debug("Set %s with %i tags (%i removed)",
+                  status.address, len(status.tags), len(removed_tags))
 
 
 class _Synchronous(type):
@@ -291,6 +421,15 @@ def cache_main(args):
     cache = Cache.connect(args.url, loop)
     try:
         address = Address("0.0.0.0", 9001)
-        cache.get(address)
+        status = Status(
+            address,
+            interest=0,
+            name="My Fan¢y Server Name",
+            map="ctf_doublecross",
+            app_id=440,
+            players=None,
+            tags=["mode:ctf", "population:empty"],
+        )
+        cache.set(status)
     finally:
         cache.close()
