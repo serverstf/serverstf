@@ -26,7 +26,23 @@ import serverstf
 log = logging.getLogger(__name__)
 
 
-@serverstf.subcommand("poll")
+def _poll_main_args(parser):
+    parser.add_argument(
+        "url",
+        type=serverstf.redis_url,
+        nargs="?",
+        default="//localhost",
+        help="The URL of the Redis database to use for the cache and queues."
+    )
+    parser.add_argument(
+        "--passive",
+        action="store_true",
+        help=("When set the poller will poll all servers "
+              "in the cache, not only those in the interest queue."),
+    )
+
+
+@serverstf.subcommand("poll", _poll_main_args)
 def _poll_main(args):
     log.info("Starting poller")
     log.info("Stopping poller")
