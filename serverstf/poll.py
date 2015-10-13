@@ -62,6 +62,17 @@ def _poll_main(args):
     loop = asyncio.get_event_loop()
     with serverstf.cache.Cache.connect(args.url, loop) as cache:
         address = serverstf.cache.Address("0.0.0.0", 9001)
+        status = serverstf.cache.Status(
+            address,
+            interest=0,
+            name="My Fan¢y Server Name",
+            map_="ctf_doublecross",
+            application_id=440,
+            players=None,
+            tags=["mode:ctf", "population:empty"],
+        )
+        cache.set(status)
+        cache.get(address)
         cache.subscribe(address)
         _watch(cache, args.passive)
     log.info("Stopping poller")

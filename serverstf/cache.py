@@ -619,31 +619,3 @@ class Cache(AsyncCache, metaclass=_Synchronous):
         """
         yield self.interesting()
         self.update_interest_queue()
-
-
-def _cache_main_args(parser):
-    parser.add_argument(
-        "url",
-        type=serverstf.redis_url,
-        nargs="?",
-        default="//localhost",
-        help="The URL of the Redis database to connect to."
-    )
-
-
-@serverstf.subcommand("cache", _cache_main_args)
-def _cache_main(args):
-    loop = asyncio.get_event_loop()
-    with Cache.connect(args.url, loop) as cache:
-        address = Address("0.0.0.0", 9001)
-        status = Status(
-            address,
-            interest=0,
-            name="My Fan¢y Server Name",
-            map_="ctf_doublecross",
-            application_id=440,
-            players=None,
-            tags=["mode:ctf", "population:empty"],
-        )
-        cache.set(status)
-        cache.get(address)
