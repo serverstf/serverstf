@@ -98,14 +98,14 @@ class Address:
 
     def __init__(self, ip, port):
         try:
-            self.ip = ipaddress.IPv4Address(ip)
+            self._ip = ipaddress.IPv4Address(ip)
         except ipaddress.AddressValueError as exc:
             raise AddressError("Malformed IP address") from exc
         try:
-            self.port = int(port)
+            self._port = int(port)
         except TypeError as exc:
             raise AddressError("Port number is not an integer") from exc
-        if self.port < 1 or self.port > 65535:
+        if self._port < 1 or self._port > 65535:
             raise AddressError("Port number is out of range")
 
     def __repr__(self):
@@ -126,6 +126,16 @@ class Address:
         if not isinstance(other, self.__class__):
             return NotImplemented
         return self.ip == other.ip and self.port == other.port
+
+    @property
+    def ip(self):
+        """Get the IP of the address."""
+        return self._ip
+
+    @property
+    def port(self):
+        """Get the port number of the address."""
+        return self._port
 
 
 class Status:
