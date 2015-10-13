@@ -258,6 +258,7 @@ class AsyncCache:
         self._connection = connection
         self._loop = loop
         self._active_iq_item = None
+        self._iq_key = self._key("interesting")
 
     def __repr__(self):
         return "<{0.__class__.__name__} using {0._connection}>".format(self)
@@ -408,6 +409,44 @@ class AsyncCache:
         log.debug("Set %s with %i tags (%i removed)",
                   status.address, len(status.tags), len(removed_tags))
 
+    @asyncio.coroutine
+    def subscribe(self, address):
+        """Increase the interest in an address.
+
+        This will increase the interest for a server and add an entry in the
+        interest queue for it.
+
+        :param Address address: the address of the server to increase the
+            interest for.
+        """
+        # TODO: fix the race condition
+        status = yield from self.__get(address)
+        interest = status.interest + 1
+        yield from self.__set(Status(
+            address,
+            interest=interest,
+            name=status.name,
+            map_=status.map,
+            application_id=status.application_id,
+            players=status.players,
+            tags=status.tags,
+        ))
+        yield from self.__push_iq(interest, address)
+        log.debug("Interest in %s now %i", address, interest)
+
+    def _encode_iq_item(self, interest, address):
+        """Encode an item for the interest queue.
+
+        The interest and stringified address are converted to a JSON array
+        being being UTF-8 encoded.
+
+        :param int interest: the interest value for the address.
+        :param Address address: the server address.
+
+        :return: a bytestring containing the encoded interest queue item.
+        """
+        return json.dumps([int(interest), str(address)]).encode(self.ENCODING)
+
     def _decode_iq_item(self, encoded):
         """Decode an item from the interest queue.
 
@@ -436,6 +475,16 @@ class AsyncCache:
         return interest, Address.parse(str(address_raw))
 
     @asyncio.coroutine
+    def __push_iq(self, interest, address):
+        """Push an item into the interest queue.
+
+        The item will be encoded as a JSON array and added to the end of
+        the queue.
+        """
+        yield from self._connection.rpush(
+            self._iq_key, [self._encode_iq_item(interest, address)])
+
+    @asyncio.coroutine
     def update_interest_queue(self):
         """Reinsert address into the interest queue.
 
@@ -447,8 +496,7 @@ class AsyncCache:
         interest, address = self._active_iq_item
         status = yield from self.__get(address)
         if status.interest >= interest:
-            # TODO: re-enqueue the item
-            pass
+            yield from self.__push_iq(interest, address)
         self._active_iq_item = None
 
     @asyncio.coroutine
@@ -466,9 +514,8 @@ class AsyncCache:
         if self._active_iq_item:
             raise CacheError("There is already an active interest queue item. "
                              "Did you forget to call update_interest_queue?")
-        key = self._key("interesting")
         while self._active_iq_item is None:
-            item_raw = yield from self._connection.lpop(key)
+            item_raw = yield from self._connection.lpop(self._iq_key)
             if not item_raw:
                 raise EmptyQueueError
             try:

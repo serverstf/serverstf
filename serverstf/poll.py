@@ -39,6 +39,7 @@ def _watch(cache, passive):
         except serverstf.cache.EmptyQueueError:
             pass
 
+
 def _poll_main_args(parser):
     parser.add_argument(
         "url",
@@ -60,5 +61,7 @@ def _poll_main(args):
     log.info("Starting poller")
     loop = asyncio.get_event_loop()
     with serverstf.cache.Cache.connect(args.url, loop) as cache:
+        address = serverstf.cache.Address("0.0.0.0", 9001)
+        cache.subscribe(address)
         _watch(cache, args.passive)
     log.info("Stopping poller")
