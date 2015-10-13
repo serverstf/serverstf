@@ -58,12 +58,26 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 
     For the purpose of providing predictable ordering this is a sorted set
     but the actual scoring algorithm is opaque.
+
+``LIST serverstf/interesting``
+    This is the *interest queue*. It is a LIST which holds UTF-8
+    encoded JSON arrays. Each array has two items: an interest level and
+    a stringified :class:`Address`.
+
+    This list is actively iterated on by pollers in order to update cache
+    entries for servers whose address occurs in the queue.
+
+    The first item in the JSON array -- the interest level -- signals what
+    the interest in the server was when that particular item was added to
+    the queue. See :attr:`Address.interest`.
 """
 
 import asyncio
+import contextlib
 import functools
 import inspect
 import ipaddress
+import json
 import logging
 import urllib.parse
 
@@ -82,6 +96,10 @@ class AddressError(ValueError):
 
 class CacheError(Exception):
     """Base exception for all cache related errors."""
+
+
+class EmptyQueueError(Exception):
+    """Raised when attempting to pop from an empty interest queue."""
 
 
 class Address:
@@ -126,6 +144,25 @@ class Address:
         if not isinstance(other, self.__class__):
             return NotImplemented
         return self.ip == other.ip and self.port == other.port
+
+    @classmethod
+    def parse(cls, address):
+        """Parse an address from a string.
+
+        This is effectively the inverse of :meth:`__str__`. The given address
+        is expected to be in the ``<ip>:<port>`` form.
+
+        :param str address: the address to parse.
+
+        :raises AddressError: if the string is not formatted correctly or the
+            address is in any other way invalid.
+        :return: a new :class:`Address` instance.
+        """
+        split = address.split(":", 1)
+        if len(split) != 2:
+            raise AddressError("Addresses must be in the form <ip/host>"
+                               ":<port> but got {!r}".format(address))
+        return cls(*split)
 
     @property
     def ip(self):
@@ -220,6 +257,7 @@ class AsyncCache:
     def __init__(self, connection, loop):
         self._connection = connection
         self._loop = loop
+        self._active_iq_item = None
 
     def __repr__(self):
         return "<{0.__class__.__name__} using {0._connection}>".format(self)
@@ -279,7 +317,7 @@ class AsyncCache:
         return "/".join(key).encode(self.ENCODING)
 
     @asyncio.coroutine
-    def get(self, address):
+    def __get(self, address):
         """Retrieve a server status from the cache.
 
         :param Address address: the address of the server whose status is
@@ -316,7 +354,7 @@ class AsyncCache:
         return Status(address, **kwargs)
 
     @asyncio.coroutine
-    def set(self, status):
+    def __set(self, status):
         """Commit a server status to the cache.
 
         This sets the primary server state HASH key and the tags SET for the
@@ -363,6 +401,78 @@ class AsyncCache:
         log.debug("Set %s with %i tags (%i removed)",
                   status.address, len(status.tags), len(removed_tags))
 
+    def _decode_iq_item(self, encoded):
+        """Decode an item from the interest queue.
+
+        The given item should be a UTF-8 encoded JSON array with two
+        elements. The first element should be a number and the second is a
+        string that will be parsed an :class:`Address`.
+
+        :param bytes encoded: the encoded JSON array from the interest queue.
+
+        :raises ValueError: if the queue item couldn't be decoded.
+        :return: a two-tuple containing a interest value and an
+            :class:`Address`.
+        """
+        try:
+            item_decoded = json.loads(encoded.decode(self.ENCODING))
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise ValueError(exc) from exc
+        if not isinstance(item_decoded, list) or len(item_decoded) != 2:
+            raise ValueError("Must be an array of length 2")
+        interest_raw, address_raw = item_decoded
+        try:
+            interest = int(interest_raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "Interest must be an integer: %s", exc) from exc
+        return interest, Address.parse(str(address_raw))
+
+    @asyncio.coroutine
+    def update_interest_queue(self):
+        """Reinsert address into the interest queue.
+
+        This should be called after calls to :meth:`interesting` in order
+        reinsert the address back into the interest queue. The address is
+        only reinserted if there is still sufficient interest in it.
+        Otherwise this method does nothing.
+        """
+        interest, address = self._active_iq_item
+        status = yield from self.__get(address)
+        if status.interest >= interest:
+            # TODO: re-enqueue the item
+            pass
+        self._active_iq_item = None
+
+    @asyncio.coroutine
+    def interesting(self):
+        """Get an address from the interest queue.
+
+        Once finished with the address you must call
+        :meth:`update_interest_queue` which will reinsert the address back
+        into the queue if necessary. If not done then subsequent calls to
+        this method will throw an exception.
+
+        :raises EmptyQueueError: if the interest queue is empty.
+        :return: a :class:`Address` from the interest queue.
+        """
+        if self._active_iq_item:
+            raise CacheError("There is already an active interest queue item. "
+                             "Did you forget to call update_interest_queue?")
+        key = self._key("interesting")
+        while self._active_iq_item is None:
+            item_raw = yield from self._connection.lpop(key)
+            if not item_raw:
+                raise EmptyQueueError
+            try:
+                self._active_iq_item = self._decode_iq_item(item_raw)
+            except ValueError as exc:
+                log.warning("Bad interest queue item: %s", exc)
+        return self._active_iq_item[1]
+
+    get = __get
+    set = __set
+
 
 class _Synchronous(type):
     """A metaclass for making an asynchronous API synchronous.
@@ -384,13 +494,20 @@ class _Synchronous(type):
     only possible for this metaclass to make instance methods synchronous
     automatically. If any asynchronous class methods are not explicitly
     overridden then a :exc:`TypeError` will be raised.
+
+    Additionally, name mangled methods are not overridden. This is useful
+    if you need to call the asynchronous method from inside another method
+    as you can expose a synchronous public API (just alias the dunder-method)
+    but still call the asynchronous API internally.
     """
 
     def __new__(meta, name, bases, attrs):
         for base in bases:
+            mangle_prefix = "_" + base.__name__ + "__"
             for attr, member in inspect.getmembers(base):
                 if asyncio.iscoroutinefunction(member):
-                    if attr not in attrs:
+                    if (attr not in attrs
+                            and not attr.startswith(mangle_prefix)):
                         # Check if the member is a class method
                         if getattr(member, "__self__", None) is base:
                             raise TypeError("The class method {!r} from {} "
@@ -436,6 +553,18 @@ class Cache(AsyncCache, metaclass=_Synchronous):
     @classmethod
     def connect(cls, url, loop):
         return loop.run_until_complete(super().connect(url, loop))
+
+    @contextlib.contextmanager
+    def interesting_context(self):
+        """Get an address from the interest queue.
+
+        This encaplusates calls to :meth:`interesting` and
+        :meth:`update_interest_queue` as a context manager.
+
+        :return: an :class:`Address` from the interest queue.
+        """
+        yield self.interesting()
+        self.update_interest_queue()
 
 
 def _cache_main_args(parser):

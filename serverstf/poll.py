@@ -32,7 +32,12 @@ log = logging.getLogger(__name__)
 
 def _watch(cache, passive):
     log.info("Watching %s; passive: %s", cache, passive)
-
+    while True:
+        try:
+            with cache.interesting_context() as address:
+                log.debug(address)
+        except serverstf.cache.EmptyQueueError:
+            pass
 
 def _poll_main_args(parser):
     parser.add_argument(
