@@ -146,12 +146,15 @@ class Status:
     :ivar tags: a frozen set of all the tags applied to the server.
     """
 
-    def __init__(self, address, *, interest, name, map, app_id, players, tags):
+    def __init__(self, address, *, interest, name,
+                 map_, application_id, players, tags):
         self._address = address
-        self._interest = int(interest)
-        self._name = str(name)
-        self._map = str(map)
-        self._application_id = int(app_id)
+        self._interest = interest if interest is None else int(interest)
+        self._name = name if name is None else str(name)
+        self._map = map_ if map_ is None else str(map_)
+        self._application_id = application_id
+        if self._application_id is not None:
+            self._application_id =  int(application_id)
         self._players = players
         self.tags = frozenset(tags)
 
@@ -425,8 +428,8 @@ def cache_main(args):
             address,
             interest=0,
             name="My Fan¢y Server Name",
-            map="ctf_doublecross",
-            app_id=440,
+            map_="ctf_doublecross",
+            application_id=440,
             players=None,
             tags=["mode:ctf", "population:empty"],
         )
