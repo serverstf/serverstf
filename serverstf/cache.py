@@ -221,6 +221,9 @@ class AsyncCache:
         self._connection = connection
         self._loop = loop
 
+    def __repr__(self):
+        return "<{0.__class__.__name__} using {0._connection}>".format(self)
+
     @classmethod
     @asyncio.coroutine
     def connect(cls, url, loop):

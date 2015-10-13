@@ -18,12 +18,20 @@ This is done in an attempt to prevent cache states becoming too stale if
 they're not in the interest queue.
 """
 
+import asyncio
 import logging
 
+import redis
+
 import serverstf
+import serverstf.cache
 
 
 log = logging.getLogger(__name__)
+
+
+def _watch(cache, passive):
+    log.info("Watching %s; passive: %s", cache, passive)
 
 
 def _poll_main_args(parser):
@@ -45,4 +53,9 @@ def _poll_main_args(parser):
 @serverstf.subcommand("poll", _poll_main_args)
 def _poll_main(args):
     log.info("Starting poller")
+    cache = serverstf.cache.Cache.connect(args.url, asyncio.get_event_loop())
+    try:
+        _watch(cache, args.passive)
+    finally:
+        cache.close()
     log.info("Stopping poller")
