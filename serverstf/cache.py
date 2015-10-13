@@ -426,18 +426,8 @@ class AsyncCache:
         :param Address address: the address of the server to increase the
             interest for.
         """
-        # TODO: fix the race condition
-        status = yield from self.__get(address)
-        interest = status.interest + 1
-        yield from self.__set(Status(
-            address,
-            interest=interest,
-            name=status.name,
-            map_=status.map,
-            application_id=status.application_id,
-            players=status.players,
-            tags=status.tags,
-        ))
+        key_interest = self._key("servers", address, "interest")
+        interest = yield from self._connection.incr(key_interest)
         yield from self.__push_iq(interest, address)
         log.debug("Interest in %s now %i", address, interest)
 
