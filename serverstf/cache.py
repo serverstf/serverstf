@@ -158,6 +158,10 @@ class Status:
         self._players = players
         self.tags = frozenset(tags)
 
+    def __repr__(self):
+        return ("<{0.__class__.__name__} {0.address} "
+                "({1} tags)>".format(self, len(self.tags)))
+
     @property
     def address(self):
         """Get the address of the server."""
@@ -259,7 +263,40 @@ class AsyncCache:
 
     @asyncio.coroutine
     def get(self, address):
+        """Retrieve a server status from the cache.
+
+        :param Address address: the address of the server whose status is
+            to be retrieved.
+
+        :return: a :class:`Status` representing the current state of the
+            cache for the give address.
+        """
         log.debug("Get %s", address)
+        key_hash = self._key("servers", address)
+        key_tags = self._key("servers", address, "tags")
+        transaction = yield from self._connection.multi()
+        f_hash_ = yield from transaction.hgetall_asdict(key_hash)
+        f_tags = yield from transaction.smembers_asset(key_tags)
+        yield from transaction.exec()
+        tags = {tag.decode(self.ENCODING) for tag in (yield from f_tags)}
+        hash_ = {key.decode(self.ENCODING):
+                 value.decode(self.ENCODING) for
+                 key, value in (yield from f_hash_).items()}
+        kwargs = {
+            "interest": None,
+            "name": hash_.get("name"),
+            "map_": hash_.get("map"),
+            "application_id": None,
+            "players": None,
+            "tags": tags,
+        }
+        for attribute in {"interest", "application_id"}:
+            try:
+                kwargs[attribute] = int(hash_.get(attribute))
+            except (ValueError, TypeError) as exc:
+                log.warning("Could not convert %r for %s "
+                            "to int: %s", attribute, address, exc)
+        return Status(address, **kwargs)
 
     @asyncio.coroutine
     def set(self, status):
@@ -434,5 +471,6 @@ def cache_main(args):
             tags=["mode:ctf", "population:empty"],
         )
         cache.set(status)
+        cache.get(address)
     finally:
         cache.close()
