@@ -1,93 +1,62 @@
 """Handles caching of server statuses.
 
 Server states are stored in Redis. It tracks their general info such as,
-name, map, player count, etc. as well as the current players. Additionally
-it maintains an index of all the tags applied to a server.
+the server name, map, player counts and scores. Additionally it maintains
+an index of all the tags applied to a server.
 
-The server (ip, port) tuple is used as the key for each server.
+Each server is uniquely identified by its address which is a combination of
+the IP address of the host and the port number -- these are represented by
+:class:`Address` objects. These address also act as Redis keys.
 
 
 Redis Schema:
 -------------
 
-Redis has a fairly limited type system, which means beyond the top-level
-keys, everything else is stored as UTF-8 encoded byte-strings. The API however
-converts transparently between more appropriate Python-native types.
+Redis has a fairly limited type system meaning that the stored values are
+all UTF-8 encoded strings. The API provided by this module will transparently
+translate these strings to more appropriate Python types.
 
-When server addresses -- e.g. ("192.168.0.1", 27015) are used in Redis keys
-('<address>') they are formatted into the standard colon-separated form
-(e.g. 192.168.0.1:27015) and then UTF-8 encoded.
+All keys are UTF-8 encoded. When a server address is used in a conventional
+colon-separated IP-port form where the IP address it self is in the dotted
+decimal format. For example: ``0.0.0.0:8000``.
 
-As tags are just Unicode strings, when they're used in Redis keys ('<tag>')
-they are simply UTF-8 encoded.
+Each key is prefixed by ``serverstf`` in order to act as a kind of namespace.
+Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 
+``HASH serverstf/servers/<ip>:<port>``
+    These hashes hold the current state of the server corresponding to the
+    key. Each hash has the following keys:
 
-HASH server:<address>
+    * ``name``
+    * ``map``
+    * ``app_id``
+    * ``players``
+    * ``bots``
+    * ``max``
+    * ``scores``
 
-    - str name
+    The ``scores`` field tracks the names, connection times and scores of
+    each player currently on the server. As this is a non-trivial structure
+    it is stored as a JSON encoded array (still UTF-8 encoded.) The array
+    itself contains further arrays, one for each player. The inner arrays
+    have 3 elements: the player's display name as a string, their connection
+    duration as a float in seconds and their score as an integer.
 
-        The server's name.
+    When one of these server status hashes is retrieved from the cache it
+    translated to a :class:`Status` object.
 
-    - str map
+``SET serverstf/server/<ip>:<port>/tags``
+    A set containing all the tags currently applied to the server referenced
+    by the key. The tags themselves are UTF-8 encoded.
 
-        The map currently being played by the server.
+``ZSET serverstf/tags/<tag>``
+    These sets hold any number of server addresses (formatted as described
+    above and UTF-8 encoded). Server's who's addresses are contained in one
+    of these hashes is understood to have the ``<tag>`` in their own
+    ``serverstf/servers/<ip>:<port>/tags`` set.
 
-    - int app
-
-        The Steam appplication ID of the game being played. Note that this is
-        the ID for the client, not the server. So for example, 440 is TF2.
-
-    - int players
-
-        The currenty number of players.
-
-    - int bots
-
-        The number of bot players.
-
-    - int max
-
-        The maximum number of players allowed by the server configuration.
-
-    - json player_scores
-
-        The player names, scores and connection durations. This fields is
-        not primitive so is stored as a JSON encoded structure. The schema
-        for the JSON is as follows:
-
-        The top-level is a JSON array with zero or more objects, each with the
-        following fields:
-
-            - str name
-
-                The player's display name.
-
-            - int score
-
-                The player's score.
-
-            - timedelta duration
-
-                The ammount of time the player has been connected to the
-                server. As JSON cannot represent time deltas natively, its
-                encoded as a float representing the delta in seconds.
-
-
-SET server:<address>:tags
-
-    A set maintaining the <tag>s that apply to the server.
-
-
-SET tags
-
-    A set containing all the <tag>s known to the cache.
-
-
-ZSET tag:<tag>
-
-    These sets hold any number of <address>es. For the purpose of providing
-    predictable ordering this is a sorted set but the actual scoring algorithm
-    is opaque.
+    For the purpose of providing predictable ordering this is a sorted set
+    but the actual scoring algorithm is opaque.
 """
 
 import asyncio
@@ -203,6 +172,10 @@ class AsyncCache:
     def get(self, address):
         log.debug("Get %s", address)
 
+    @asyncio.coroutine
+    def set(self, status):
+        log.debug("Set %s", address)
+
 
 class _Synchronous(type):
     """A metaclass for making an asynchronous API synchronous.
@@ -316,8 +289,8 @@ def cache_main_args(parser):
 def cache_main(args):
     loop = asyncio.get_event_loop()
     cache = Cache.connect(args.url, loop)
-    address = Address("94.23.226.212", 2055)
     try:
+        address = Address("0.0.0.0", 9001)
         cache.get(address)
     finally:
         cache.close()
