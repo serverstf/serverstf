@@ -1,13 +1,67 @@
 import asyncio
+import functools
 import itertools
+import json
 import logging
 
+import voluptuous
 import websockets
 
 import serverstf.cache
 
 
 log = logging.getLogger(__name__)
+
+
+class WebsocketError(Exception):
+    """Base exception for all websocket related errors."""
+
+
+class MessageError(WebsocketError):
+    """Raised for message validation failures."""
+
+
+def validate(schema):
+    """Validate message entities against a schema.
+
+    This is a decorator to help message handlers validate the entity against
+    a :mod:`voluptuous` schema. The decorated function will raise
+    :exc:`MessageError` if the entity is not valid according to the given
+    schema. If the entity is valid then the wrapped function will be called
+    being passed the validated entity as the sole argument.
+
+    :param schema: a :mod:`voluptuous` schema specification.
+    """
+
+    def decorator(function):
+        if not asyncio.iscoroutinefunction(function):
+            raise TypeError(
+                "{!r} is not a coroutine function".format(function))
+
+        @asyncio.coroutine
+        @functools.wraps(function)
+        def wrapper(self, entity):
+            try:
+                validated_entity = voluptuous.Schema(schema)(entity)
+            except voluptuous.Invalid as exc:
+                raise MessageError("Entity: {}".format(exc)) from exc
+            yield from function(self, validated_entity)
+
+        return wrapper
+
+    return decorator
+
+
+def address(value):
+    """Convert a dictionary to a :class:`serverstf.cache.Address`.
+
+    The dictionary must have an ``ip`` and ``port`` field which are a
+    string and integer respectively.
+    """
+    return serverstf.cache.Address(*voluptuous.Schema({
+        voluptuous.Required("ip"): str,
+        voluptuous.Required("port"): int,
+    })(value).values())
 
 
 class Client:
@@ -42,18 +96,82 @@ class Client:
         self._send_queue = asyncio.Queue()
 
     @asyncio.coroutine
-    def send(self, message):
+    def send(self, type_, entity):
         """Enqueue a message to be sent to peer."""
-        yield from self._send_queue.put(message)
+        message = { "type": str(type_), "entity": entity}
+        yield from self._send_queue.put(json.dumps(message))
+
+    @validate(address)
+    @asyncio.coroutine
+    def _handle_subscribe(self, address):
+        log.info("New subscription to address %s", address)
+        # TODO: everything
+
+    @asyncio.coroutine
+    def _dispatch(self, raw_message):
+        """Handle a JSON encoded message.
+
+        This will decode the message as JSON and validate the envelope to
+        ensure it has the necessary fields. If the envelope is valid then
+        a method is looked up that is capable of dealing with the given
+        message type.
+
+        Message type handler methods should be named with the message type
+        prefixed by ``_handle_``. For example, the handler for messages of
+        type ``foo`` would be handled by :meth:`_handle_foo`.
+
+        If a handler method exists for the message type then it will be
+        called with the message entity passed in as the sole argument.
+
+        Method handlers must be coroutine functions.
+
+        :raises MessageError: if the message isn't JSON, the envelope
+            is invalid (e.g. missing fields or wrong type) or there is no
+            handler method for the given message type.
+        """
+        try:
+            message = json.loads(raw_message)
+        except ValueError as exc:
+            raise MessageError("JSON: {}".format(exc)) from exc
+        try:
+            voluptuous.Schema({
+                voluptuous.Required("type"): str,
+                voluptuous.Required("entity"): lambda x: x,
+            })(message)
+        except voluptuous.Invalid as exc:
+            raise MessageError("Envelope: {}".format(exc)) from exc
+        handler = getattr(self, "_handle_" + message["type"], None)
+        if not handler or not asyncio.iscoroutinefunction(handler):
+            raise MessageError(
+                "Unknown message type: {}".format(message["type"]))
+        yield from handler(message["entity"])
 
     @asyncio.coroutine
     def _read(self):
-        """Continually receive and handle incoming messages."""
+        """Continually receive and handle incoming messages.
+
+        This will continually attempt to receive messages from the websocket
+        and dispatch them to appropriate handlers. When malformed messages
+        are received or there is an unexpected error then the client will
+        be notified.
+
+        If the client disconnects then the coroutine will return.
+        """
         while True:
             received = yield from self._websocket.recv()
             if received is None:
                 return
-            yield from self.send(received[::-1])
+            try:
+                yield from self._dispatch(received)
+            except MessageError as exc:
+                log.warning("Received bad message: %s", exc)
+                # TODO: send notification of malformed message
+            except Exception as exc:
+                log.exception(
+                    "Error handling %r for %s",  received, self._websocket)
+                # Unhandled exception. To be safe we shouldn't blindly send
+                # this error unabridged to the client.
+                # TODO: send notification of internal error
 
     @asyncio.coroutine
     def _write(self):
