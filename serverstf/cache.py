@@ -317,7 +317,8 @@ class AsyncCache:
         # Hack to work around the fact that closing the connection doesn't
         # clean upt tasks started by asyncio_redis. See:
         # https://github.com/jonathanslenders/asyncio-redis/issues/56
-        self._loop.run_until_complete(asyncio.sleep(0))
+        if not self._loop.is_running():
+            self._loop.run_until_complete(asyncio.sleep(0))
 
     def _key(self, *parts):
         """Construct a Redis key from contituent parts.
