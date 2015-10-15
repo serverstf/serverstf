@@ -12,13 +12,23 @@ log = logging.getLogger(__name__)
 
 
 def _make_application():
-    config = pyramid.config.Configurator()
+    config = pyramid.config.Configurator(settings={
+        "pyramid.reload_templates": True,
+    })
     config.include("pyramid_jinja2")
     config.add_jinja2_search_path(__name__ + ":templates/")
     config.add_route("main", "/")
     config.add_view(route_name="main", renderer="main.jinja2")
     for static in ["external", "scripts", "styles"]:
         config.add_static_view(static, "{}:{}/".format(__name__, static))
+    config.commit()
+    jinja2_env = config.get_jinja2_environment()
+    jinja2_env.block_start_string = "[%"
+    jinja2_env.block_end_string = "%]"
+    jinja2_env.variable_start_string = "[["
+    jinja2_env.variable_end_string = "]]"
+    jinja2_env.comment_start_string = "[#"
+    jinja2_env.comment_end_string = "#]"
     return config.make_wsgi_app()
 
 

@@ -6,6 +6,9 @@ define ["angular"], (angular) ->
     # for further details.
     NG_APPLICATION_MODULE_NAME = "serverstf"
     NG_APPLICATION_SPECIFICATION =
+        "controller": [
+            "ServerList",
+        ]
         "service": [
             "socket",
         ]
