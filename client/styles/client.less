@@ -112,6 +112,22 @@ header.main {
             .header-background(#151412, 2560px, -750px,
                 "http://media.steampowered.com/apps/tf2/artwork/cityonfire.jpg");
         }
+        &granary {
+            .header-background(#151412, 1920px, -0px,
+                "@{images}/Granary.jpg");
+        }
+        &well {
+            .header-background(#151412, 1920px, -400px,
+                "@{images}/Well.jpg");
+        }
+        &badlands {
+            .header-background(#151412, 1920px, -225px,
+                "@{images}/Badlands.jpg");
+        }
+        &cp {
+            .header-background(#151412, 1920px, 0px,
+                "@{images}/controlpoints.png");
+        }
     }
 
     nav {
@@ -360,7 +376,7 @@ ol.search-results {
     .font-emphasis();
     margin: 20px 0;
     padding: 30px;
-    background-color: @tf2-red-2;
+    background-color: @tf2-red-3;
     background-image: repeating-linear-gradient(
         -45deg,
         transparent,
@@ -372,8 +388,15 @@ ol.search-results {
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     text-align: center;
     cursor: pointer;
+    transition: 0.05s ease-in-out;
+    box-shadow: 0px 10px 0px 0px #700000;
+    border-radius: 10px;
 
     &:hover {
-        background-color: @tf2-blu-2;
+        background-color: @tf2-red-2;
+    }
+    &:active {
+        margin-top: 30px;
+        box-shadow: 0px 0px 0px 0px #700000;
     }
 }  // .search-results-more
