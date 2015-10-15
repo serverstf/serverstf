@@ -403,12 +403,14 @@ class AsyncCache:
         been removed by the new status the address is removed from the
         corresponding tag SETs outside of the transaction.
 
+        Note that the :attr:`Status.interest` field is ignored when setting
+        the state.
+
         :param Status status: the new status for the server.
         """
         address = str(status.address).encode(self.ENCODING)
         key_hash = self._key("servers", status.address)
         key_tags = self._key("servers", status.address, "tags")
-        key_interest = self._key("servers", status.address, "interest")
         hash_ = {}
         for attribute in {"name", "map", "application_id"}:
             value = getattr(status, attribute)
@@ -420,8 +422,7 @@ class AsyncCache:
         yield from self.__ensure(status.address)
         transaction = yield from self._connection.multi()
         f_old_tags = yield from transaction.smembers(key_tags)
-        yield from transaction.delete([key_hash, key_tags, key_interest])
-        yield from transaction.incrby(key_interest, status.interest)
+        yield from transaction.delete([key_hash, key_tags])
         yield from transaction.hmset(key_hash, hash_)
         yield from transaction.sadd(key_tags, (t for t in tags))
         for tag in status.tags:
