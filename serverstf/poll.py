@@ -45,10 +45,10 @@ def _interest_queue_iterator(cache):
             return
 
 
-def _watch(cache, passive):
-    log.info("Watching %s; passive: %s", cache, passive)
+def _watch(cache, all_):
+    log.info("Watching %s; all: %s", cache, all_)
     while True:
-        if passive:
+        if all_:
             addresses = cache.all_iterator()
         else:
             addresses = _interest_queue_iterator(cache)
@@ -65,7 +65,7 @@ def _poll_main_args(parser):
         help="The URL of the Redis database to use for the cache and queues."
     )
     parser.add_argument(
-        "--passive",
+        "--all",
         action="store_true",
         help=("When set the poller will poll all servers "
               "in the cache, not only those in the interest queue."),
@@ -90,5 +90,5 @@ def _poll_main(args):
         cache.set(status)
         cache.get(address)
         cache.subscribe(address)
-        _watch(cache, args.passive)
+        _watch(cache, args.all)
     log.info("Stopping poller")
