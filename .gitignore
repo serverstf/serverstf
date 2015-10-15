@@ -6,6 +6,8 @@ node_modules/
 client/external/
 client/styles/*.css
 
-serverstf/ui/external/*
+serverstf/ui/external/
+serverstf/ui/scripts/
+serverstf/ui/styles/*.css
 
 .coverage

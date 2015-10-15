@@ -1,5 +1,7 @@
-"indentation": {
-    "name": "indentation",
-    "value": 4,
-    "level": "error"
-},
+{
+    "indentation": {
+        "name": "indentation",
+        "value": 4,
+        "level": "error"
+    }
+}
