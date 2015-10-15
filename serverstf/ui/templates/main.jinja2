@@ -2,6 +2,12 @@
 <html>
   <head>
     <title>Servers.tf</title>
+    <link
+      rel="stylesheet"
+      href="{{request.static_path('serverstf.ui:styles/serverstf.css')}}">
+    <script
+      src="{{request.static_path('serverstf.ui:external/requirejs/require.js')}}"
+      data-main="scripts/serverstf"></script>
   </head>
   <body>
     <h1>Hello, world!</h1>

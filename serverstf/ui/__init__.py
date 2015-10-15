@@ -13,12 +13,12 @@ log = logging.getLogger(__name__)
 
 def _make_application():
     config = pyramid.config.Configurator()
+    config.include("pyramid_jinja2")
+    config.add_jinja2_search_path(__name__ + ":templates/")
     config.add_route("main", "/")
-    config.add_view(
-        lambda r: "hello world",
-        route_name="main",
-        renderer="string",
-    )
+    config.add_view(route_name="main", renderer="main.jinja2")
+    for static in ["external", "scripts", "styles"]:
+        config.add_static_view(static, "{}:{}/".format(__name__, static))
     return config.make_wsgi_app()
 
 
