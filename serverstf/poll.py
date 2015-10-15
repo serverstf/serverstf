@@ -22,13 +22,57 @@ import asyncio
 import logging
 
 import redis
+import valve.source.a2s
 
 import serverstf
 import serverstf.cache
+import serverstf.tags
+
+# TODO: remove this
+import unittest.mock
 
 
 log = logging.getLogger(__name__)
 
+
+def poll(cache, tagger, address):
+    """Poll the state of a server.
+
+    This will issue a number of requests to the server at the given address
+    to determine its current state. This state is then used to calculate the
+    tags that should be applied to the server.
+
+    The new state and tags are written to the cache.
+
+    :param serverstf.cache.Cache cache: the cache to store the updated
+        status in.
+    :param serverstf.tags.Tagger tagger: the tagger used to determine server
+        tags.
+    :param servers.cache.Address address: the address of the server to poll.
+    """
+    log.debug("Polling %s", address)
+    query = valve.source.a2s.ServerQuerier(
+        (str(address.ip), address.port), timeout=5)
+    try:
+        info = query.get_info()
+        # players = query.get_players()
+        # rules = query.get_rules()
+        # TODO: fix python-valve; remove hack
+        players = unittest.mock.MagicMock()
+        rules = unittest.mock.MagicMock()
+    except valve.source.a2s.NoResponseError as exc:
+        log.warning("Timed out waiting for response from %s", address)
+    else:
+        tags = tagger.evaluate(info, players, rules)
+        cache.set(serverstf.cache.Status(
+            address,
+            interest=0,  # TODO: dont do this
+            name=info["server_name"],
+            map_=info["map"],
+            application_id=info["app_id"],
+            players=None,
+            tags=tags,
+        ))
 
 def _interest_queue_iterator(cache):
     """Expose a cache's interest queue as an iterator.
@@ -46,14 +90,27 @@ def _interest_queue_iterator(cache):
 
 
 def _watch(cache, all_):
+    """Poll servers in the cache.
+
+    This will poll servers in the cache updating their statuses as it goes.
+    Either the interest queue or entire cache is used to determining which
+    servers to poll.
+
+    :param serverstf.cache.Cache cache: the server status cache to poll and
+        write updates to.
+    :param bool all_: if ``True`` then every server in the cache will be
+        polled. Otherwise only servers which exist in the internet queue
+        will be.
+    """
     log.info("Watching %s; all: %s", cache, all_)
+    tagger = serverstf.tags.Tagger.scan(__package__)
     while True:
         if all_:
             addresses = cache.all_iterator()
         else:
             addresses = _interest_queue_iterator(cache)
         for address in addresses:
-            log.debug(address)
+            poll(cache, tagger, address)
 
 
 def _poll_main_args(parser):
@@ -77,18 +134,7 @@ def _poll_main(args):
     log.info("Starting poller")
     loop = asyncio.get_event_loop()
     with serverstf.cache.Cache.connect(args.url, loop) as cache:
-        address = serverstf.cache.Address("0.0.0.0", 9001)
-        status = serverstf.cache.Status(
-            address,
-            interest=0,
-            name="My Fan¢y Server Name",
-            map_="ctf_doublecross",
-            application_id=440,
-            players=None,
-            tags=["mode:ctf", "population:empty"],
-        )
-        cache.set(status)
-        cache.get(address)
-        cache.subscribe(address)
+        address = serverstf.cache.Address("151.80.218.94", 27015)
+        cache.ensure(address)
         _watch(cache, args.all)
     log.info("Stopping poller")
