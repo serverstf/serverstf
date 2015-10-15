@@ -30,14 +30,30 @@ import serverstf.cache
 log = logging.getLogger(__name__)
 
 
-def _watch(cache, passive):
-    log.info("Watching %s; passive: %s", cache, passive)
+def _interest_queue_iterator(cache):
+    """Expose a cache's interest queue as an iterator.
+
+    .. note::
+        It is possible the generator returned by function can never be
+        exhausted.
+    """
     while True:
         try:
             with cache.interesting_context() as address:
-                log.debug(address)
+                yield address
         except serverstf.cache.EmptyQueueError:
-            pass
+            return
+
+
+def _watch(cache, passive):
+    log.info("Watching %s; passive: %s", cache, passive)
+    while True:
+        if passive:
+            addresses = cache.all_iterator()
+        else:
+            addresses = _interest_queue_iterator(cache)
+        for address in addresses:
+            log.debug(address)
 
 
 def _poll_main_args(parser):

@@ -541,9 +541,99 @@ class AsyncCache:
                 log.warning("Bad interest queue item: %s", exc)
         return self._active_iq_item[1]
 
+    @asyncio.coroutine
+    def __fetch_addresses_from_cursor(self, cursor, queue):
+        """Fetch addresses from a Redis cursor.
+
+        This will read all available values from a Redis cusor, convert them
+        to :class:`Address` and then place them into a asynchronous queue
+        returning when the end of the cursor is reached.
+
+        The cursor is expected to yield UTF-8 encoded stringified
+        :class:`Address`es.
+
+        :param asyncio.cursors.Cursor cursor: the Redis cursor to fetch
+            results from.
+        :param FiniteAsyncQueue queue: the queue to place :class:`Address`es
+            in.
+        """
+        with queue:
+            while True:
+                item = yield from cursor.fetchone()
+                if item is None:
+                    return
+                try:
+                    yield from queue.put(
+                        Address.parse(item.decode(self.ENCODING)))
+                except (UnicodeDecodeError, AddressError) as exc:
+                    log.warning("Bad address from cursor %s: %s", cursor, exc)
+
+    @asyncio.coroutine
+    def all(self):
+        """Get all the addresses in the cache.
+
+        This returns a queue which will be populated by addresses that are
+        held by the cache.
+
+        :return: a :class:`FiniteAsyncQueue` containing :class:`Address`es.
+        """
+        key = self._key("servers")
+        queue = FiniteAsyncQueue(loop=self._loop)
+        cursor = yield from self._connection.sscan(key)
+        asyncio.Task(self.__fetch_addresses_from_cursor(cursor, queue))
+        return queue
+
     ensure = __ensure
     get = __get
     set = __set
+
+
+class EndOfQueueError(Exception):
+    """Raised when the end of a :class:`FiniteAsyncQueue` is reached."""
+
+
+class FiniteAsyncQueue(asyncio.Queue):
+    """A finite/closable asynchronous queue.
+
+    This is the exact same as :class:`asyncio.Queue` except that the queue
+    can be *closed*. When the queue is closed and exhausted and further
+    attempts to get items from the queue will raise an exception.
+
+    Instances of this class are context managers. When exited the queue
+    is closed meaning that once all items have been removed from the
+    queue future calls to :meth:`get` or :meth:`get_nowait` raise
+    :exc:`EndOfQueueError`.
+    """
+
+    def __init__(self, *, loop=None):
+        super().__init__(loop=loop)
+        self._closed = False
+        self._end_of_queue = object()
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type_, value, traceback):
+        self.put_nowait(self._end_of_queue)
+        self._closed = True
+
+    def _check_end_of_queue(self, item):
+        if item is self._end_of_queue:
+            raise EndOfQueueError
+        return item
+
+    @asyncio.coroutine
+    def get(self):
+        return self._check_end_of_queue((yield from super().get()))
+
+    def get_nowait(self):
+        return self._check_end_of_queue(super().get_nowait())
+
+    @asyncio.coroutine
+    def put(self, item):
+        if self._closed:
+            raise EndOfQueueError
+        yield from super().put(item)
 
 
 class _Synchronous(type):
@@ -637,3 +727,28 @@ class Cache(AsyncCache, metaclass=_Synchronous):
         """
         yield self.interesting()
         self.update_interest_queue()
+
+    def all(self):
+        """Use :meth:`all_iterator` for the synchronous implementation."""
+        raise NotImplementedError("Use all_iterator instead")
+
+    def all_iterator(self):
+        """Get an iterator of all addresses in the cache.
+
+        This is a synchronous version of :meth:`all` which wraps a
+        :class:`FiniteAsyncQueue` in an interator. The iterator will
+        complete once the end of the queue is reached.
+
+        :return: an iterator of :class:`Address`es.
+        """
+        queue = self.loop.run_until_complete(super().all())
+        while True:
+            # Give time to the event loop so cursor reads have time to
+            # complete.
+            self.loop.run_until_complete(asyncio.sleep(0))
+            try:
+                yield queue.get_nowait()
+            except asyncio.QueueEmpty:
+                pass
+            except EndOfQueueError:
+                return
