@@ -1,2 +1,3 @@
-require [], () ->
-    console.log("hello world")
+define ["config"], (config) ->
+    require ["ng/application"], (application) ->
+        application.initialise()

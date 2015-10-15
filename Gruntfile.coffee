@@ -6,7 +6,7 @@ module.exports = (grunt) ->
                 tasks: ["clean:stylesheets", "less"]
             scripts:
                 files: ["serverstf/ui/lib/**/*.coffee"]
-                tasks: ["clean:coffee", "coffee"]
+                tasks: ["clean:coffee", "coffee", "bowerRequirejs"]
         less:
             default:
                 options:
@@ -28,9 +28,23 @@ module.exports = (grunt) ->
                     dest: "serverstf/ui/scripts/"
                     ext: ".js"
                 ]
+        bowerRequirejs:
+            target:
+                rjsConfig: "serverstf/ui/scripts/config.js"
     )
+    grunt.loadNpmTasks("grunt-bower-requirejs")
     grunt.loadNpmTasks("grunt-contrib-clean")
     grunt.loadNpmTasks("grunt-contrib-coffee")
     grunt.loadNpmTasks("grunt-contrib-less")
     grunt.loadNpmTasks("grunt-contrib-watch")
-    grunt.registerTask("default", ["clean", "less", "coffee"])
+    grunt.registerTask("requirejs-bower", [
+        "clean:coffee",
+        "coffee",
+        "bowerRequirejs",
+    ])
+    grunt.registerTask("default", [
+        "clean",
+        "less",
+        "coffee",
+        "bowerRequirejs",
+    ])

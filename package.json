@@ -21,6 +21,7 @@
     "grunt-contrib-clean": "~0.6.0",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-contrib-coffee": "~0.13.0",
-    "grunt-contrib-less": "~1.0.1"
+    "grunt-contrib-less": "~1.0.1",
+    "grunt-bower-requirejs": "~2.0.0"
   }
 }

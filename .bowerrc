@@ -1,3 +1,6 @@
 {
-    "directory": "serverstf/ui/external/"
+    "directory": "serverstf/ui/external/",
+    "scripts": {
+        "postinstall": "grunt requirejs-bower"
+    }
 }
