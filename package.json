@@ -1,0 +1,26 @@
+{
+  "name": "serverstf",
+  "version": "0.0.0",
+  "description": "Servers.tf is a browser-based server browser for Source games such as Team Fortress 2 and Garry's Mod. The goal is to be able to index servers so that far more sophisticated searches can be made that what is currently possible with the current Source/Steam server browser.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Holiverh/serverstf.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Holiverh/serverstf/issues"
+  },
+  "devDependencies": {
+    "grunt-cli": "~0.1.13",
+    "grunt": "~0.4.5",
+    "bower": "~1.6.2",
+    "grunt-contrib-clean": "~0.6.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-coffee": "~0.13.0",
+    "grunt-contrib-less": "~1.0.1"
+  }
+}
