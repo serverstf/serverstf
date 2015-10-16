@@ -30,14 +30,24 @@ def _sync_main_args(parser):
               "in the cache, not only those in the interest queue."),
     )
 
+
 @serverstf.subcommand("sync", _sync_main_args)
-def sync_main(args):
+def _sync_main(args):
     log.info("Starting master server synchroniser")
     loop = asyncio.get_event_loop()
     with serverstf.cache.Cache.connect(args.url, loop) as cache:
-        msq = valve.source.master_server.MasterServerQuerier()
-        try:
-            for address in msq.find(gamedir="tf"):
-                cache.ensure(serverstf.cache.Address(*address))
-        except valve.source.a2s.NoResponseError:
-            pass
+        while True:
+            msq = valve.source.master_server.MasterServerQuerier()
+            addresses_total = 0
+            addresses_new = 0
+            try:
+                for address in msq.find(gamedir="tf"):
+                    addresses_total += 1
+                    if cache.ensure(serverstf.cache.Address(*address)):
+                        addresses_new += 1
+            except valve.source.a2s.NoResponseError:
+                log.warning(
+                    "Timed out waiting for response from the master server")
+            finally:
+                if addresses_total:
+                    log.info("Added %i addresses to cache", addresses_new)

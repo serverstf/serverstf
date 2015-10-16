@@ -343,9 +343,13 @@ class AsyncCache:
         the authorative set.
 
         :param Address address: the address to add to the cache.
+
+        :return: ``True`` if the address didn't already exist in the cache,
+            ``False`` otherwise.
         """
-        yield from self._connection.sadd(
+        added = yield from self._connection.sadd(
             self._key("servers"), [str(address).encode(self.ENCODING)])
+        return added == 1
 
     @asyncio.coroutine
     def __get(self, address):
