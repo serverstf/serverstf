@@ -1,0 +1,29 @@
+// Styles for the main application container.
+
+@images: "../images";
+
+
+.svtf-body(
+  @background-colour,
+) {
+
+.svtf-body {
+    height: 100%;
+    background-color: @background-colour;
+    background-image: url("@{images}/background-speckle.png");
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    .svtf-view {
+        flex: 1;
+    }
+}
+
+}
+
+
+body {
+    .svtf-body(#ffffff);
+}
