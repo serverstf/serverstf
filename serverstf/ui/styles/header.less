@@ -23,11 +23,13 @@
         li {
             a {
                 display: block;
-                padding: 1em;
+                padding: 0.8em 1em;
                 color: @foreground-colour;
                 text-decoration: none;
                 border-top: 3px solid transparent;
                 border-bottom: 3px solid transparent;
+                font-weight: bold;
+                text-shadow: 0 1px 0 darken(@background-colour, 10%);
 
                 &:hover {
                     border-bottom-color: @border-colour;
