@@ -1,0 +1,66 @@
+.svtf-tag(
+    @prefix-background-colour,
+    @prefix-foreground-colour,
+    @name-background-colour,
+    @name-foreground-colour,
+    @stripe-colour,
+) {
+
+@padding: 0.5em;
+@arrow-size: 10px;
+
+.svtf-tag {
+    display: flex;
+
+    .svtf-tag-prefix {
+        position: relative;
+        flex: 0 0 10%;
+        padding: @padding;
+        background-color: @prefix-background-colour;
+        color: @prefix-foreground-colour;
+        text-align: center;
+        white-space: nowrap;
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: -@arrow-size;
+            font-size: 0;
+            border-left: @arrow-size solid @prefix-background-colour;
+            border-top: @arrow-size solid transparent;
+            border-bottom: @arrow-size solid transparent;
+            transform: translateY(-50%);
+        }
+    }
+
+    .svtf-tag-name {
+        flex: 1;
+        padding: @padding;
+        padding-left: @arrow-size * 2;
+        background-color: @name-background-colour;
+        background-image: repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 40px,
+            @stripe-colour 40px,
+            @stripe-colour 80px,
+        );
+        color: @name-foreground-colour;
+        text-transform: uppercase;
+        text-shadow: 0 1px 0 darken(@name-background-colour, 10%);
+    }
+}
+
+}  // .svtf-tag
+
+
+body {
+    .svtf-tag(
+        #000000,
+        #ffffff,
+        #888888,
+        #000000,
+        transparent,
+    );
+}
