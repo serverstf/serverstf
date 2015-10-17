@@ -9,13 +9,6 @@
     }
 }
 
-
-ol.svtf-server-list {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
-
 }  // .svtf-search
 
 
@@ -64,8 +57,107 @@ ol.svtf-server-list {
 }  // .svtf-search-control
 
 
+.svtf-server-list(
+    @background-colour,
+    @foreground-colour,
+    @name-background-colour,
+) {
+
+ol.svtf-server-list {
+    display: flex;
+    margin: 0;
+    padding: 10px;
+    list-style-type: none;
+    align-items: flex-start;
+    align-content: flex-start;
+    flex-wrap: wrap;
+
+    li {
+        min-width: 200px;
+        padding: 10px;
+        flex-basis: 20%;
+
+        > div {
+            background-color: @background-colour;
+            color: @foreground-colour;
+            box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.5);
+        }
+    }
+}
+
+.svtf-server {
+    header {
+        display: flex;
+        padding: 0.5em;
+        padding-bottom: 5em;
+        justify-content: space-between;
+        background-size: cover;
+        background-position: center center;
+        -webkit-filter: saturate(40%);
+    }
+
+    .svtf-server-name {
+        position: relative;
+        padding: 0.5em;
+        background-color: @name-background-colour;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+
+        &::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            width: 3em;
+            height: 1em;
+            background-image: linear-gradient(
+                270deg,
+                @name-background-colour 0.5em,
+                transparent,
+            );
+        }
+    }
+
+    .svtf-server-information {
+        display: flex;
+
+        > * {
+            flex: 1;
+            padding: 0.5em;
+            text-align: center;
+
+            > *:first-child {
+                font-weight: bold;
+            }
+
+            > *:first-child + * {
+                margin-top: 0.5em;
+                font-size: 0.6em;
+                text-transform: uppercase;
+            }
+        }
+    }
+
+    &:hover {
+        cursor: pointer;
+        transform: scale(1.05);
+
+        header {
+            -webkit-filter: saturate(100%);
+        }
+    }
+
+    &:nth-child(1n) header { background-image: url("../images/badlands.jpg"); }
+    &:nth-child(2n) header { background-image: url("../images/well.jpg"); }
+    &:nth-child(3n) header { background-image: url("../images/granary.jpg"); }
+}
+
+}  // .svtf-server-list
+
+
 body {
     .svtf-search();
+
     .svtf-search-control(
         #f8f8f8,
         #000000,
@@ -74,5 +166,11 @@ body {
         #000000,
         #000000,
         #ffffff,
+    );
+
+    .svtf-server-list(
+        #000000,
+        #ffffff,
+        #888888,
     );
 }
