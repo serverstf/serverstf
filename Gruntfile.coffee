@@ -2,7 +2,7 @@ module.exports = (grunt) ->
     grunt.initConfig(
         watch:
             stylesheets:
-                files: ["serverstf/ui/styles/*.less"]
+                files: ["serverstf/ui/styles/**/*.less"]
                 tasks: ["clean:stylesheets", "less"]
             scripts:
                 files: ["serverstf/ui/lib/**/*.coffee"]
