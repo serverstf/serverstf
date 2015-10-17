@@ -17,7 +17,7 @@
       src="[[request.static_path('serverstf.ui:external/requirejs/require.js')]]"
       data-main="scripts/serverstf"></script>
   </head>
-  <body class="svtf-theme-tf2">
+  <body>
     <div class="svtf-body">
 
       <header class="svtf-header">
@@ -39,7 +39,24 @@
       </header>
 
       <div class="svtf-view">
-        <h1>Hello, world!</h1>
+
+        <div class="svtf-search">
+          <div class="svtf-search-control">
+            <input type="text">
+            <ol>
+              <li>game:tf2</li>
+              <li>favourite</li>
+              <li>population:active</li>
+            </ol>
+            <div class="svtf-search-results">n servers found</div>
+          </div>
+          <ol class="svtf-server-list">
+            <li>0.0.0.0:9001</li>
+            <li>0.0.0.0:9002</li>
+            <li>0.0.0.0:9003</li>
+          </ol>
+        </div>
+
       </div>
 
     </div>
