@@ -1,0 +1,61 @@
+// Styles for the main application header.
+
+
+.svtf-header(
+  @background-colour,
+  @foreground-colour,
+  @border-colour
+) {
+
+.svtf-header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #ffffff;
+    border-bottom: 1px solid #000000;
+    text-transform: uppercase;
+
+    nav ul {
+        display: flex;
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+
+        li {
+            a {
+                display: block;
+                padding: 1em;
+                color: @foreground-colour;
+                text-decoration: none;
+                border-top: 3px solid transparent;
+                border-bottom: 3px solid transparent;
+
+                &:hover {
+                    border-bottom-color: @border-colour;
+
+                    span {
+                        display: initial;
+                    }
+                }
+
+                span {
+                    display: none;
+                    margin: 0 1em;
+                }
+            }
+        }
+    }
+
+    nav:first-child ul li a span { margin-right: 0; }
+    nav:last-child ul li a span { margin-left: 0; }
+}
+
+}  // .svtf-header
+
+
+body {
+  .svtf-header(
+    #ffffff,
+    #000000,
+    #000000
+  )
+}

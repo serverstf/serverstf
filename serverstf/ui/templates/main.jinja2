@@ -8,6 +8,10 @@
         'serverstf.ui:external/normalize-css/normalize.css')]]">
     <link
       rel="stylesheet"
+      href="[[request.static_path(
+        'serverstf.ui:external/fontawesome/css/font-awesome.css')]]">
+    <link
+      rel="stylesheet"
       href="[[request.static_path('serverstf.ui:styles/serverstf.css')]]">
     <script
       src="[[request.static_path('serverstf.ui:external/requirejs/require.js')]]"
@@ -15,9 +19,23 @@
   </head>
   <body>
 
-    <div ng-controller="ServerList as list">
-      <h1>{{list.address.ip}}:{{list.address.port}}</h1>
-    </div>
+    <header class="svtf-header">
+      <nav>
+        <ul>
+          <li><a href="#">svtf</a></li>
+          <li><a href="#"><i class="fa fa-line-chart"></i><span>Stats</span></a></li>
+          <li><a href="#"><i class="fa fa-star-o"></i><span>Favourites</span></a></li>
+          <li><a href="#">TF2</a></li>
+          <li><a href="#">GMod</a></li>
+        </ul>
+      </nav>
+      <nav>
+        <ul>
+          <li><a href="https://github.com/Holiverh/serverstf"><span>Contribute</span><i class="fa fa-github"></i></a></li>
+          <li><a href="https://github.com/Holiverh/serverstf/issues/new"><span>Report Bug</span><i class="fa fa-bug"></i></a></li>
+        </ul>
+      </nav>
+    </header>
 
   </body>
 </html>
