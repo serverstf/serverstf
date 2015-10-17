@@ -21,6 +21,7 @@ ol.svtf-server-list {
 
 .svtf-search-control(
     @background-colour,
+    @foreground-colour,
     @border-colour,
     @input-background-colour,
     @input-foreground-colour,
@@ -34,11 +35,13 @@ ol.svtf-server-list {
     width: 350px;
     background-color: @background-colour;
     border-right: 1px solid @border-colour;
+    color: @foreground-colour;
 
     input {
         padding: 0.25em;
         border: 0;
-        border-bottom: 1px solid @border-colour;
+        background-color: @input-background-colour;
+        color: @input-foreground-colour;
         font-size: 2.5em;
 
         &:focus {
@@ -65,6 +68,7 @@ body {
     .svtf-search();
     .svtf-search-control(
         #f8f8f8,
+        #000000,
         #000000,
         #ffffff,
         #000000,

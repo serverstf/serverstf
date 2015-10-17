@@ -1,6 +1,8 @@
 // Team Fortress 2 theme derived from the TF2 colour palette.
 
+@import (reference) "../body.less";
 @import (reference) "../header.less";
+@import (reference) "../search.less";
 
 @tf2-neutral-0: #f6e7de;
 @tf2-neutral-1: #dabdab;
@@ -32,6 +34,17 @@ body.svtf-theme-tf2 {
     @tf2-blu-4,
     @tf2-neutral-0,
     darken(@tf2-blu-4, 10%),
+);
+
+.svtf-search();
+.svtf-search-control(
+    @tf2-red-4,
+    @tf2-neutral-0,
+    darken(@tf2-red-4, 20%),
+    @tf2-neutral-1,
+    @tf2-blu-4,
+    darken(@tf2-red-4, 10%),
+    @tf2-neutral-0,
 );
 
 }
