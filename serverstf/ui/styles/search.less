@@ -117,6 +117,18 @@ ol.svtf-server-list {
             }
         }
 
+        .svtf-server-map {
+            position: absolute;
+            bottom: 15%;
+            right: -100%;
+            padding: 0.5em 1em;
+            font-size: 0.75em;
+            background-color: @background-colour;
+            box-shadow: 2px 2px 5px -2px #000000;
+            z-index: 1;
+            transition: right 0.2s ease-out;
+        }
+
         &::after {
             content: "";
             position: absolute;
@@ -184,6 +196,10 @@ ol.svtf-server-list {
             left: 0px;
             right: 0px;
             -webkit-filter: saturate(100%);
+        }
+
+        .svtf-server-map {
+            right: 0;
         }
     }
 
