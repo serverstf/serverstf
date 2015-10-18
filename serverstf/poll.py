@@ -23,13 +23,11 @@ import logging
 
 import redis
 import valve.source.a2s
+import valve.source.messages
 
 import serverstf
 import serverstf.cache
 import serverstf.tags
-
-# TODO: remove this
-import unittest.mock
 
 
 log = logging.getLogger(__name__)
@@ -55,18 +53,19 @@ def poll(cache, tagger, address):
         (str(address.ip), address.port), timeout=5)
     try:
         info = query.get_info()
-        # players = query.get_players()
-        # rules = query.get_rules()
-        # TODO: fix python-valve; remove hack
-        players = unittest.mock.MagicMock()
-        rules = unittest.mock.MagicMock()
+        players = query.get_players()
+        rules = query.get_rules()
     except valve.source.a2s.NoResponseError as exc:
         log.warning("Timed out waiting for response from %s", address)
+    except NotImplementedError as exc:
+        log.error("Compressed fragments; couldn't poll %s", address)
+    except valve.source.messages.BrokenMessageError as exc:
+        log.exception("Seemingly broken response from %s", address)
     else:
         tags = tagger.evaluate(info, players, rules)
         cache.set(serverstf.cache.Status(
             address,
-            interest=0,  # TODO: dont do this
+            interest=None,
             name=info["server_name"],
             map_=info["map"],
             application_id=info["app_id"],
