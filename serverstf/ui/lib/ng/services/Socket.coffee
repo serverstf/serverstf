@@ -30,8 +30,13 @@ define ->
 
         _onMessage: (message) =>
             envelope = JSON.parse(message.data)
-            for handler in @_handlers[envelope.type] or []
-                handler(envelope.entity)
+            handlers = @_handlers[envelope.type] or []
+            if not handlers.length
+                console.warn("Unhandled message of type
+                             '#{envelope.type}'", envelope.entity)
+            else
+                for handler in handlers
+                    handler(envelope.entity)
 
         _connect: ->
             @_socket = new WebSocket("ws://#{window.location.hostname}:9001/")

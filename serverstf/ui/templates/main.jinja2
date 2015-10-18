@@ -55,24 +55,24 @@
             <div class="svtf-search-results">n servers found</div>
           </div>
           <ol class="svtf-server-list">
-            <li class="svtf-server" ng-repeat="rank in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]">
+            <li class="svtf-server" ng-repeat="server in search.servers">
               <div>
                 <header>
-                  <div class="svtf-server-rank">#{{rank}}</div>
+                  <div class="svtf-server-rank">#{{$index + 1}}</div>
                   <div class="svtf-server-freshness">4m</div>
                 </header>
-                <div class="svtf-server-name">A really loooooooooooooooooooooooooooooooooooong name</div>
+                <div class="svtf-server-name">{{server.name}}</div>
                 <div class="svtf-server-information">
                   <div>
-                    <div>{{21 - rank}}</div>
+                    <div>{{server.players}}</div>
                     <div>Players</div>
                   </div>
                   <div>
-                    <div>GB</div>
+                    <div>{{server.country}}</div>
                     <div>Country</div>
                   </div>
                   <div>
-                    <div>{{50 + rank}}</div>
+                    <div>{{52}}</div>
                     <div>Ping</div>
                   </div>
                 </div>

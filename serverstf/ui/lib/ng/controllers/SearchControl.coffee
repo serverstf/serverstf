@@ -1,6 +1,6 @@
 define ->
 
-    factory = ($scope, Socket) ->
+    factory = ($scope, Server, Socket) ->
 
         class SearchControl
             constructor: ->
@@ -12,6 +12,10 @@ define ->
                 Socket.onScoped($scope, "tag_add", @_onTagAdd)
                 Socket.onScoped($scope, "tag_remove", @_onTagAdd)
                 @addTag("tf2", @INCLUDE)
+                @servers = [
+                    Server.get("198.24.175.75", 27015),
+                ]
+                console.log(Server._servers)
 
             submit: ->
                 if $scope.tag
@@ -29,5 +33,5 @@ define ->
 
     return _ =
         "name": "SearchControl"
-        "dependencies": ["$scope", "Socket"]
+        "dependencies": ["$scope", "Server", "Socket"]
         "controller": factory

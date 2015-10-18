@@ -58,10 +58,10 @@ def address(value):
     The dictionary must have an ``ip`` and ``port`` field which are a
     string and integer respectively.
     """
-    return serverstf.cache.Address(*voluptuous.Schema({
+    return serverstf.cache.Address(**voluptuous.Schema({
         voluptuous.Required("ip"): str,
         voluptuous.Required("port"): int,
-    })(value).values())
+    })(value))
 
 
 class Client:
@@ -105,7 +105,16 @@ class Client:
     @asyncio.coroutine
     def _handle_subscribe(self, address):
         log.info("New subscription to address %s", address)
-        # TODO: everything
+        status = yield from self._cache.get(address)
+        yield from self.send("status", {
+            "ip": str(status.address.ip),
+            "port": status.address.port,
+            "name": status.name or "",
+            "map": status.map or "",
+            "players": 0,
+            "tags": list(status.tags),
+            "country": "GB",
+        })
 
     @asyncio.coroutine
     def _dispatch(self, raw_message):
@@ -248,7 +257,11 @@ def _websocket_async_main(args, loop):
     cache_context = \
         yield from serverstf.cache.AsyncCache.connect(args.url, loop)
     with cache_context as cache:
-        yield from websockets.serve(Service(cache), port=args.port)
+        yield from websockets.serve(
+            Service(cache), port=args.port, loop=loop)
+        # Surely this isn't the correct way to do this!?
+        while True:
+            yield from asyncio.sleep(1)
     log.info("Stopping websocket server")
 
 
@@ -256,4 +269,3 @@ def _websocket_async_main(args, loop):
 def _websocket_main(args):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_websocket_async_main(args, loop))
-    loop.run_forever()

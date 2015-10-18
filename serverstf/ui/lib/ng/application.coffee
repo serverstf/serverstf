@@ -8,9 +8,9 @@ define ["angular"], (angular) ->
     NG_APPLICATION_SPECIFICATION =
         "controller": [
             "SearchControl",
-            "ServerList",
         ]
         "service": [
+            "Server",
             "Socket",
         ]
 
