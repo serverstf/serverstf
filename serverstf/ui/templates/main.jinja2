@@ -58,8 +58,10 @@
             <li class="svtf-server" ng-repeat="server in search.servers">
               <div>
                 <header>
-                  <div class="svtf-server-rank">#{{$index + 1}}</div>
-                  <div class="svtf-server-freshness">4m</div>
+                  <div class="svtf-server-statistics">
+                    <div class="svtf-server-rank">#{{$index + 1}}</div>
+                    <div class="svtf-server-freshness">4m</div>
+                  </div>
                 </header>
                 <div class="svtf-server-name">{{server.name}}</div>
                 <div class="svtf-server-information">

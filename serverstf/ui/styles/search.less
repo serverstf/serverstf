@@ -97,21 +97,24 @@ ol.svtf-server-list {
     transition: transform 0.1s linear;
 
     header {
-        display: flex;
         position: relative;
         padding: 0.5em;
         padding-bottom: 5em;
-        justify-content: space-between;
         overflow: hidden;
 
-        > * {
-            position: relative;
-            padding: 0.5em;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.5);
-            box-shadow: inset 0 5px 5px -5px rgba(0, 0, 0, 0.5);
-            font-size: 0.75em;
-            z-index: 1;
+        .svtf-server-statistics {
+            display: flex;
+            justify-content: space-between;
+
+            > * {
+                position: relative;
+                padding: 0.5em;
+                border-radius: 5px;
+                background-color: rgba(0, 0, 0, 0.5);
+                box-shadow: inset 0 5px 5px -5px rgba(0, 0, 0, 0.5);
+                font-size: 0.75em;
+                z-index: 1;
+            }
         }
 
         &::after {
