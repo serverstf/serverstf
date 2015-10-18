@@ -105,6 +105,10 @@ class AddressError(ValueError):
     """Exception for all errors related to :class:`Address`es."""
 
 
+class NotifierError(Exception):
+    """Exception raised for all errors stemming from :class:`Notifier`s."""
+
+
 class CacheError(Exception):
     """Base exception for all cache related errors."""
 
@@ -251,6 +255,129 @@ class Status:
         return self._players
 
 
+class Notifier:
+    """Send and receive notifications about cache state changes.
+
+    This class wraps the Redis pub/sub subsystem to provide a method for
+    signaling when the cache's state changes. It also allows other services
+    to listen for these changes.
+
+    You should never instantiate this class directly, instead use
+    :meth:`AsyncCache.notifier`. These notifier objects are strictly
+    asynchronous and therefore public use of them is not possible with
+    synchronous caches.
+
+    When a notifier is used to listen for notifications it enters the
+    *watching* state. In this state it is not possible to use the same
+    notifier to send notifications. This is a limitation of the Redis
+    pub/sub system. Any attempts to send notifcations whilst in this state
+    will result in :exc:`NotifierError`.
+    """
+
+    def __init__(self, connection, encoding, namespace):
+        self._connection = connection
+        self._encoding = encoding
+        self._namespace = namespace
+        self._subscriber = None
+
+    @property
+    def watching(self):
+        """Determine if the notifier is in watching mode."""
+        return self._subscriber is not None
+
+    def close(self):
+        """Close the Redis connection."""
+        self._connection.close()
+
+    def _channel(self, *parts):
+        """Construct a Redis pub/sub channel name from contituent parts.
+
+        :return: a bytestring containing the encoded channel name.
+        """
+        channel = [self._namespace, "channels"]
+        for part in parts:
+            channel.append(str(part))
+        return "/".join(channel).encode(self._encoding)
+
+    @asyncio.coroutine
+    def _get_subscriber(self):
+        """Get the :mod:`asyncio_redis` subscriber.
+
+        This will put the Redis connection in pub/sub mode making it
+        impossible send most commands and hence the notifier enteres the
+        *watching* state.
+
+        :return: a :class:`asyncio_redis.Subscription`.
+        """
+        if not self._subscriber:
+            self._subscriber = yield from self._connection.start_subscribe()
+        return self._subscriber
+
+    @asyncio.coroutine
+    def notify_server(self, address):
+        """Send a notification of server status update.
+
+        This publishes a UTF-8 encoded stringified version of the given
+        address to a channel dedicated to that address.
+
+        :param Address address: the address to send the notification for.
+
+        :raises NotifierError: if the notifier has entered watching mode.
+        """
+        if self.watching:
+            raise NotifierError(
+                "Notifier in watch mode; cannot send notifications")
+        channel_server = self._channel("servers", address)
+        log.debug("Publish %s", channel_server)
+        yield from self._connection.publish(
+            channel_server, str(address).encode(self._encoding))
+
+    @asyncio.coroutine
+    def watch_server(self, address):
+        """Watch for server status updates.
+
+        :param Address address: the address of the server to subscribe to
+            updates for.
+        """
+        channel_server = self._channel("servers", address)
+        subscriber = yield from self._get_subscriber()
+        yield from subscriber.subscribe([channel_server])
+        log.debug("Subscribed to %s", channel_server)
+
+    @asyncio.coroutine
+    def unwatch_server(self, address):
+        """Stop watching for server status updates.
+
+        This is the inverse of :meth:`watch_server`.
+        """
+        channel_server = self._channel("servers", address)
+        subscriber = yield from self._get_subscriber()
+        yield from subscriber.unsubscribe([channel_server])
+        log.debug("Unsubscribed from %s", channel_server)
+
+    @asyncio.coroutine
+    def watch(self):
+        """Wait for server status updates.
+
+        This coroutine will block until a notification has been published
+        for a server that is being actively watched. If the notifier is not
+        currently watching any servers (e.g. no calls :meth:`watch_server`
+        have been made) then the coroutine will wait indefinately.
+
+        :return: an :class:`Address` of the updated server.
+        """
+        subscriber = yield from self._get_subscriber()
+        address = None
+        while not address:
+            message = yield from subscriber.next_published()
+            try:
+                address = Address.parse(message.value.decode(self._encoding))
+            except (UnicodeDecodeError, AddressError) as exc:
+                log.error("Malformed address on channel "
+                          "%s: %s: %s", message.channel, message.value, exc)
+        return address
+
+
 class AsyncCache:
     """Asynchronous access to a Redis state cache.
 
@@ -268,6 +395,7 @@ class AsyncCache:
     def __init__(self, connection, loop):
         self._connection = connection
         self._loop = loop
+        self._notifier = None
         self._active_iq_item = None
         self._iq_key = self._key("interesting")
 
@@ -293,7 +421,7 @@ class AsyncCache:
             port=url.port,
             db=int(url.path.split("/")[1]),
             loop=loop,
-            encoder=asyncio_redis.encoders.BytesEncoder()
+            encoder=asyncio_redis.encoders.BytesEncoder(),
         )
 
         @contextlib.contextmanager
@@ -320,6 +448,35 @@ class AsyncCache:
         # https://github.com/jonathanslenders/asyncio-redis/issues/56
         if not self._loop.is_running():
             self._loop.run_until_complete(asyncio.sleep(0))
+
+    @asyncio.coroutine
+    def __internal_notifier(self):
+        """Get the internal notifier used for publishing changes.
+
+        The return value is cached so that subsequent calls always return
+        same notifier.
+
+        :return: a :class:`Notifier`.
+        """
+        if not self._notifier:
+            self._notifier = yield from self.__notifier()
+        return self._notifier
+
+    @asyncio.coroutine
+    def __notifier(self):
+        """Get a notifier for the cache.
+
+        :return: a :class:`Notifier` object connected to the same Redis
+            database as the cache.
+        """
+        connection = yield from asyncio_redis.Connection.create(
+            host=self._connection.host,
+            port=self._connection.port,
+            db=self._connection.protocol.db,
+            loop=self._loop,
+            encoder=asyncio_redis.encoders.BytesEncoder(),
+        )
+        return Notifier(connection, self.ENCODING, self.NAMESPACE)
 
     def _key(self, *parts):
         """Construct a Redis key from contituent parts.
@@ -444,6 +601,8 @@ class AsyncCache:
             key_tag = self._key("tags", tag)
             yield from transaction.sadd(key_tag, [address])
         yield from transaction.exec()
+        notifier = yield from self.__internal_notifier()
+        yield from notifier.notify_server(status.address)
         old_tags = (yield from (yield from f_old_tags).asset())
         removed_tags = old_tags - tags
         for old_tag in removed_tags:
@@ -632,6 +791,7 @@ class AsyncCache:
                 addresses.add(address)
         return addresses
 
+    notifier = __notifier
     ensure = __ensure
     get = __get
     set = __set
@@ -764,6 +924,10 @@ class Cache(AsyncCache, metaclass=_Synchronous):
     @classmethod
     def connect(cls, url, loop):
         return loop.run_until_complete(super().connect(url, loop))
+
+    def notifier(self):
+        raise NotImplementedError(
+            "Notifiers not available for synchronous caches.")
 
     @contextlib.contextmanager
     def interesting_context(self):

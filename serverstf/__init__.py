@@ -80,7 +80,7 @@ def redis_url(raw_url):
     mandatory component is a network location.
 
     The scheme will be forced to ``redis``. If no port is given it will
-    default to 6579. If no path is given it defaults to 0. The query and
+    default to 6379. If no path is given it defaults to 0. The query and
     fragments components are ignored.
 
     :param str raw_url: the URL to normalise.
