@@ -98,7 +98,7 @@ class Client:
     @asyncio.coroutine
     def send(self, type_, entity):
         """Enqueue a message to be sent to peer."""
-        message = { "type": str(type_), "entity": entity}
+        message = {"type": str(type_), "entity": entity}
         yield from self._send_queue.put(json.dumps(message))
 
     @validate(address)
@@ -165,7 +165,7 @@ class Client:
                 yield from self._dispatch(received)
             except MessageError as exc:
                 log.warning("Received bad message: %s", exc)
-                # TODO: send notification of malformed message
+                yield from self.send("error", str(exc))
             except Exception as exc:
                 log.exception(
                     "Error handling %r for %s",  received, self._websocket)

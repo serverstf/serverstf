@@ -9,6 +9,9 @@ define ->
                 @OPTIONAL = ""
                 @query = []
                 $scope.tag = ""
+                Socket.onScoped($scope, "tag_add", @_onTagAdd)
+                Socket.onScoped($scope, "tag_remove", @_onTagAdd)
+                @addTag("tf2", @INCLUDE)
 
             submit: ->
                 if $scope.tag
@@ -20,6 +23,7 @@ define ->
                     tag: tag
                     mode: mode
                 )
+                Socket.send("subscribe_tag", tag)
 
         return new SearchControl()
 

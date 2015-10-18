@@ -31,7 +31,7 @@ define ->
         _onMessage: (message) =>
             envelope = JSON.parse(message.data)
             for handler in @_handlers[envelope.type] or []
-                handler(entity)
+                handler(envelope.entity)
 
         _connect: ->
             @_socket = new WebSocket("ws://#{window.location.hostname}:9001/")
@@ -55,6 +55,9 @@ define ->
                 @_handlers[type].push(handler)
             return ->
                 @_handlers[type].remove(handler)
+
+        onScoped: (scope, type, handler) ->
+            scope.$on("$destroy", @on(type, handler))
 
     return _ =
         "name": "Socket"
