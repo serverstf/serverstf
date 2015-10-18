@@ -89,6 +89,7 @@ import inspect
 import ipaddress
 import json
 import logging
+import uuid
 import urllib.parse
 
 import asyncio_redis
@@ -334,6 +335,16 @@ class AsyncCache:
         for part in parts:
             key.append(str(part))
         return "/".join(key).encode(self.ENCODING)
+
+    def _random_key(self):
+        """Construct a random Redis key.
+
+        This will create a normal key (see :meth:`_key`) using a random UUID
+        so it's safe to use for temporary usage.
+
+        :return: a bytestring containing the encoded key.
+        """
+        return self._key("random", uuid.uuid4())
 
     @asyncio.coroutine
     def __ensure(self, address):
@@ -587,6 +598,39 @@ class AsyncCache:
         cursor = yield from self._connection.sscan(key)
         asyncio.Task(self.__fetch_addresses_from_cursor(cursor, queue))
         return queue
+
+    @asyncio.coroutine
+    def search(self, *, include=None, exclude=None):
+        """Search for addresses by tags.
+
+        :param include: a sequence of tags that addresses must have.
+        :param exclude: a sequence of tags that will be used to filter the
+            the set of addresses.
+
+        :return: a set of :class:`Address`es that match the query.
+        """
+        key_intersection = self._random_key()
+        key_include = [self._key("tags", tag) for tag in include or []]
+        key_exclude = [self._key("tags", tag) for tag in exclude or []]
+        if not key_include:
+            return set()
+        try:
+            yield from self._connection.sinterstore(
+                key_intersection, key_include)
+            raw_addresses = yield from self._connection.sdiff_asset(
+                [key_intersection] + key_exclude)
+        finally:
+            yield from self._connection.delete([key_intersection])
+        addresses = set()
+        for raw_address in raw_addresses:
+            try:
+                address = Address.parse(raw_address.decode(self.ENCODING))
+            except (UnicodeDecodeError, AddressError):
+                # can't do much here, not even log which key it came from
+                pass
+            else:
+                addresses.add(address)
+        return addresses
 
     ensure = __ensure
     get = __get
