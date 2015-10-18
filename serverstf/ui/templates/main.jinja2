@@ -42,20 +42,16 @@
       <div class="svtf-view">
 
         <div class="svtf-search">
-          <div class="svtf-search-control">
-            <input type="text">
+          <div
+            class="svtf-search-control"
+            ng-controller="SearchControl as search">
+            <form ng-submit="search.submit()">
+              <input type="text" ng-model="tag">
+            </form>
             <ol>
-              <li class="svtf-tag svtf-tag-x-game svtf-tag-x-game-tf2">
-                <div class="svtf-tag-prefix">!</div>
-                <div class="svtf-tag-name">game:tf2</div>
-              </li>
-              <li class="svtf-tag svtf-tag-x-favourite">
-                <div class="svtf-tag-prefix">~</div>
-                <div class="svtf-tag-name">favourite</div>
-              </li>
-              <li class="svtf-tag svtf-tag-x-population svtf-tag-x-population-active">
-                <div class="svtf-tag-prefix">~</div>
-                <div class="svtf-tag-name">population:active</div>
+              <li class="svtf-tag" ng-repeat="query in search.query">
+                <div class="svtf-tag-prefix">{{query.mode}}</div>
+                <div class="svtf-tag-name">{{query.tag}}</div>
               </li>
             </ol>
             <div class="svtf-search-results">n servers found</div>

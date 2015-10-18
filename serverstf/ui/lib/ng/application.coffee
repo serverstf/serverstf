@@ -7,10 +7,11 @@ define ["angular"], (angular) ->
     NG_APPLICATION_MODULE_NAME = "serverstf"
     NG_APPLICATION_SPECIFICATION =
         "controller": [
+            "SearchControl",
             "ServerList",
         ]
         "service": [
-            "socket",
+            "Socket",
         ]
 
     # Bootstrap the Angular application.
