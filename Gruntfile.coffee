@@ -3,7 +3,7 @@ module.exports = (grunt) ->
         watch:
             stylesheets:
                 files: ["serverstf/ui/styles/**/*.less"]
-                tasks: ["clean:stylesheets", "less"]
+                tasks: ["clean:stylesheets", "less", "autoprefixer"]
             scripts:
                 files: ["serverstf/ui/lib/**/*.coffee"]
                 tasks: ["clean:coffee", "coffee", "bowerRequirejs"]
@@ -14,6 +14,14 @@ module.exports = (grunt) ->
                 files:
                     "serverstf/ui/styles/serverstf.css":
                         "serverstf/ui/styles/serverstf.less"
+        autoprefixer:
+            default:
+                options:
+                    browsers: ["last 2 versions"]
+                    remove: true
+                files:
+                    "serverstf/ui/styles/serverstf.css":
+                        "serverstf/ui/styles/serverstf.css"
         clean:
             coffee: ["serverstf/ui/scripts/*"]
             stylesheets: ["serverstf/ui/styles/*.css"]
@@ -32,6 +40,7 @@ module.exports = (grunt) ->
             target:
                 rjsConfig: "serverstf/ui/scripts/config.js"
     )
+    grunt.loadNpmTasks("grunt-autoprefixer")
     grunt.loadNpmTasks("grunt-bower-requirejs")
     grunt.loadNpmTasks("grunt-contrib-clean")
     grunt.loadNpmTasks("grunt-contrib-coffee")
@@ -45,6 +54,7 @@ module.exports = (grunt) ->
     grunt.registerTask("default", [
         "clean",
         "less",
+        "autoprefixer",
         "coffee",
         "bowerRequirejs",
     ])
