@@ -50,6 +50,7 @@ def rd(info, players, rules, tags):
 def medieval(info, players, rules, tags):
     return "tf2" in tags and rules["rules"].get("tf_medieval") == "1"
 
+
 @tag("mode:sb", ["tf2", "mode:arena"])
 def sb(info, players, rules, tags):
     return ("tf2" in tags
