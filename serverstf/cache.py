@@ -336,6 +336,21 @@ class Notifier:
             channel_server, str(address).encode(self._encoding))
 
     @asyncio.coroutine
+    def notify_tag(self, tag, address):
+        """Send a notification of a server being added to a tag.
+
+        This publishes a UTF-8 encoded stringified version of the given
+        address to a channel dedicated to the tag.
+        """
+        if self.watching:
+            raise NotifierError(
+                "Notifier in watch mode; cannot send notifications")
+        channel_server = self._channel(self.TAG, address)
+        log.debug("Publish %s", channel_server)
+        yield from self._connection.publish(
+            channel_server, str(address).encode(self._encoding))
+
+    @asyncio.coroutine
     def watch_server(self, address):
         """Watch for server status updates.
 
@@ -630,6 +645,10 @@ class AsyncCache:
         for old_tag in removed_tags:
             key_old_tag = self._key("tags", old_tag)
             yield from self._connection.srem(key_old_tag, [address])
+        new_tags = tags - old_tags
+        for tag in new_tags:
+            yield from notifier.notify_tag(
+                tag.decode(self.ENCODING), status.address)
         log.debug("Set %s with %i tags (%i removed)",
                   status.address, len(status.tags), len(removed_tags))
 
