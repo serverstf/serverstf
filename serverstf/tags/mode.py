@@ -46,6 +46,12 @@ def rd(info, players, rules, tags):
     return "tf2" in tags and rules["rules"].get("tf_gamemode_rd") == "1"
 
 
-@tag("mode:medival", ["tf2"])
+@tag("mode:medieval", ["tf2"])
 def medieval(info, players, rules, tags):
     return "tf2" in tags and rules["rules"].get("tf_medieval") == "1"
+
+@tag("mode:sb", ["tf2", "mode:arena"])
+def sb(info, players, rules, tags):
+    return ("tf2" in tags
+            and "mode:cp" in tags
+            and info["map"].lower().startswith("sb_"))
