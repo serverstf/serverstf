@@ -53,6 +53,7 @@ def medieval(info, players, rules, tags):
 
 @tag("mode:sb", ["tf2", "mode:arena"])
 def sb(info, players, rules, tags):
+    """Smash Bros mod."""
     return ("tf2" in tags
             and "mode:arena" in tags
             and info["map"].lower().startswith("sb_"))
