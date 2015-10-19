@@ -89,10 +89,10 @@ class Client:
     to the fact that status updates may happen at any time.
     """
 
-    def __init__(self, websocket, cache):
+    def __init__(self, websocket, cache, notifier):
         self._websocket = websocket
         self._cache = cache
-        self._subscriptions = []
+        self._notifier = notifier
         self._send_queue = asyncio.Queue()
 
     @asyncio.coroutine
@@ -101,10 +101,31 @@ class Client:
         message = {"type": str(type_), "entity": entity}
         yield from self._send_queue.put(json.dumps(message))
 
-    @validate(address)
     @asyncio.coroutine
-    def _handle_subscribe(self, address):
-        log.info("New subscription to address %s", address)
+    def _send_status(self, address):
+        """Send a server status update.
+
+        This will send a ``status`` type message to the client which contains
+        the correct state of the server as identifier by the given address.
+
+        The message entity is an object with the following fields:
+
+        ``ip``
+            IP address of the server as a string in dot-decimal form.
+
+        ``port``
+            Port number of server as a number.
+
+        ``name``
+            Server name as a string. Note that this may contain unprintable
+            characters.
+
+        ``map``
+            Name of the currently active map.
+
+        ``tags``
+            An array of tags currently applied to the server as strings.
+        """
         status = yield from self._cache.get(address)
         yield from self.send("status", {
             "ip": str(status.address.ip),
@@ -115,6 +136,13 @@ class Client:
             "tags": list(status.tags),
             "country": "GB",
         })
+
+    @validate(address)
+    @asyncio.coroutine
+    def _handle_subscribe(self, address):
+        log.info("New subscription to address %s", address)
+        yield from self._notifier.watch_server(address)
+        yield from self._send_status(address)
 
     @asyncio.coroutine
     def _dispatch(self, raw_message):
@@ -190,6 +218,13 @@ class Client:
             yield from self._websocket.send(message)
 
     @asyncio.coroutine
+    def _watch_notifications(self):
+        """Continually watch for server status updates."""
+        while True:
+            address = yield from self._notifier.watch()
+            yield from self._send_status(address)
+
+    @asyncio.coroutine
     def process(self):
         """Process websocket communication.
 
@@ -203,6 +238,7 @@ class Client:
         done, pending = yield from asyncio.wait([
             self._read(),
             self._write(),
+            self._watch_notifications(),
         ], return_when=asyncio.FIRST_COMPLETED)
         log.debug("Socket handler for %s finished", self._websocket)
         for task in itertools.chain(done, pending):
@@ -231,8 +267,12 @@ class Service:
         if path != self.PATH:
             log.error("Client connected on path %s; dropping connection", path)
             return
-        client = Client(websocket, self._cache)
-        yield from client.process()
+        notifier = yield from self._cache.notifier()
+        client = Client(websocket, self._cache, notifier)
+        try:
+            yield from client.process()
+        finally:
+            notifier.close()
         log.debug("Connection closed")
 
 
