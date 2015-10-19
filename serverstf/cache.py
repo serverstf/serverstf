@@ -274,6 +274,9 @@ class Notifier:
     will result in :exc:`NotifierError`.
     """
 
+    SERVER = "servers"
+    TAG = "tags"
+
     def __init__(self, connection, encoding, namespace):
         self._connection = connection
         self._encoding = encoding
@@ -327,7 +330,7 @@ class Notifier:
         if self.watching:
             raise NotifierError(
                 "Notifier in watch mode; cannot send notifications")
-        channel_server = self._channel("servers", address)
+        channel_server = self._channel(self.SERVER, address)
         log.debug("Publish %s", channel_server)
         yield from self._connection.publish(
             channel_server, str(address).encode(self._encoding))
@@ -339,7 +342,7 @@ class Notifier:
         :param Address address: the address of the server to subscribe to
             updates for.
         """
-        channel_server = self._channel("servers", address)
+        channel_server = self._channel(self.SERVER, address)
         subscriber = yield from self._get_subscriber()
         yield from subscriber.subscribe([channel_server])
         log.debug("Subscribed to %s", channel_server)
@@ -350,7 +353,7 @@ class Notifier:
 
         This is the inverse of :meth:`watch_server`.
         """
-        channel_server = self._channel("servers", address)
+        channel_server = self._channel(self.SERVER, address)
         subscriber = yield from self._get_subscriber()
         yield from subscriber.unsubscribe([channel_server])
         log.debug("Unsubscribed from %s", channel_server)
@@ -358,34 +361,43 @@ class Notifier:
     @asyncio.coroutine
     def watch_tag(self, tag):
         """Watch a tag for updates."""
-        # TODO: everything
+        channel_server = self._channel(self.TAG, tag)
+        subscriber = yield from self._get_subscriber()
+        yield from subscriber.subscribe([channel_server])
+        log.debug("Subscribed to %s", channel_server)
 
     @asyncio.coroutine
     def unwatch_tag(self, tag):
         """Stop watching a tag for updates."""
-        # TODO: everything
+        channel_server = self._channel(self.TAG, address)
+        subscriber = yield from self._get_subscriber()
+        yield from subscriber.unsubscribe([channel_server])
+        log.debug("Unsubscribed from %s", channel_server)
 
     @asyncio.coroutine
     def watch(self):
-        """Wait for server status updates.
+        """Wait for server status or tag updates.
 
         This coroutine will block until a notification has been published
-        for a server that is being actively watched. If the notifier is not
-        currently watching any servers (e.g. no calls :meth:`watch_server`
-        have been made) then the coroutine will wait indefinately.
+        for a server or tag that is being actively watched. If the notifier
+        is not currently watching any servers (e.g. no calls
+        :meth:`watch_server` of :meth:`watch_tag` have been made) then the
+        coroutine will wait indefinately.
 
-        :return: an :class:`Address` of the updated server.
+        :return: a tuple containing the type of update (either :attr:`SERVER`
+            or :attr:`TAG`) and a corresponding :class:`Address`.
         """
         subscriber = yield from self._get_subscriber()
         address = None
         while not address:
             message = yield from subscriber.next_published()
+            type_ = message.channel.decode(self._encoding).split("/")[-2]
             try:
                 address = Address.parse(message.value.decode(self._encoding))
             except (UnicodeDecodeError, AddressError) as exc:
                 log.error("Malformed address on channel "
                           "%s: %s: %s", message.channel, message.value, exc)
-        return address
+        return type_, address
 
 
 class AsyncCache:

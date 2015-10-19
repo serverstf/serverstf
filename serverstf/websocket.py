@@ -256,8 +256,15 @@ class Client:
     def _watch_notifications(self):
         """Continually watch for server status updates."""
         while True:
-            address = yield from self._notifier.watch()
-            yield from self._send_status(address)
+            update, address = yield from self._notifier.watch()
+            if update == self._notifier.SERVER:
+                yield from self._send_status(address)
+            elif update == self._notifier.TAG:
+                status = yield from self._cache.get(address)
+                if (status.tags <= self._include
+                        and not status.tags & self._exclude):
+                    yield from self._send_match(address)
+
 
     @asyncio.coroutine
     def process(self):
