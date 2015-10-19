@@ -356,6 +356,16 @@ class Notifier:
         log.debug("Unsubscribed from %s", channel_server)
 
     @asyncio.coroutine
+    def watch_tag(self, tag):
+        """Watch a tag for updates."""
+        # TODO: everything
+
+    @asyncio.coroutine
+    def unwatch_tag(self, tag):
+        """Stop watching a tag for updates."""
+        # TODO: everything
+
+    @asyncio.coroutine
     def watch(self):
         """Wait for server status updates.
 

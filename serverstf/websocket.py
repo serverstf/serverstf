@@ -94,6 +94,7 @@ class Client:
         self._cache = cache
         self._notifier = notifier
         self._send_queue = asyncio.Queue()
+        self._watched_tags = set()
 
     @asyncio.coroutine
     def send(self, type_, entity):
@@ -143,6 +144,40 @@ class Client:
         log.info("New subscription to address %s", address)
         yield from self._notifier.watch_server(address)
         yield from self._send_status(address)
+
+    @asyncio.coroutine
+    def _send_match(self, address):
+        yield from self.send(
+            "match", {"ip": str(address.ip), "port": address.port})
+
+    @validate({
+        voluptuous.Required("include"): [str],
+        voluptuous.Required("exclude"): [str],
+    })
+    @asyncio.coroutine
+    def _handle_query(self, entity):
+        """Query the cache for servers matching given tags.
+
+        The message entity should have two fields: ``include`` and
+        ``exclude``; both of which should be an array of tags as strings.
+        These tags are used to query the cache to find matching servers. For
+        each matching address a ``match`` message is sent.
+
+        In addition to this we begin listening to changes to the included
+        tags so that we can detect when a new server has the tag applied and
+        send the appropriate ``match`` message to notify the client.
+        """
+        include = set(entity["include"])
+        exclude = set(entity["exclude"])
+        for old_tag in self._watched_tags - include:
+            yield from self._notifier.unwatch_tag(old_tag)
+        self._watched_tags = include
+        for tag in include:
+            yield from self._notifier.watch_tag(tag)
+        addresses = yield from self._cache.search(
+            include=include, exclude=exclude)
+        for address in addresses:
+            yield from self._send_match(address)
 
     @asyncio.coroutine
     def _dispatch(self, raw_message):
