@@ -18,7 +18,8 @@ define ->
                 @query = []
                 @servers = []
                 $scope.tag = ""
-                Socket.onScoped($scope, "match", @_onMatch)
+                Socket.on("match", @_onMatch, $scope)
+                @_removeConnectObservation = ->
                 @addTag("mode:arena", @REQUIRED)
 
             # Handler for `match` socket messages.
@@ -62,7 +63,10 @@ define ->
                         include.push(tag)
                     else if mode == @EXCLUDE
                         exclude.push(tag)
-                Socket.send("query", {include: include, exclude: exclude})
+                @_removeConnectObservation()
+                @_removeConnectObservation = Socket.observeConnect(->
+                    Socket.send("query", {include: include, exclude: exclude})
+                , $scope)
 
             submit: ->
                 if $scope.tag

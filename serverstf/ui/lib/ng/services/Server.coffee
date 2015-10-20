@@ -14,7 +14,6 @@ define ->
                 @players = 0
                 @country = ""
 
-
         # Access and track server states.
         #
         # This service maintains a collection of all servers in use. When
@@ -76,10 +75,11 @@ define ->
                 address = @_stringifyAddress(ip, port)
                 server = @_servers[address]
                 if not server
-                    console.trace("Apparent free after use of #{address}")
+                    console.trace("Apparent double-free of #{address}")
                     return
                 server.references -= 1
                 if server.references == 0
+                    server.removeConnectObservation()
                     Socket.send("unsubscribe", {ip: ip, port: port})
                     delete @_servers[address]
                     return
@@ -99,7 +99,9 @@ define ->
                         references: 0
                         server: new Server(
                             @_free.bind(@, ip, port), ip, port)
-                    Socket.send("subscribe", {ip: ip, port: port})
+                        removeConnectObservation:
+                            Socket.observeConnect(->
+                                Socket.send("subscribe", {ip: ip, port: port}))
                 server = @_servers[address]
                 server.references += 1
                 return server.server
