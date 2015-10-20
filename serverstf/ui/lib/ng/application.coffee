@@ -9,6 +9,9 @@ define ["angular"], (angular) ->
         "controller": [
             "SearchControl",
         ]
+        "directive": [
+            "Modal",
+        ]
         "service": [
             "Server",
             "Socket",

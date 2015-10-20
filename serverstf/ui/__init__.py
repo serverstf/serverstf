@@ -19,7 +19,7 @@ def _make_application():
     config.add_jinja2_search_path(__name__ + ":templates/")
     config.add_route("main", "/")
     config.add_view(route_name="main", renderer="main.jinja2")
-    for static in ["external", "scripts", "styles", "images"]:
+    for static in ["external", "scripts", "styles", "images", "templates"]:
         config.add_static_view(static, "{}:{}/".format(__name__, static))
     config.commit()
     jinja2_env = config.get_jinja2_environment()
