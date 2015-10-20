@@ -55,8 +55,6 @@ define ->
                 server.server.tags = entity.tags
                 server.server.players = entity.players
                 server.server.country = entity.country
-                # Ugh, this looks wrong ...
-                $rootScope.$digest()
 
             # Convert an IP address and port number to a string.
             #

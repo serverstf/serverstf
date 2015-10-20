@@ -1,6 +1,6 @@
 define ->
 
-    factory = ($timeout) ->
+    factory = ($rootScope, $timeout) ->
 
         # Communicate over a WebSocket.
         #
@@ -144,14 +144,16 @@ define ->
             # This will invoke all the handlers which are registered for
             # the particular message's type.
             _onMessage: (message) =>
-                envelope = JSON.parse(message.data)
-                handlers = @_handlers[envelope.type] or []
-                if not handlers.length
-                    console.warn("Unhandled message of type
-                                 '#{envelope.type}'", envelope.entity)
-                else
-                    for handler in handlers
-                        handler(envelope.entity)
+                $rootScope.$applyAsync(=>
+                    envelope = JSON.parse(message.data)
+                    handlers = @_handlers[envelope.type] or []
+                    if not handlers.length
+                        console.warn("Unhandled message of type
+                                     '#{envelope.type}'", envelope.entity)
+                    else
+                        for handler in handlers
+                            handler(envelope.entity)
+                )
 
             # Attempt to connect to the server.
             _connect: =>
@@ -166,5 +168,5 @@ define ->
 
     return _ =
         "name": "Socket"
-        "dependencies": ["$timeout"]
+        "dependencies": ["$rootScope", "$timeout"]
         "service": factory
