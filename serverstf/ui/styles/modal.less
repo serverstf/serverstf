@@ -1,0 +1,108 @@
+.svtf-modal(
+    @frame-background-colour,
+    @frame-foreground-colour,
+    @header-background-colour,
+    @header-foreground-colour,
+    @button-background-colour,
+    @button-foreground-colour,
+) {
+
+.svtf-modal {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    background-image: url("../images/background-speckle.png");
+    z-index: 2;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    // Sadly no cross-browser way of doing this with even filthier hacks.
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    .svtf-modal-frame {
+        height: 100%;  // TODO: remove this
+        margin: 0 4em;
+        margin-top: 6em;
+        background-color: @frame-background-colour;
+        box-shadow: 0px 0px 30px -10px #000000;
+        color: @frame-foreground-colour;
+    }
+
+    .svtf-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid darken(@header-background-colour, 10%);
+        background-color: @header-background-colour;
+        color: @header-foreground-colour;
+
+        h2 {
+            flex: 1;
+            position: relative;
+            margin: 0.75em;
+            white-space: nowrap;
+            overflow: hidden;
+
+            &::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                width: 2em;
+                background-image: linear-gradient(
+                    90deg,
+                    transparent,
+                    @header-background-colour 50%,
+                );
+            }
+        }
+
+        button {
+            padding: 0.5em 1em;
+            border: 0;
+            align-self: stretch;
+            background-color: darken(@header-background-colour, 10%);
+
+            &:focus {
+                outline: 0;
+            }
+
+            &:hover {
+                background-color: @button-background-colour;
+                background-image: repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 10px,
+                    lighten(@button-background-colour, 5%) 10px,
+                    lighten(@button-background-colour, 5%) 20px,
+                );
+                color: @button-foreground-colour;
+            }
+
+            .fa {
+                margin: 0em 0.5em;
+                font-size: 1.5em;
+            }
+        }
+    }
+}
+
+}  // .svtf-modal
+
+
+body {
+    .svtf-modal(
+        @frame-background-colour: #ffffff,
+        @frame-foreground-colour: #000000,
+        @header-background-colour: #888888,
+        @header-foreground-colour: #000000,
+        @button-background-colour: #000000,
+        @button-foreground-colour: #ffffff,
+    );
+}

@@ -4,6 +4,7 @@
 @import (reference) "../header.less";
 @import (reference) "../search.less";
 @import (reference) "../tag.less";
+@import (reference) "../modal.less";
 
 @tf2-neutral-0: #f6e7de;
 @tf2-neutral-1: #dabdab;
@@ -29,38 +30,47 @@
 
 body.svtf-theme-tf2 {
 
-.svtf-body(@tf2-neutral-0);
+    .svtf-body(@tf2-neutral-0);
 
-.svtf-header(
-    @tf2-blu-4,
-    @tf2-neutral-0,
-    darken(@tf2-blu-4, 10%),
-);
+    .svtf-header(
+        @tf2-blu-4,
+        @tf2-neutral-0,
+        darken(@tf2-blu-4, 10%),
+    );
 
-.svtf-search();
+    .svtf-search();
 
-.svtf-search-control(
-    @tf2-red-4,
-    @tf2-neutral-0,
-    darken(@tf2-red-4, 20%),
-    @tf2-neutral-1,
-    @tf2-blu-4,
-    darken(@tf2-red-4, 10%),
-    @tf2-neutral-0,
-);
+    .svtf-search-control(
+        @tf2-red-4,
+        @tf2-neutral-0,
+        darken(@tf2-red-4, 20%),
+        @tf2-neutral-1,
+        @tf2-blu-4,
+        darken(@tf2-red-4, 10%),
+        @tf2-neutral-0,
+    );
 
-.svtf-server-list(
-    darken(@tf2-blu-4, 10%),
-    @tf2-neutral-0,
-    @tf2-blu-4,
-);
+    .svtf-server-list(
+        darken(@tf2-blu-4, 10%),
+        @tf2-neutral-0,
+        @tf2-blu-4,
+    );
 
-.svtf-tag(
-    @tf2-red-2,
-    #ffffff,
-    @tf2-neutral-0,
-    @tf2-blu-4,
-    rgba(0, 0, 0, 0.1),
-);
+    .svtf-tag(
+        @tf2-red-2,
+        #ffffff,
+        @tf2-neutral-0,
+        @tf2-blu-4,
+        rgba(0, 0, 0, 0.1),
+    );
+
+    .svtf-modal(
+        @frame-background-colour: @tf2-neutral-0,
+        @frame-foreground-colour: @tf2-blu-4,
+        @header-background-colour: @tf2-blu-4,
+        @header-foreground-colour: @tf2-neutral-0,
+        @button-background-colour: @tf2-red-3,
+        @button-foreground-colour: @tf2-neutral-0,
+    );
 
 }
