@@ -52,7 +52,9 @@
                 <div class="svtf-tag-name">{{query.tag}}</div>
               </li>
             </ol>
-            <div class="svtf-search-results">n servers found</div>
+            <div class="svtf-search-results">
+              {{search.servers.length}} servers found
+            </div>
           </div>
           <ol class="svtf-server-list">
             <li class="svtf-server" ng-repeat="server in search.servers">
@@ -60,7 +62,7 @@
                 <header>
                   <div class="svtf-server-statistics">
                     <div class="svtf-server-rank">#{{$index + 1}}</div>
-                    <div class="svtf-server-freshness">4m</div>
+                    <div class="svtf-server-freshness">0s</div>
                   </div>
                   <div class="svtf-server-map">{{server.map}}</div>
                 </header>
@@ -79,6 +81,12 @@
                     <div>Ping</div>
                   </div>
                 </div>
+
+                <!-- TODO: remove this at some point -->
+                <ul>
+                  <li ng-repeat="tag in server.tags">{{tag}}</li>
+                </ul>
+
               </div>
             </li>
           </ol>

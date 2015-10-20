@@ -4,7 +4,7 @@ define ->
 
         constructor: ($timeout) ->
             @_$timeout = $timeout  # lol, no
-            @_min_retry_delay = 1000
+            @_min_retry_delay = 5000
             @_max_retry_delay = 120000
             @_retry_delay = @_min_retry_delay  # ms
             @_socket = null

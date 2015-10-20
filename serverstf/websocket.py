@@ -145,6 +145,12 @@ class Client:
         yield from self._notifier.watch_server(address)
         yield from self._send_status(address)
 
+    @validate(address)
+    @asyncio.coroutine
+    def _handle_unsubscribe(self, address):
+        log.info("Unsubscribing from address %s", address)
+        yield from self._notifier.unwatch_server(address)
+
     @asyncio.coroutine
     def _send_match(self, address):
         yield from self.send(
