@@ -11,6 +11,7 @@ define ["angular"], (angular) ->
         ]
         "directive": [
             "Modal",
+            "ModalOpen",
         ]
         "service": [
             "Modal",

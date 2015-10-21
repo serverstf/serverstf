@@ -8,11 +8,14 @@ define ->
                 @_is_open = false
                 @title = ""
 
-            isOpen: ->
+            isOpen: =>
                 return @_is_open
 
-            open: ->
+            open: =>
                 @_is_open = true
+
+            close: =>
+                @_is_open = false
 
         return new Modal()
 
