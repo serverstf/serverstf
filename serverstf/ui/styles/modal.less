@@ -8,12 +8,13 @@
 ) {
 
 svtf-modal {
+    display: none;
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: rgba(0, 0, 0, 0.35);
+    background-color: rgba(0, 0, 0, 0.15);
     background-image: url("../images/background-speckle.png");
     z-index: 2;
     overflow-y: auto;
@@ -22,6 +23,10 @@ svtf-modal {
     // Sadly no cross-browser way of doing this without filthy hacks.
     &::-webkit-scrollbar {
         display: none;
+    }
+
+    &.svtf-modal-open {
+        display: initial;
     }
 
     .svtf-modal-frame {

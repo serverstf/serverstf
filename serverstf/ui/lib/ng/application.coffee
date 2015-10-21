@@ -13,6 +13,7 @@ define ["angular"], (angular) ->
             "Modal",
         ]
         "service": [
+            "Modal",
             "Server",
             "Socket",
         ]
