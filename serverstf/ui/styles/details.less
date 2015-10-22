@@ -129,6 +129,95 @@
 }  // .svtf-details-control
 
 
+.svtf-details-latency(
+    @background-colour,
+    @foreground-colour,
+    @location-background-colour,
+    @location-foreground-colour,
+) {
+
+.svtf-details-latency {
+    display: flex;
+    background-color: @background-colour;
+    color: @foreground-colour;
+
+    h3 {
+        margin: 0;
+        padding: 0.35em 0;
+        text-align: center;
+    }
+
+    .svtf-details-latency-location {
+        flex: 0 0 30%;
+        box-sizing: border-box;
+        background-color: @location-background-colour;
+        color: @location-foreground-colour;
+
+        &:first-child {
+            border-right: 5px solid @background-colour;
+        }
+
+        &:last-child {
+            border-left: 5px solid @background-colour;
+        }
+
+        h3 {
+            background-color: darken(@location-background-colour, 5%);
+        }
+
+        .svtf-details-latency-location-map {
+            position: relative;
+            height: 10em;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                box-shadow:
+                    inset 0px 0px 20px 20px @location-background-colour;
+            }
+        }
+    }
+
+    .svtf-details-latency-metrics {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+
+        h3 + * {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            justify-content: center;
+        }
+    }
+
+    .svtf-details-latency-metrics-metrics {
+        text-align: center;
+
+        .svtf-details-latency-metrics-metrics-ping {
+            font-size: 5em;
+
+            span {
+                font-size: 0.35em;
+                font-weight: bold;
+            }
+        }
+        .svtf-details-latency-metrics-metrics-distance {
+            span {
+                font-size: 0.8em;
+            }
+        }
+    }
+}
+
+
+}  // .svtf-details-latency
+
+
 body {
     .svtf-details();
 
@@ -148,5 +237,12 @@ body {
         @blacklist-foreground-colour: #000000,
         @favourite-background-colour: #888888,
         @favourite-foreground-colour: #000000,
+    );
+
+    .svtf-details-latency(
+        @background-colour: #ffffff,
+        @foreground-colour: #000000,
+        @location-background-colour: #888888,
+        @location-foreground-colour: #000000,
     );
 }
