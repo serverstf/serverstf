@@ -57,3 +57,7 @@ def sb(info, players, rules, tags):
     return ("tf2" in tags
             and "mode:arena" in tags
             and info["map"].lower().startswith("sb_"))
+
+@tag("mode:mge", ["tf2"])
+def mge(info, players, rules, tags):
+    return "tf2" in tags and info["map"].lower().startswith("mge_")
