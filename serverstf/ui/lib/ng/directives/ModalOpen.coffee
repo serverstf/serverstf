@@ -1,11 +1,19 @@
 define ->
 
-    factory = ($rootScope, Modal) ->
+    factory = ($parse, $rootScope, Modal) ->
 
-        link = (scope, element) ->
+        link = (scope, element, attributes) ->
             element.on("click", ->
                 $rootScope.$applyAsync(->
-                    Modal.open()
+                    controller = null
+                    configuration = $parse(attributes.svtfModalOpen)(scope)
+                    if typeof configuration == "string"
+                        controller = configuration
+                        configuration = {}
+                    else
+                        controller = configuration[0]
+                        configuration = configuration[1]
+                    Modal.open(controller, configuration)
                 )
             )
 
@@ -15,5 +23,5 @@ define ->
 
     return _ =
         "name": "svtfModalOpen"
-        "dependencies": ["$rootScope", "Modal"]
+        "dependencies": ["$parse", "$rootScope", "Modal"]
         "directive": factory

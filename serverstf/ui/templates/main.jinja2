@@ -61,7 +61,7 @@
             <li
               class="svtf-server"
               ng-repeat="server in search.servers"
-              svtf-modal-open="">
+              svtf-modal-open="['ServerDetails', {ip: server.ip, port: server.port}]">
               <div>
                 <header>
                   <div class="svtf-server-statistics">
