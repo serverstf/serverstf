@@ -1,0 +1,152 @@
+@import url(http://fonts.googleapis.com/css?family=Permanent+Marker);
+
+.svtf-details(
+
+) {
+
+.svtf-details {
+    header {
+        display: flex;
+        align-items: stretch;
+        height: 13.5em;
+        background-image: url("../images/granary.jpg");
+        background-size: cover;
+        background-position: center center;
+        box-shadow: inset 0px -10em 10em -10em #000000;
+    }
+}
+
+}  // .svtf-details
+
+
+.svtf-details-map (
+    @primary-background-colour,
+    @primary-foreground-colour,
+    @secondary-background-colour,
+    @secondary-foreground-colour,
+) {
+
+.svtf-details-map {
+    position: relative;
+    flex: 1 0 70%;
+
+    .svtf-details-map-identity {
+        font-family: "Permanent Marker", cursive;
+    }
+
+    > * {
+        position: absolute;
+        top: 0;
+
+        > span {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: @primary-background-colour;
+            color: @primary-foreground-colour;
+            text-shadow: 0px 1px 0px darken(@primary-background-colour, 10%);
+
+            ~ span {
+                background-color: @secondary-background-colour;
+                color: @secondary-foreground-colour;
+                font-size: 0.8em;
+                text-shadow: none;
+            }
+        }
+    }
+
+    .svtf-details-map-image {
+        top: auto;
+        bottom: 0;
+    }
+
+}
+
+}  // .svtf-details-map
+
+
+.svtf-details-control(
+    @background-colour,
+    @foreground-colour,
+    @connect-background-colour,
+    @connect-foreground-colour,
+    @blacklist-background-colour,
+    @blacklist-foreground-colour,
+    @favourite-background-colour,
+    @favourite-foreground-colour,
+) {
+
+.svtf-details-control {
+    display: flex;
+    flex: 1 0 30%;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    background-color: @background-colour;
+    background-clip: padding-box;
+    border-left: 5px solid fade(@background-colour, 50%);
+    color: @foreground-colour;
+
+    > * {
+        display: flex;
+        flex: 0 0 50%;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        text-shadow: 0px 1px 0px darken(@background-colour, 10%);
+
+        > *:first-child {
+            font-size: 1.5em;
+        }
+
+        > *:last-child {
+            margin-top: 1em;
+        }
+    }
+
+    a {
+        color: @foreground-colour;
+        text-decoration: none;
+    }
+
+    .svtf-details-control-connect:hover {
+        background-color: @connect-background-colour;
+        color: @connect-foreground-colour;
+        text-shadow: 0px 1px 0px darken(@connect-background-colour, 10%);
+    }
+
+    .svtf-details-control-blacklist:hover {
+        background-color: @blacklist-background-colour;
+        color: @blacklist-foreground-colour;
+        text-shadow: 0px 1px 0px darken(@blacklist-background-colour, 10%);
+    }
+
+    .svtf-details-control-favourite:hover {
+        background-color: @favourite-background-colour;
+        color: @favourite-foreground-colour;
+        text-shadow: 0px 1px 0px darken(@favourite-background-colour, 10%);
+    }
+}
+
+}  // .svtf-details-control
+
+
+body {
+    .svtf-details();
+
+    .svtf-details-map(
+        @primary-background-colour: #000000,
+        @primary-foreground-colour: #ffffff,
+        @secondary-background-colour: #888888,
+        @secondary-foreground-colour: #000000,
+    );
+
+    .svtf-details-control(
+        @background-colour: #000000,
+        @foreground-colour: #ffffff,
+        @connect-background-colour: #888888,
+        @connect-foreground-colour: #000000,
+        @blacklist-background-colour: #888888,
+        @blacklist-foreground-colour: #000000,
+        @favourite-background-colour: #888888,
+        @favourite-foreground-colour: #000000,
+    );
+}

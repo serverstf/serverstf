@@ -12,10 +12,14 @@ define ->
                 @_dialogue =
                     controller: null
                     template: null
+                @_configuration = {}
                 @title = ""
 
             getDialogue: =>
                 return [@_dialogue.controller, @_dialogue.template]
+
+            getConfig: =>
+                return @_configuration
 
             isOpen: =>
                 return @_is_open
@@ -24,6 +28,7 @@ define ->
                 if controller not of DIALOGUES
                     console.error("No template for #{controller} dialogue")
                     return
+                @_configuration = configuration
                 @_dialogue =
                     controller: controller
                     template: DIALOGUES[controller]

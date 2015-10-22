@@ -1,1 +1,39 @@
-<h1>server details {{controller.foo}}</h1>
+<div class="svtf-details">
+  <header>
+    <div class="svtf-details-map">
+      <div class="svtf-details-map-details">
+        <span>{{controller.server.map}}</span>
+        <br>
+        <span>by <span class="svtf-details-map-identity">Michael "Mike" Michaelson</span></span>
+      </div>
+      <div class="svtf-details-map-image">
+        <span>Image</span>
+        <br>
+        <span>by <span class="svtf-details-map-identity">gatsan</span></span>
+      </div>
+    </div>
+    <div class="svtf-details-control">
+      <div class="svtf-details-control-freshness">
+        <div>0s</div>
+        <div>Updated</div>
+      </div>
+      <a class="svtf-details-control-connect" href="#">
+        <i class="fa fa-steam"></i>
+        <div>Connect</div>
+      </a>
+      <a class="svtf-details-control-blacklist" href="#">
+        <i class="fa fa-ban"></i>
+        <div>Blacklist</div>
+      </a>
+      <a class="svtf-details-control-favourite" href="#">
+        <i class="fa fa-star-o"></i>
+        <div>Favourite</div>
+      </a>
+    </div>
+  </header>
+  <div class="svtf-details-latency" style="display: none;">
+    <div class="svtf-details-latency-server">FR</div>
+    <div class="svtf-details-latency-metric">50ms</div>
+    <div class="svtf-details-latency-user">GB</div>
+  </div>
+</div>

@@ -3,7 +3,6 @@ define ->
     factory = ($compile, Modal) ->
 
         link = (scope, element) ->
-            console.log(scope, element)
             scope.$watch(
                 -> Modal.getDialogue()
                 ([controller, template]) ->
