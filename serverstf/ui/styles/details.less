@@ -218,6 +218,47 @@
 }  // .svtf-details-latency
 
 
+.svtf-details-players(
+    @header-background-colour,
+    @header-foreground-colour,
+    @odd-row-background-colour,
+    @odd-row-foreground-colour,
+    @even-row-background-colour,
+    @even-row-foreground-colour,
+) {
+
+.svtf-details-players {
+    width: 50%;
+
+    thead tr {
+        background-color: @header-background-colour;
+        color: @header-foreground-colour;
+        font-size: 1.17em;  // h3
+
+        th {
+            padding: 0.35em 0;
+        }
+    }
+
+    th, td {
+        padding: 0.25em 0.5em;
+        white-space: nowrap;
+    }
+
+    tr {
+        background-color: @odd-row-background-colour;
+        color: @odd-row-foreground-colour;
+
+        &:nth-child(2n) {
+            background-color: @even-row-background-colour;
+            color: @even-row-foreground-colour;
+        }
+    }
+}
+
+}  // .svtf-details-players
+
+
 body {
     .svtf-details();
 
@@ -244,5 +285,14 @@ body {
         @foreground-colour: #000000,
         @location-background-colour: #888888,
         @location-foreground-colour: #000000,
+    );
+
+    .svtf-details-players(
+        @header-background-colour: #000000,
+        @header-foreground-colour: #ffffff,
+        @odd-row-background-colour: #ffffff,
+        @odd-row-foreground-colour: #000000,
+        @even-row-background-colour: #888888,
+        @even-row-foreground-colour: #000000,
     );
 }
