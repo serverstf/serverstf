@@ -1,0 +1,329 @@
+@import url(http://fonts.googleapis.com/css?family=Permanent+Marker);
+
+.svtf-details(
+
+) {
+
+.svtf-details {
+    header {
+        display: flex;
+        align-items: stretch;
+        height: 13.5em;
+        background-size: cover;
+        background-position: center center;
+        box-shadow: inset 0px -10em 10em -10em #000000;
+    }
+}
+
+}  // .svtf-details
+
+
+.svtf-details-map (
+    @primary-background-colour,
+    @primary-foreground-colour,
+    @secondary-background-colour,
+    @secondary-foreground-colour,
+) {
+
+.svtf-details-map {
+    position: relative;
+    flex: 1 0 70%;
+
+    .svtf-details-map-identity {
+        font-family: "Permanent Marker", cursive;
+    }
+
+    > * {
+        position: absolute;
+        top: 0;
+
+        > span {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: @primary-background-colour;
+            color: @primary-foreground-colour;
+            text-shadow: 0px 1px 0px darken(@primary-background-colour, 10%);
+
+            ~ span {
+                background-color: @secondary-background-colour;
+                color: @secondary-foreground-colour;
+                font-size: 0.8em;
+                text-shadow: none;
+            }
+        }
+    }
+
+    .svtf-details-map-image {
+        top: auto;
+        bottom: 0;
+    }
+
+}
+
+}  // .svtf-details-map
+
+
+.svtf-details-control(
+    @background-colour,
+    @foreground-colour,
+    @connect-background-colour,
+    @connect-foreground-colour,
+    @blacklist-background-colour,
+    @blacklist-foreground-colour,
+    @favourite-background-colour,
+    @favourite-foreground-colour,
+) {
+
+.svtf-details-control {
+    display: flex;
+    flex: 1 0 30%;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    background-color: @background-colour;
+    background-clip: padding-box;
+    border-left: 5px solid fade(@background-colour, 50%);
+    color: @foreground-colour;
+
+    > * {
+        display: flex;
+        flex: 0 0 50%;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        text-shadow: 0px 1px 0px darken(@background-colour, 10%);
+
+        > *:first-child {
+            font-size: 1.5em;
+        }
+
+        > *:last-child {
+            margin-top: 1em;
+        }
+    }
+
+    a {
+        color: @foreground-colour;
+        text-decoration: none;
+    }
+
+    .svtf-details-control-connect:hover {
+        background-color: @connect-background-colour;
+        color: @connect-foreground-colour;
+        text-shadow: 0px 1px 0px darken(@connect-background-colour, 10%);
+    }
+
+    .svtf-details-control-blacklist:hover {
+        background-color: @blacklist-background-colour;
+        color: @blacklist-foreground-colour;
+        text-shadow: 0px 1px 0px darken(@blacklist-background-colour, 10%);
+    }
+
+    .svtf-details-control-favourite:hover {
+        background-color: @favourite-background-colour;
+        color: @favourite-foreground-colour;
+        text-shadow: 0px 1px 0px darken(@favourite-background-colour, 10%);
+    }
+}
+
+}  // .svtf-details-control
+
+
+.svtf-details-latency(
+    @background-colour,
+    @foreground-colour,
+    @location-background-colour,
+    @location-foreground-colour,
+) {
+
+.svtf-details-latency {
+    display: flex;
+    background-color: @background-colour;
+    color: @foreground-colour;
+
+    h3 {
+        margin: 0;
+        padding: 0.35em 0;
+        text-align: center;
+    }
+
+    .svtf-details-latency-location {
+        flex: 0 0 30%;
+        box-sizing: border-box;
+        background-color: @location-background-colour;
+        color: @location-foreground-colour;
+
+        &:first-child {
+            border-right: 5px solid @background-colour;
+        }
+
+        &:last-child {
+            border-left: 5px solid @background-colour;
+        }
+
+        h3 {
+            background-color: darken(@location-background-colour, 5%);
+        }
+
+        .svtf-details-latency-location-map {
+            position: relative;
+            height: 10em;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                box-shadow:
+                    inset 0px 0px 20px 20px @location-background-colour;
+            }
+        }
+    }
+
+    .svtf-details-latency-metrics {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+
+        h3 + * {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            justify-content: center;
+        }
+    }
+
+    .svtf-details-latency-metrics-metrics {
+        text-align: center;
+
+        .svtf-details-latency-metrics-metrics-ping {
+            font-size: 5em;
+
+            span {
+                font-size: 0.35em;
+                font-weight: bold;
+            }
+        }
+        .svtf-details-latency-metrics-metrics-distance {
+            span {
+                font-size: 0.8em;
+            }
+        }
+    }
+}
+
+
+}  // .svtf-details-latency
+
+
+.svtf-details-players(
+    @heading-background-colour,
+    @heading-foreground-colour,
+) {
+
+.svtf-details-players {
+    display: flex;
+
+    > * {
+        flex: 1 0 50%;
+
+        h3 {
+            margin: 0;
+            padding: 0.35em 0;
+            background-color: @heading-background-colour;
+            color: @heading-foreground-colour;
+            font-size: 1.17em;  // h3
+            text-align: center;
+        }
+    }
+}
+
+}  // .svtf-details-players
+
+
+.svtf-details-players-table(
+    @header-background-colour,
+    @header-foreground-colour,
+    @odd-row-background-colour,
+    @odd-row-foreground-colour,
+    @even-row-background-colour,
+    @even-row-foreground-colour,
+) {
+
+.svtf-details-players-table {
+    table {
+        width: 100%;
+    }
+
+    thead tr {
+        background-color: @header-background-colour;
+        color: @header-foreground-colour;
+        font-size: 1.17em;  // h3
+
+        th {
+            padding: 0.35em 0;
+        }
+    }
+
+    th, td {
+        padding: 0.25em 0.5em;
+        white-space: nowrap;
+    }
+
+    tr {
+        background-color: @odd-row-background-colour;
+        color: @odd-row-foreground-colour;
+
+        &:nth-child(2n) {
+            background-color: @even-row-background-colour;
+            color: @even-row-foreground-colour;
+        }
+    }
+}
+
+}  // .svtf-details-players-table
+
+
+body {
+    .svtf-details();
+
+    .svtf-details-map(
+        @primary-background-colour: #000000,
+        @primary-foreground-colour: #ffffff,
+        @secondary-background-colour: #888888,
+        @secondary-foreground-colour: #000000,
+    );
+
+    .svtf-details-control(
+        @background-colour: #000000,
+        @foreground-colour: #ffffff,
+        @connect-background-colour: #888888,
+        @connect-foreground-colour: #000000,
+        @blacklist-background-colour: #888888,
+        @blacklist-foreground-colour: #000000,
+        @favourite-background-colour: #888888,
+        @favourite-foreground-colour: #000000,
+    );
+
+    .svtf-details-latency(
+        @background-colour: #ffffff,
+        @foreground-colour: #000000,
+        @location-background-colour: #888888,
+        @location-foreground-colour: #000000,
+    );
+
+    .svtf-details-players(
+        @heading-background-colour: #000000,
+        @heading-foreground-colour: #ffffff,
+    );
+
+    .svtf-details-players-table(
+        @header-background-colour: #000000,
+        @header-foreground-colour: #ffffff,
+        @odd-row-background-colour: #ffffff,
+        @odd-row-foreground-colour: #000000,
+        @even-row-background-colour: #888888,
+        @even-row-foreground-colour: #000000,
+    );
+}

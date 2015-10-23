@@ -5,6 +5,7 @@
 @import (reference) "../search.less";
 @import (reference) "../tag.less";
 @import (reference) "../modal.less";
+@import (reference) "../details.less";
 
 @tf2-neutral-0: #f6e7de;
 @tf2-neutral-1: #dabdab;
@@ -71,6 +72,47 @@ body.svtf-theme-tf2 {
         @header-foreground-colour: @tf2-neutral-0,
         @button-background-colour: @tf2-red-3,
         @button-foreground-colour: @tf2-neutral-0,
+    );
+
+    .svtf-details();
+
+    .svtf-details-map(
+        @primary-background-colour: darken(@tf2-blu-4, 10%),
+        @primary-foreground-colour: @tf2-neutral-0,
+        @secondary-background-colour: @tf2-neutral-0,
+        @secondary-foreground-colour: @tf2-blu-4,
+    );
+
+    .svtf-details-control(
+        @background-colour: darken(@tf2-blu-4, 10%),
+        @foreground-colour: @tf2-neutral-0,
+        @connect-background-colour: @tf2-blu-2,
+        @connect-foreground-colour: @tf2-neutral-0,
+        @blacklist-background-colour: @tf2-red-2,
+        @blacklist-foreground-colour: @tf2-neutral-0,
+        @favourite-background-colour: @tf2-yellow-2,
+        @favourite-foreground-colour: @tf2-blu-4,
+    );
+
+    .svtf-details-latency(
+        @background-colour: @tf2-neutral-0,
+        @foreground-colour: @tf2-blu-4,
+        @location-background-colour: darken(@tf2-blu-4, 10%),
+        @location-foreground-colour: @tf2-neutral-0,
+    );
+
+    .svtf-details-players(
+        @heading-background-colour: @tf2-blu-4,
+        @heading-foreground-colour: @tf2-neutral-0,
+    );
+
+    .svtf-details-players-table(
+        @header-background-colour: @tf2-blu-4,
+        @header-foreground-colour: @tf2-neutral-0,
+        @odd-row-background-colour: @tf2-neutral-0,
+        @odd-row-foreground-colour: @tf2-blu-4,
+        @even-row-background-colour: @tf2-neutral-1,
+        @even-row-foreground-colour: darken(@tf2-blu-4, 10%),
     );
 
 }

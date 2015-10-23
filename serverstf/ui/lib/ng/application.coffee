@@ -8,9 +8,12 @@ define ["angular"], (angular) ->
     NG_APPLICATION_SPECIFICATION =
         "controller": [
             "SearchControl",
+            "ServerDetails",
         ]
         "directive": [
+            "Map",
             "Modal",
+            "ModalContent",
             "ModalOpen",
         ]
         "service": [

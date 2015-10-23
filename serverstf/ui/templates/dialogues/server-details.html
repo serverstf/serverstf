@@ -1,0 +1,83 @@
+<div class="svtf-details">
+  <header svtf-map="controller.server">
+    <div class="svtf-details-map">
+      <div class="svtf-details-map-details">
+        <span>{{controller.server.map}}</span>
+        <br>
+        <span>by <span class="svtf-details-map-identity">Michael "Mike" Michaelson</span></span>
+      </div>
+      <div class="svtf-details-map-image">
+        <span>Image</span>
+        <br>
+        <span>by <span class="svtf-details-map-identity">gatsan</span></span>
+      </div>
+    </div>
+    <div class="svtf-details-control">
+      <div class="svtf-details-control-freshness">
+        <div>0s</div>
+        <div>Updated</div>
+      </div>
+      <a class="svtf-details-control-connect" href="#">
+        <i class="fa fa-steam"></i>
+        <div>Connect</div>
+      </a>
+      <a class="svtf-details-control-blacklist" href="#">
+        <i class="fa fa-ban"></i>
+        <div>Blacklist</div>
+      </a>
+      <a class="svtf-details-control-favourite" href="#">
+        <i class="fa fa-star-o"></i>
+        <div>Favourite</div>
+      </a>
+    </div>
+  </header>
+  <div class="svtf-details-latency">
+    <div class="svtf-details-latency-location">
+      <h3>Server</h3>
+      <div class="svtf-details-latency-location-map"></div>
+    </div>
+    <div class="svtf-details-latency-metrics">
+      <h3>Approximate Latency</h3>
+      <div>
+        <div class="svtf-details-latency-metrics-metrics">
+          <div class="svtf-details-latency-metrics-metrics-ping">
+            52<span>ms</span>
+          </div>
+          <div class="svtf-details-latency-metrics-metrics-distance">
+            300<span>km</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="svtf-details-latency-location">
+      <h3>You</h3>
+      <div class="svtf-details-latency-location-map"></div>
+    </div>
+  </div>
+  <div class="svtf-details-players">
+    <div>
+      <h3>Players</h3>
+      20/14
+    </div>
+    <div class="svtf-details-players-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Score</th>
+            <th>Duration</th>
+            <th>Score / min</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="player in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+            <td>Bot {{player}}</td>
+            <td>{{100 - (player * 3.2)|number:0}}</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
