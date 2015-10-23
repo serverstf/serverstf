@@ -20,7 +20,7 @@ define ->
                 $scope.tag = ""
                 Socket.on("match", @_onMatch, $scope)
                 @_removeConnectObservation = ->
-                @addTag("mode:arena", @REQUIRED)
+                @addTag("mode:cp", @REQUIRED)
 
             # Handler for `match` socket messages.
             #

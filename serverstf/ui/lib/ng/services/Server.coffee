@@ -8,6 +8,7 @@ define ->
                 @free = free
                 @ip = ip
                 @port = port
+                @application_id = 440
                 @name = ""
                 @map = ""
                 @tags = []

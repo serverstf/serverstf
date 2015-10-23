@@ -11,6 +11,7 @@ define ["angular"], (angular) ->
             "ServerDetails",
         ]
         "directive": [
+            "Map",
             "Modal",
             "ModalContent",
             "ModalOpen",
