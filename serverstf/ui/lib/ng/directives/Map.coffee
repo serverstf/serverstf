@@ -1,5 +1,5 @@
 define ->
-    CLASS_PREFIX = "svtf-map"
+    CLASS_PREFIX = "svtf-map-x"
 
     factory = ->
 
