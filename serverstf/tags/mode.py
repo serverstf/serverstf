@@ -57,3 +57,14 @@ def sb(info, players, rules, tags):
     return ("tf2" in tags
             and "mode:arena" in tags
             and info["map"].lower().startswith("sb_"))
+
+
+@tag("mode:vsh", ["tf2", "mode:arena"])
+def vsh(info, players, rules, tags):
+    """Versus Saxton Hale
+
+    Official thread: http://bit.ly/1jZTvex
+    """
+    return ("tf2" in tags
+            and "mode:arena" in tags
+            and info["map"].lower().startswith("vsh_"))
