@@ -182,3 +182,8 @@ def mge(info, players, rules, tags):
 @tag("tf2")
 def tf2(info, players, rules, tags):
     return info["app_id"] == 440
+
+
+@tag("csgo")
+def csgo(info, players, rules, tags):
+    return info["app_id"] == 730
