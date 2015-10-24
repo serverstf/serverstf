@@ -161,8 +161,11 @@ def _poll_main_args(parser):
 @serverstf.subcommand("poll", _poll_main_args)
 def _poll_main(args):
     tagger = serverstf.tags.Tagger.scan(__package__)
-    status = poll(tagger, args.address)
-    if status:
+    try:
+        status = poll(tagger, args.address)
+    except PollError as exc:
+        raise serverstf.FatalError from exc
+    else:
         print("\nStatus\n------")
         print("Address:", status.address)
         print("App:    ", status.application_id)
