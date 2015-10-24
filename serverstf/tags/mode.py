@@ -57,3 +57,32 @@ def sb(info, players, rules, tags):
     return ("tf2" in tags
             and "mode:arena" in tags
             and info["map"].lower().startswith("sb_"))
+
+
+@tag("mode:vsh", ["tf2", "mode:arena"])
+def vsh(info, players, rules, tags):
+    """Versus Saxton Hale.
+
+    Official thread: https://forums.alliedmods.net/showthread.php?t=244209
+    """
+    return ("tf2" in tags
+            and "mode:arena" in tags
+            and info["map"].lower().startswith("vsh_"))
+
+
+@tag("mode:dr", ["tf2", "mode:arena"])
+def dr(info, players, rules, tags):
+    """Deathrun.
+
+    Official thread: https://forums.alliedmods.net/showthread.php?t=201623
+    """
+
+    return ("tf2" in tags
+            and "mode:arena" in tags
+            and info["map"].lower().startswith("dr_"))
+
+
+@tag("mode:surf", ["tf2"])
+def surf(info, players, rules, tags):
+    return ("tf2" in tags
+            and info["map"].lower().startswith("surf_"))
