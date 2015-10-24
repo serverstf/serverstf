@@ -33,20 +33,25 @@ import serverstf.tags
 log = logging.getLogger(__name__)
 
 
-def poll(cache, tagger, address):
+class PollError(Exception):
+    """Exception raised for all polling errors."""
+
+
+def poll(tagger, address):
     """Poll the state of a server.
 
     This will issue a number of requests to the server at the given address
     to determine its current state. This state is then used to calculate the
     tags that should be applied to the server.
 
-    The new state and tags are written to the cache.
-
-    :param serverstf.cache.Cache cache: the cache to store the updated
-        status in.
     :param serverstf.tags.Tagger tagger: the tagger used to determine server
         tags.
     :param servers.cache.Address address: the address of the server to poll.
+
+    :raise PollError: if the server is unreachable or does not return a
+        valid response.
+    :return: a :class:`serverstf.cache.Status` containing the up-to-date
+        state of the server.
     """
     log.debug("Polling %s", address)
     query = valve.source.a2s.ServerQuerier(
@@ -56,14 +61,17 @@ def poll(cache, tagger, address):
         players = query.get_players()
         rules = query.get_rules()
     except valve.source.a2s.NoResponseError as exc:
-        log.warning("Timed out waiting for response from %s", address)
+        raise PollError("Timed out waiting for "
+                        "response from {}".format(address)) from exc
     except NotImplementedError as exc:
-        log.error("Compressed fragments; couldn't poll %s", address)
+        raise PollError("Compressed fragments; "
+                        "couldn't poll {}".format(address)) from exc
     except valve.source.messages.BrokenMessageError as exc:
-        log.exception("Seemingly broken response from %s", address)
+        raise PollError(
+            "Seemingly broken response from {}".format(address)) from exc
     else:
         tags = tagger.evaluate(info, players, rules)
-        cache.set(serverstf.cache.Status(
+        return serverstf.cache.Status(
             address,
             interest=None,
             name=info["server_name"],
@@ -71,7 +79,7 @@ def poll(cache, tagger, address):
             application_id=info["app_id"],
             players=None,
             tags=tags,
-        ))
+        )
 
 def _interest_queue_iterator(cache):
     """Expose a cache's interest queue as an iterator.
@@ -109,10 +117,15 @@ def _watch(cache, all_):
         else:
             addresses = _interest_queue_iterator(cache)
         for address in addresses:
-            poll(cache, tagger, address)
+            try:
+                status = poll(tagger, address)
+            except PollError as exc:
+                log.error("Couldn't poll {}: {}".format(address, exc))
+            else:
+                cache.set(status)
 
 
-def _poll_main_args(parser):
+def _poller_main_args(parser):
     parser.add_argument(
         "url",
         type=serverstf.redis_url,
@@ -128,12 +141,33 @@ def _poll_main_args(parser):
     )
 
 
-@serverstf.subcommand("poll", _poll_main_args)
-def _poll_main(args):
+@serverstf.subcommand("poller", _poller_main_args)
+def _poller_main(args):
     log.info("Starting poller")
     loop = asyncio.get_event_loop()
     with serverstf.cache.Cache.connect(args.url, loop) as cache:
-        address = serverstf.cache.Address("151.80.218.94", 27015)
-        cache.ensure(address)
         _watch(cache, args.all)
     log.info("Stopping poller")
+
+
+def _poll_main_args(parser):
+    parser.add_argument(
+        "address",
+        type=serverstf.cache.Address.parse,
+        help="The address of the server to poll in the <ip>:<port> form."
+    )
+
+
+@serverstf.subcommand("poll", _poll_main_args)
+def _poll_main(args):
+    tagger = serverstf.tags.Tagger.scan(__package__)
+    status = poll(tagger, args.address)
+    if status:
+        print("\nStatus\n------")
+        print("Address:", status.address)
+        print("App:    ", status.application_id)
+        print("Name:   ", status.name)
+        print("Map:    ", status.map)
+        print("Tags:   ")
+        for tag in sorted(status.tags):
+            print(" -", tag)
