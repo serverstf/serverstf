@@ -189,6 +189,7 @@ def _poll_main(args):
         print("Tags:   ")
         for tag in sorted(status.tags):
             print(" -", tag)
-        print("Players:")
+        print("Players:",
+              "{0.current}/{0.max} ({0.bots} bots)".format(status.players))
         for name, score, duration in players:
             print(" -", str(duration).split(".")[0], str(score).rjust(4), name)

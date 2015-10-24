@@ -21,7 +21,7 @@ colon-separated IP-port form where the IP address it self is in the dotted
 decimal format. For example: ``0.0.0.0:8000``.
 
 Each key is prefixed by ``serverstf`` in order to act as a kind of namespace.
-Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
+Key *namespaces* are separated by forward slashes.
 
 ``SET serverstf/servers``
     A set containing the addresses of all the servers in the cache. This is
@@ -35,18 +35,29 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 
     * ``name``
     * ``map``
-    * ``app_id``
+    * ``application_id``
     * ``players``
-    * ``bots``
-    * ``max``
-    * ``scores``
 
-    The ``scores`` field tracks the names, connection times and scores of
-    each player currently on the server. As this is a non-trivial structure
-    it is stored as a JSON encoded array (still UTF-8 encoded.) The array
-    itself contains further arrays, one for each player. The inner arrays
-    have 3 elements: the player's display name as a string, their connection
-    duration as a float in seconds and their score as an integer.
+    The ``players`` field tracks the players on the server. Include the
+    current number of players, the maximum allowed, how many are boths and
+    each individual player's name, score and connection time.
+
+    As this is a non-trivial structure it is stored as a JSON object (still
+    UTF-8 encoded.) The object contains four fields:
+
+    ``current``
+        The current number of players.
+
+    ``max``
+        The maximum number of players supported by the server.
+
+    ``bots``
+        The number of players that are bots.
+
+    ``scores``
+        An array of three-item arrays which contains (in the following order)
+        the player name as a string, their score as a number and their
+        connection duration in seconds as a float.
 
     When one of these server status hashes is retrieved from the cache it
     translated to a :class:`Status` object.
@@ -222,6 +233,10 @@ class Players:
             normalised_scores.append((name, score, duration))
         self._scores = tuple(normalised_scores)
 
+    def __repr__(self):
+        return ("<{0.__class__.__name__} "
+                "{0.current}/{0.max} ({0.bots} bots)>".format(self))
+
     def __iter__(self):
         """Iterate over players and scores.
 
@@ -251,6 +266,69 @@ class Players:
         """Get the current number of NPC players."""
         return self._bots
 
+    @classmethod
+    def from_json(cls, encoded):
+        """Parse a JSON-encoded object.
+
+        This is effectively the inverse of :meth:`to_json`.
+
+        :raises PlayersError: if the JSON or the structure of the JSON object
+            is invalid in any way.
+        :return: a new :class:`Players`.
+        """
+        try:
+            decoded = json.loads(encoded)
+        except ValueError as exc:
+            raise PlayersError("Bad JSON: {}".format(exc)) from exc
+        for field in ["current", "max", "bots", "scores"]:
+            if field not in decoded:
+                raise PlayersError("Missing field {!r}".format(field))
+        try:
+            current = int(decoded["current"])
+            max_ = int(decoded["max"])
+            bots = int(decoded["bots"])
+        except (ValueError, TypeError) as exc:
+            raise PlayersError(
+                "Malformed integer fields: {}".format(exc)) from exc
+        else:
+            scores = []
+            for entry in decoded["scores"]:
+                if not isinstance(entry, list) or not len(entry) == 3:
+                    raise PlayersError(
+                        "Malformed scores; expected list "
+                        "of length 3 but got: {!r}".format(entry))
+                if not isinstance(entry[0], str):
+                    raise PlayersError("First item must be a string "
+                                       "for but got: {!r}".format(entry[0]))
+                if not all(isinstance(i, (int, float)) for i in entry[1:]):
+                    raise PlayersError("Last two items must be numbers "
+                                       "but got: {!r}".format(entry[1:]))
+                scores.append((entry[0],  entry[1],
+                               datetime.timedelta(seconds=entry[2])))
+            return cls(current=current, max_=max_, bots=bots, scores=[])
+
+
+    def to_json(self):
+        """Convert the players to a JSON-encoded object.
+
+        The JSON object will have four fields: ``current``, ``max``, ``bots``
+        and ``scores``. The first three are just plain numbers corresponding
+        to the attributes of the same names. ``scores`` is an array of
+        arrays which contain the name, score and duration (in seconds) of
+        each player.
+
+        :return: a string containing the JSON-encoded object.
+        """
+        object_ = {
+            "current": self.current,
+            "max": self.max,
+            "bots": self.bots,
+            "scores": [],
+        }
+        for name, score, duration in self:
+            object_["scores"].append([name, score, duration.total_seconds()])
+        return json.dumps(object_)
+
 
 class Status:
     """Immutable representation of the state of a server at a point in time.
@@ -267,6 +345,9 @@ class Status:
         by the server. Note that this is the Steam application ID of the
         game's client not the server. For example, in the case of TF2 it is
         440 not 232250.
+    :ivar players: a :class:`Players` instance containing all the players
+        currently on the server. Defaults to an empty :class:`Players` object
+        if not set.
     :ivar tags: a frozen set of all the tags applied to the server.
     """
 
@@ -279,7 +360,9 @@ class Status:
         self._application_id = application_id
         if self._application_id is not None:
             self._application_id =  int(application_id)
-        if not isinstance(players, (Players, type(None))):
+        if players is None:
+            players = Players(current=0, max_=0, bots=0, scores=[])
+        if not isinstance(players, Players):
             raise TypeError("Status players must be "
                             "a {} instance or None".format(Players))
         self._players = players
@@ -657,6 +740,11 @@ class AsyncCache:
         except (ValueError, TypeError) as exc:
             log.warning("Could not convert application_id "
                         "for %s to int: %s", address, exc)
+        try:
+            kwargs["players"] = Players.from_json(hash_.get("players", ""))
+        except PlayersError as exc:
+            log.warning("Could not decode players "
+                        "JSON object for %s: %s", address, exc)
         return Status(address, **kwargs)
 
     @asyncio.coroutine
@@ -690,6 +778,7 @@ class AsyncCache:
             value = getattr(status, attribute)
             if value is not None:
                 hash_[attribute] = str(value)
+        hash_["players"] = status.players.to_json()
         hash_ = {key.encode(self.ENCODING):
                  value.encode(self.ENCODING) for key, value in hash_.items()}
         tags = {tag.encode(self.ENCODING) for tag in status.tags}
