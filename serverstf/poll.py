@@ -19,6 +19,7 @@ they're not in the interest queue.
 """
 
 import asyncio
+import datetime
 import logging
 
 import redis
@@ -71,13 +72,26 @@ def poll(tagger, address):
             "Seemingly broken response from {}".format(address)) from exc
     else:
         tags = tagger.evaluate(info, players, rules)
+        scores = []
+        for entry in players["players"]:
+            # For newly connected players there is a delay before their name
+            # becomes available to the server, so we just filter these out.
+            if entry["name"]:
+                duration = datetime.timedelta(seconds=entry["duration"])
+                scores.append((entry["name"], entry["score"], duration))
+        players_status = serverstf.cache.Players(
+            current=info["player_count"],
+            max_=info["max_players"],
+            bots=info["bot_count"],
+            scores=scores,
+        )
         return serverstf.cache.Status(
             address,
             interest=None,
             name=info["server_name"],
             map_=info["map"],
             application_id=info["app_id"],
-            players=None,
+            players=players_status,
             tags=tags,
         )
 
@@ -166,6 +180,7 @@ def _poll_main(args):
     except PollError as exc:
         raise serverstf.FatalError from exc
     else:
+        players = sorted(status.players, key=lambda p: p[1], reverse=True)
         print("\nStatus\n------")
         print("Address:", status.address)
         print("App:    ", status.application_id)
@@ -174,3 +189,6 @@ def _poll_main(args):
         print("Tags:   ")
         for tag in sorted(status.tags):
             print(" -", tag)
+        print("Players:")
+        for name, score, duration in players:
+            print(" -", str(duration).split(".")[0], str(score).rjust(4), name)

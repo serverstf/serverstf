@@ -84,6 +84,7 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 
 import asyncio
 import contextlib
+import datetime
 import functools
 import inspect
 import ipaddress
@@ -103,6 +104,10 @@ log = logging.getLogger(__name__)
 
 class AddressError(ValueError):
     """Exception for all errors related to :class:`Address`es."""
+
+
+class PlayersError(ValueError):
+    """Exception raised for invalid :class:`Players` objects."""
 
 
 class NotifierError(Exception):
@@ -190,6 +195,63 @@ class Address:
         return self._port
 
 
+class Players:
+    """Immutable representation of the server players at a point in time.
+
+    :ivar current: the current number of players as an integer.
+    :ivar max: the maximum number of players supported by the server as an
+        integer.
+    :ivar bots: the current number of players that are bots as an integer.
+
+    :param scores: an iterable of three-item tuples containing the player's
+        name as a string, their score as an integer and their connection
+        duration as a :class:`datetime.timedelta`.
+    """
+
+    def __init__(self, *, current, max_, bots, scores):
+        self._current = int(current)
+        self._max = int(max_)
+        self._bots = int(bots)
+        normalised_scores = []
+        for name, score, duration in scores:
+            name = str(name)
+            score = int(score)
+            if not isinstance(duration, datetime.timedelta):
+                raise PlayersError("Player connection duration must "
+                                   "be a {} object".format(datetime.timedelta))
+            normalised_scores.append((name, score, duration))
+        self._scores = tuple(normalised_scores)
+
+    def __iter__(self):
+        """Iterate over players and scores.
+
+        When iterated on this yields a tuple for each connected player
+        containing their name, score and connection duration. The players
+        themselves should never be considered to be in any particular order.
+
+        .. note::
+            It's possible for the number of players returned by this iterator
+            to be less than or greater than that of the :attr:`current`
+            players.
+        """
+        return iter(self._scores)
+
+    @property
+    def current(self):
+        """Get the current number of players."""
+        return self._current
+
+    @property
+    def max(self):
+        """Get the maximum number of players."""
+        return self._max
+
+    @property
+    def bots(self):
+        """Get the current number of NPC players."""
+        return self._bots
+
+
 class Status:
     """Immutable representation of the state of a server at a point in time.
 
@@ -217,6 +279,9 @@ class Status:
         self._application_id = application_id
         if self._application_id is not None:
             self._application_id =  int(application_id)
+        if not isinstance(players, (Players, type(None))):
+            raise TypeError("Status players must be "
+                            "a {} instance or None".format(Players))
         self._players = players
         self.tags = frozenset(tags)
 
@@ -481,7 +546,7 @@ class AsyncCache:
         """
         self._connection.close()
         # Hack to work around the fact that closing the connection doesn't
-        # clean upt tasks started by asyncio_redis. See:
+        # clean up tasks started by asyncio_redis. See:
         # https://github.com/jonathanslenders/asyncio-redis/issues/56
         if not self._loop.is_running():
             self._loop.run_until_complete(asyncio.sleep(0))
