@@ -61,9 +61,9 @@ def sb(info, players, rules, tags):
 
 @tag("mode:vsh", ["tf2", "mode:arena"])
 def vsh(info, players, rules, tags):
-    """Versus Saxton Hale
+    """Versus Saxton Hale.
 
-    Official thread: http://bit.ly/1jZTvex
+    Official thread: https://forums.alliedmods.net/showthread.php?t=244209
     """
     return ("tf2" in tags
             and "mode:arena" in tags
