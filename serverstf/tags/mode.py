@@ -86,3 +86,8 @@ def dr(info, players, rules, tags):
 def surf(info, players, rules, tags):
     return ("tf2" in tags
             and info["map"].lower().startswith("surf_"))
+
+
+@tag("mode:mge", ["tf2"])
+def mge(info, players, rules, tags):
+    return "tf2" in tags and info["map"].lower().startswith("mge_")
