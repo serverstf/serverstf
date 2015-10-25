@@ -1,0 +1,12 @@
+language: python
+python:
+    - "3.4"
+install:
+    - python setup.py install
+script:
+    - python -m serverstf --help
+    - python -m serverstf poll --help
+    - python -m serverstf poller --help
+    - python -m serverstf ui --help
+    - python -m serverstf sync --help
+    - python -m serverstf websocket --help
