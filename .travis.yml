@@ -3,6 +3,8 @@ python:
     - "3.4"
 install:
     - python setup.py install
+    - npm install
+    - node_modules/.bin/bower install
 script:
     - python -m serverstf --help
     - python -m serverstf poll --help
@@ -10,3 +12,4 @@ script:
     - python -m serverstf ui --help
     - python -m serverstf sync --help
     - python -m serverstf websocket --help
+    - node_modules/.bin/grunt
