@@ -1,6 +1,6 @@
 define ->
 
-    factory = ($rootScope, Socket) ->
+    factory = ($rootScope, Socket, Modal) ->
 
         class Server
 
@@ -56,6 +56,12 @@ define ->
                 server.server.tags = entity.tags
                 server.server.players = entity.players
                 server.server.country = entity.country
+                if server.server.players.current > 0
+                    Modal.open("ServerDetails", {
+                        ip: server.server.ip,
+                        port: server.server.port,
+                    })
+
 
             # Convert an IP address and port number to a string.
             #
@@ -109,5 +115,5 @@ define ->
 
     return _ =
         "name": "Server"
-        "dependencies": ["$rootScope", "Socket"]
+        "dependencies": ["$rootScope", "Socket", "Modal"]
         "service": factory

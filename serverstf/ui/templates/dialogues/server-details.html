@@ -57,7 +57,7 @@
   <div class="svtf-details-players">
     <div>
       <h3>Players</h3>
-      20/14
+      {{controller.server.players.current}}/{{controller.server.players.max}}
     </div>
     <div class="svtf-details-players-table">
       <table>
@@ -70,11 +70,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="player in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-            <td>Bot {{player}}</td>
-            <td>{{100 - (player * 3.2)|number:0}}</td>
-            <td></td>
-            <td></td>
+          <tr ng-repeat="player in controller.players|orderBy:'-score'">
+            <td>{{player.name}}</td>
+            <td>{{player.score|number}}</td>
+            <td>{{player.duration}}</td>
+            <td>{{player.rate|number}}</td>
           </tr>
         </tbody>
       </table>

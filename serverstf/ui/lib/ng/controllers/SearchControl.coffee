@@ -1,6 +1,6 @@
 define ->
 
-    factory = ($scope, Server, Socket, Modal) ->
+    factory = ($scope, Server, Socket) ->
 
         # Server search controller.
         #
@@ -31,7 +31,6 @@ define ->
                 server = Server.get(ip, port)
                 if server not in @servers
                     @servers.push(server)
-                    Modal.open("ServerDetails", {ip: ip, port: port})
                 else
                     server.free()
 
@@ -90,5 +89,5 @@ define ->
 
     return _ =
         "name": "SearchControl"
-        "dependencies": ["$scope", "Server", "Socket", "Modal"]
+        "dependencies": ["$scope", "Server", "Socket"]
         "controller": factory
