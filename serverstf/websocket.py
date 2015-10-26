@@ -126,6 +126,24 @@ class Client:
 
         ``tags``
             An array of tags currently applied to the server as strings.
+
+        ``players``
+            An object describing the players on the server. This object has
+            four fields of its own:
+
+            ``current``
+                The current number of players as an integer.
+
+            ``max``
+                The maximum number of players as an integer.
+
+            ``bots``
+                The number of players who are bots as an integer.
+
+            ``scores``
+                An array of three-item arrays which contain player names as a
+                string, their score as a number and connection duration as
+                a number in that order.
         """
         status = yield from self._cache.get(address)
         yield from self.send("status", {
@@ -133,9 +151,14 @@ class Client:
             "port": status.address.port,
             "name": status.name or "",
             "map": status.map or "",
-            "players": 0,
             "tags": list(status.tags),
             "country": "GB",
+            "players": {
+                "current": status.players.current,
+                "max": status.players.max,
+                "bots": status.players.bots,
+                "scores": list(status.players),
+            },
         })
 
     @validate(address)
