@@ -305,7 +305,7 @@ class Players:
                                        "but got: {!r}".format(entry[1:]))
                 scores.append((entry[0],  entry[1],
                                datetime.timedelta(seconds=entry[2])))
-            return cls(current=current, max_=max_, bots=bots, scores=[])
+            return cls(current=current, max_=max_, bots=bots, scores=scores)
 
 
     def to_json(self):

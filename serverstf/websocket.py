@@ -157,7 +157,8 @@ class Client:
                 "current": status.players.current,
                 "max": status.players.max,
                 "bots": status.players.bots,
-                "scores": list(status.players),
+                "scores": list([n, s, d.total_seconds()]
+                                for n, s, d in status.players),
             },
         })
 
