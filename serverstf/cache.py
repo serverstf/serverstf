@@ -493,7 +493,7 @@ class Notifier:
         if self.watching:
             raise NotifierError(
                 "Notifier in watch mode; cannot send notifications")
-        channel_server = self._channel(self.TAG, address)
+        channel_server = self._channel(self.TAG, tag)
         log.debug("Publish %s", channel_server)
         yield from self._connection.publish(
             channel_server, str(address).encode(self._encoding))
