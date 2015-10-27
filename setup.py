@@ -7,12 +7,13 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         "asyncio-redis",
-        "websockets",
+        "geoip2",
         "pyramid",
         "pyramid_jinja2",
         "python-valve",
         "venusian",
         "voluptuous",
         "waitress",
+        "websockets",
     ],
 )

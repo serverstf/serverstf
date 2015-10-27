@@ -21,7 +21,9 @@ they're not in the interest queue.
 import asyncio
 import datetime
 import logging
+import pathlib
 
+import geoip2.database
 import valve.source.a2s
 import valve.source.messages
 
@@ -93,6 +95,7 @@ def poll(tagger, address):
             players=players_status,
             tags=tags,
         )
+
 
 def _interest_queue_iterator(cache):
     """Expose a cache's interest queue as an iterator.
@@ -169,23 +172,37 @@ def _poll_main_args(parser):
         type=serverstf.cache.Address.parse,
         help="The address of the server to poll in the <ip>:<port> form."
     )
+    parser.add_argument(
+        "--geoip",
+        type=pathlib.Path,
+        required=True,
+    )
 
 
 @serverstf.subcommand("poll", _poll_main_args)
 def _poll_main(args):
+    geoip = geoip2.database.Reader(str(args.geoip))
     tagger = serverstf.tags.Tagger.scan(__package__)
     try:
         status = poll(tagger, args.address)
     except PollError as exc:
         raise serverstf.FatalError from exc
     else:
+        location = geoip.city(str(args.address.ip))
         players = sorted(status.players, key=lambda p: p[1], reverse=True)
         print("\nStatus\n------")
-        print("Address:", status.address)
-        print("App:    ", status.application_id)
-        print("Name:   ", status.name)
-        print("Map:    ", status.map)
-        print("Tags:   ")
+        print()
+        print("Address:  ", status.address)
+        print(
+            "Location: ",
+            location.country.iso_code,
+            location.location.latitude,
+            location.location.longitude,
+        )
+        print("App:      ", status.application_id)
+        print("Name:     ", status.name)
+        print("Map:      ", status.map)
+        print("Tags:     ")
         for tag in sorted(status.tags):
             print(" -", tag)
         print("Players:",

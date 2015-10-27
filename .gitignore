@@ -11,3 +11,4 @@ serverstf/ui/scripts/
 serverstf/ui/styles/*.css
 
 .coverage
+*.mmdb
