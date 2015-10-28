@@ -24,6 +24,7 @@ import logging
 import pathlib
 
 import geoip2.database
+import maxminddb
 import valve.source.a2s
 import valve.source.messages
 
@@ -39,15 +40,19 @@ class PollError(Exception):
     """Exception raised for all polling errors."""
 
 
-def poll(tagger, address):
+# TODO: refactor this sick filth
+def poll(tagger, geoip, address):
     """Poll the state of a server.
 
     This will issue a number of requests to the server at the given address
     to determine its current state. This state is then used to calculate the
-    tags that should be applied to the server.
+    tags that should be applied to the server. The location of the server is
+    also looked up in a GeoIP database.
 
     :param serverstf.tags.Tagger tagger: the tagger used to determine server
         tags.
+    :param geoip2.database.Reader geoip: the MaxMind GeoIP2 database used to
+        determine the geographic location of the server.
     :param servers.cache.Address address: the address of the server to poll.
 
     :raise PollError: if the server is unreachable or does not return a
@@ -73,6 +78,7 @@ def poll(tagger, address):
             "Seemingly broken response from {}".format(address)) from exc
     else:
         tags = tagger.evaluate(info, players, rules)
+        location = geoip.city(str(address.ip))
         scores = []
         for entry in players["players"]:
             # For newly connected players there is a delay before their name
@@ -112,7 +118,7 @@ def _interest_queue_iterator(cache):
             return
 
 
-def _watch(cache, all_):
+def _watch(cache, geoip, all_):
     """Poll servers in the cache.
 
     This will poll servers in the cache updating their statuses as it goes.
@@ -121,6 +127,8 @@ def _watch(cache, all_):
 
     :param serverstf.cache.Cache cache: the server status cache to poll and
         write updates to.
+    :param geoip2.database.Reader geoip: the MaxMind GeoIP2 database used to
+        determine the geographic location of the servers.
     :param bool all_: if ``True`` then every server in the cache will be
         polled. Otherwise only servers which exist in the internet queue
         will be.
@@ -134,7 +142,7 @@ def _watch(cache, all_):
             addresses = _interest_queue_iterator(cache)
         for address in addresses:
             try:
-                status = poll(tagger, address)
+                status = poll(tagger, geoip, address)
             except PollError as exc:
                 log.error("Couldn't poll {}: {}".format(address, exc))
             else:
@@ -155,14 +163,27 @@ def _poller_main_args(parser):
         help=("When set the poller will poll all servers "
               "in the cache, not only those in the interest queue."),
     )
+    parser.add_argument(
+        "--geoip",
+        type=pathlib.Path,
+        required=True,
+    )
 
 
 @serverstf.subcommand("poller", _poller_main_args)
 def _poller_main(args):
     log.info("Starting poller")
     loop = asyncio.get_event_loop()
-    with serverstf.cache.Cache.connect(args.url, loop) as cache:
-        _watch(cache, args.all)
+    try:
+        log.info("Loading geoip database from %s", args.geoip)
+        geoip = geoip2.database.Reader(str(args.geoip))
+    except maxminddb.InvalidDatabaseError as exc:
+        raise serverstf.FatalError(exc)
+    else:
+        with serverstf.cache.Cache.connect(args.url, loop) as cache:
+            _watch(cache, geoip, args.all)
+    finally:
+        geoip.close()
     log.info("Stopping poller")
 
 
