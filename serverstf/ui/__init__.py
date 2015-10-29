@@ -12,6 +12,25 @@ log = logging.getLogger(__name__)
 
 
 def _make_application():
+    """Construct a Pyramid WSGI application.
+
+    This creates a central Pyramid configurator then adds all routes, views
+    and Jinja2 configuration to it.
+
+    :mod:`pyramid_jinja2` is included into the configuration. The search path
+    for Jinja2 is set to the ``templates/`` directory. The Jinja2 syntax is
+    modified so that it uses square brackets instead of curly ones. E.g.
+    ``{{foo}}`` becomes ``[[foo]]``. This applies to Jinja2 statements as
+    well as comments.
+
+    A route and view is added for ``/`` which serves the Angular application.
+
+    Static views are added for the ``external``, ``scripts``, ``styles``,
+    ``images`` and ``templates`` directories. These are all served directly
+    from the route. E.g. templates are served from ``/templates/``.
+
+    :return: a WSGI application.
+    """
     config = pyramid.config.Configurator(settings={
         "pyramid.reload_templates": True,
     })
@@ -33,6 +52,7 @@ def _make_application():
 
 
 def _main_ui_args(parser):
+    """Arguments for the ``ui`` subcommand."""
     parser.add_argument(
         "port",
         type=int,
@@ -48,6 +68,15 @@ def _main_ui_args(parser):
 
 @serverstf.subcommand("ui", _main_ui_args)
 def _main_ui(args):
+    """Run the UI WSGI application.
+
+    This spawns a Waitress server for the application returned by
+    :func:`_make_application`. It will listen on the port defined by the
+    command line arguments.
+
+    If the command line arguments specified ``--development`` then the
+    ``expose_tracebacks`` option will be enabled for Waitress.
+    """
     application = _make_application()
     kwargs = {
         "port": args.port,
