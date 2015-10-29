@@ -144,15 +144,30 @@ class Client:
                 An array of three-item arrays which contain player names as a
                 string, their score as a number and connection duration as
                 a number in that order.
+
+        ``country``
+            The location of the server as an ISO 3166 two-letter country code.
+
+        ``latitude``
+            The location of the server in terms of latitude as a number.
+
+        ``longitude``
+            The location of the server in terms of longitude as a number.
+
+        If the location of the server is not conclusively known then all
+        location based fields (``country``, ``latitude`` and ``longitude``)
+        are set to ``None``/``null``.
+
+        The location is considered to be conclusively known if all location
+        fields are not ``None``.
         """
         status = yield from self._cache.get(address)
-        yield from self.send("status", {
+        entity = {
             "ip": str(status.address.ip),
             "port": status.address.port,
             "name": status.name or "",
             "map": status.map or "",
             "tags": list(status.tags),
-            "country": "GB",
             "players": {
                 "current": status.players.current,
                 "max": status.players.max,
@@ -160,7 +175,17 @@ class Client:
                 "scores": list([n, s, d.total_seconds()]
                                 for n, s, d in status.players),
             },
-        })
+            "country": None,
+            "latitude": None,
+            "longitude": None,
+        }
+        if (status.country is not None
+                and status.latitude is not None
+                and status.longitude is not None):
+            entity["country"] = status.country
+            entity["latitude"] = status.latitude
+            entity["longitude"] = status.longitude
+        yield from self.send("status", entity)
 
     @validate(address)
     @asyncio.coroutine
