@@ -13,7 +13,13 @@ define ->
                 @map = ""
                 @tags = []
                 @players = 0
-                @country = ""
+                @country = null
+                @latitude = null
+                @longitude = null
+
+            hasLocation: =>
+                return @country != null and
+                    @latitude != null and @longitude != null
 
         # Access and track server states.
         #
@@ -56,6 +62,9 @@ define ->
                 server.server.tags = entity.tags
                 server.server.players = entity.players
                 server.server.country = entity.country
+                server.server.latitude = entity.latitude
+                server.server.longitude = entity.longitude
+                # TODO: remove
                 if server.server.players.current > 0
                     Modal.open("ServerDetails", {
                         ip: server.server.ip,
