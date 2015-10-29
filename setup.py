@@ -17,4 +17,9 @@ setuptools.setup(
         "waitress",
         "websockets",
     ],
+    extras_require={
+        "development": [
+            "pylint",
+        ],
+    },
 )

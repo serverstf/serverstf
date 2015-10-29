@@ -2,7 +2,7 @@ language: python
 python:
     - "3.4"
 install:
-    - python setup.py install
+    - python setup.py install[development]
     - npm install
     - node_modules/.bin/bower install
 script:
@@ -13,3 +13,4 @@ script:
     - python -m serverstf sync --help
     - python -m serverstf websocket --help
     - node_modules/.bin/grunt
+    - pylint serverstf

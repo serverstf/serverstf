@@ -26,8 +26,14 @@ editable mode into an isolated environment, e.g. using `virtualenv`.
 ```shell
 $ virtualenv -p $(which python3) env
 $ . env/bin/activate
-$ pip install -e .
+$ pip install -e .[development]
 ```
+
+Note that `[development]` will ensure that development dependencies will
+also be installed along side core packages. This includes things like
+[Pylint](http://www.pylint.org/) which can be used to check the Python source.
+Installing these extra packages isn't strictly necessary as long as you're
+certain you won't need them -- e.g. you're just adding a map image.
 
 
 ### Install UI Dependencies ###
