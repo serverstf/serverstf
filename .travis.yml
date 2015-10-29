@@ -2,7 +2,7 @@ language: python
 python:
     - "3.4"
 install:
-    - python setup.py install[development]
+    - pip install -e .[development]
     - npm install
     - node_modules/.bin/bower install
 script:
