@@ -40,7 +40,34 @@ class PollError(Exception):
     """Exception raised for all polling errors."""
 
 
-# TODO: refactor this sick filth
+def _query_server(address):
+    """Query the server info, players and rules.
+
+    This issues a number of A2S queries to server identified by the given
+    address.
+
+    :param servers.cache.Address address: the address of the server to query.
+
+    :raise PollError: if the server is unreachable or does not return a
+        valid response.
+    :return: a tuple containing the server info, players and rules as returned
+        by a :class:`valve.source.a2s.ServerQuerier`.
+    """
+    query = valve.source.a2s.ServerQuerier(
+        (str(address.ip), address.port), timeout=5)
+    try:
+        return query.get_info(), query.get_players(), query.get_rules()
+    except valve.source.a2s.NoResponseError as exc:
+        raise PollError("Timed out waiting for "
+                        "response from {}".format(address)) from exc
+    except NotImplementedError as exc:
+        raise PollError("Compressed fragments; "
+                        "couldn't poll {}".format(address)) from exc
+    except valve.source.messages.BrokenMessageError as exc:
+        raise PollError(
+            "Seemingly broken response from {}".format(address)) from exc
+
+
 def poll(tagger, geoip, address):
     """Poll the state of a server.
 
@@ -55,52 +82,35 @@ def poll(tagger, geoip, address):
         determine the geographic location of the server.
     :param servers.cache.Address address: the address of the server to poll.
 
-    :raise PollError: if the server is unreachable or does not return a
-        valid response.
     :return: a :class:`serverstf.cache.Status` containing the up-to-date
         state of the server.
     """
     log.debug("Polling %s", address)
-    query = valve.source.a2s.ServerQuerier(
-        (str(address.ip), address.port), timeout=5)
-    try:
-        info = query.get_info()
-        players = query.get_players()
-        rules = query.get_rules()
-    except valve.source.a2s.NoResponseError as exc:
-        raise PollError("Timed out waiting for "
-                        "response from {}".format(address)) from exc
-    except NotImplementedError as exc:
-        raise PollError("Compressed fragments; "
-                        "couldn't poll {}".format(address)) from exc
-    except valve.source.messages.BrokenMessageError as exc:
-        raise PollError(
-            "Seemingly broken response from {}".format(address)) from exc
-    else:
-        tags = tagger.evaluate(info, players, rules)
-        location = geoip.city(str(address.ip))
-        scores = []
-        for entry in players["players"]:
-            # For newly connected players there is a delay before their name
-            # becomes available to the server, so we just filter these out.
-            if entry["name"]:
-                duration = datetime.timedelta(seconds=entry["duration"])
-                scores.append((entry["name"], entry["score"], duration))
-        players_status = serverstf.cache.Players(
-            current=info["player_count"],
-            max_=info["max_players"],
-            bots=info["bot_count"],
-            scores=scores,
-        )
-        return serverstf.cache.Status(
-            address,
-            interest=None,
-            name=info["server_name"],
-            map_=info["map"],
-            application_id=info["app_id"],
-            players=players_status,
-            tags=tags,
-        )
+    info, players, rules = _query_server(address)
+    tags = tagger.evaluate(info, players, rules)
+    location = geoip.city(str(address.ip))
+    scores = []
+    for entry in players["players"]:
+        # For newly connected players there is a delay before their name
+        # becomes available to the server, so we just filter these out.
+        if entry["name"]:
+            duration = datetime.timedelta(seconds=entry["duration"])
+            scores.append((entry["name"], entry["score"], duration))
+    players_status = serverstf.cache.Players(
+        current=info["player_count"],
+        max_=info["max_players"],
+        bots=info["bot_count"],
+        scores=scores,
+    )
+    return serverstf.cache.Status(
+        address,
+        interest=None,
+        name=info["server_name"],
+        map_=info["map"],
+        application_id=info["app_id"],
+        players=players_status,
+        tags=tags,
+    )
 
 
 def _interest_queue_iterator(cache):
