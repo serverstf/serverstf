@@ -106,6 +106,7 @@ import urllib.parse
 
 import asyncio_redis
 import asyncio_redis.encoders
+import iso3166
 
 import serverstf
 
@@ -348,11 +349,16 @@ class Status:
     :ivar players: a :class:`Players` instance containing all the players
         currently on the server. Defaults to an empty :class:`Players` object
         if not set.
+    :ivar country: the country of server as an ISO 3166 two-letter
+        country identifier string.
+    :ivar latitude: the latitude for the location of the server as a float.
+    :ivar longitude: the longitude for the location of the server as a float.
     :ivar tags: a frozen set of all the tags applied to the server.
     """
 
     def __init__(self, address, *, interest, name,
-                 map_, application_id, players, tags):
+                 map_, application_id, players,
+                 country, latitude, longitude, tags):
         self._address = address
         self._interest = 0 if interest is None else int(interest)
         self._name = name if name is None else str(name)
@@ -366,6 +372,12 @@ class Status:
             raise TypeError("Status players must be "
                             "a {} instance or None".format(Players))
         self._players = players
+        if country is not None and country not in iso3166.countries_by_alpha2:
+            raise TypeError("{!r} is not a valid ISO "
+                            "3166 country code".format(country))
+        self._country = country
+        self._latitude = latitude if latitude is None else float(latitude)
+        self._longitude = longitude if longitude is None else float(longitude)
         self.tags = frozenset(tags)
 
     def __repr__(self):
@@ -401,6 +413,21 @@ class Status:
     def players(self):
         """Get the current players."""
         return self._players
+
+    @property
+    def country(self):
+        """Get the country of the server as a ISO 3166 identifier."""
+        return self._country
+
+    @property
+    def latitude(self):
+        """Get the latitude for the server's location."""
+        return self._latitude
+
+    @property
+    def longitude(self):
+        """get the longitude for the server's location."""
+        return self._longitude
 
 
 class Notifier:
@@ -733,6 +760,9 @@ class AsyncCache:
             "map_": hash_.get("map"),
             "application_id": None,
             "players": None,
+            "country": hash_.get("country"),
+            "latitude": None,
+            "longitude": None,
             "tags": tags,
         }
         try:
@@ -740,6 +770,12 @@ class AsyncCache:
         except (ValueError, TypeError) as exc:
             log.warning("Could not convert application_id "
                         "for %s to int: %s", address, exc)
+        for field in ("latitude", "longitude"):
+            try:
+                kwargs[field] = float(hash_.get(field))
+            except (ValueError, TypeError) as exc:
+                log.warning("Could not convert %s for %s "
+                            "to float: %s", field, address, exc)
         try:
             kwargs["players"] = Players.from_json(hash_.get("players", ""))
         except PlayersError as exc:
@@ -774,7 +810,8 @@ class AsyncCache:
         key_hash = self._key("servers", status.address)
         key_tags = self._key("servers", status.address, "tags")
         hash_ = {}
-        for attribute in {"name", "map", "application_id"}:
+        for attribute in {"name", "map", "application_id",
+                          "country", "latitude", "longitude"}:
             value = getattr(status, attribute)
             if value is not None:
                 hash_[attribute] = str(value)

@@ -109,6 +109,9 @@ def poll(tagger, geoip, address):
         map_=info["map"],
         application_id=info["app_id"],
         players=players_status,
+        country=location.country.iso_code,
+        latitude=location.location.latitude,
+        longitude=location.location.longitude,
         tags=tags,
     )
 
@@ -215,7 +218,7 @@ def _poll_main(args):
     geoip = geoip2.database.Reader(str(args.geoip))
     tagger = serverstf.tags.Tagger.scan(__package__)
     try:
-        status = poll(tagger, args.address)
+        status = poll(tagger, geoip, args.address)
     except PollError as exc:
         raise serverstf.FatalError from exc
     else:
@@ -224,12 +227,7 @@ def _poll_main(args):
         print("\nStatus\n------")
         print()
         print("Address:  ", status.address)
-        print(
-            "Location: ",
-            location.country.iso_code,
-            location.location.latitude,
-            location.location.longitude,
-        )
+        print("Location: ", status.country, status.latitude, status.longitude)
         print("App:      ", status.application_id)
         print("Name:     ", status.name)
         print("Map:      ", status.map)
