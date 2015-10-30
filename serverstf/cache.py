@@ -108,8 +108,6 @@ import asyncio_redis
 import asyncio_redis.encoders
 import iso3166
 
-import serverstf
-
 
 log = logging.getLogger(__name__)
 
@@ -304,7 +302,7 @@ class Players:
                 if not all(isinstance(i, (int, float)) for i in entry[1:]):
                     raise PlayersError("Last two items must be numbers "
                                        "but got: {!r}".format(entry[1:]))
-                scores.append((entry[0],  entry[1],
+                scores.append((entry[0], entry[1],
                                datetime.timedelta(seconds=entry[2])))
             return cls(current=current, max_=max_, bots=bots, scores=scores)
 
@@ -331,7 +329,7 @@ class Players:
         return json.dumps(object_)
 
 
-class Status:
+class Status:  # pylint: disable=too-many-instance-attributes
     """Immutable representation of the state of a server at a point in time.
 
     :ivar address: the :class:`Address` that identifies the server.
@@ -365,7 +363,7 @@ class Status:
         self._map = map_ if map_ is None else str(map_)
         self._application_id = application_id
         if self._application_id is not None:
-            self._application_id =  int(application_id)
+            self._application_id = int(application_id)
         if players is None:
             players = Players(current=0, max_=0, bots=0, scores=[])
         if not isinstance(players, Players):
@@ -559,7 +557,7 @@ class Notifier:
     @asyncio.coroutine
     def unwatch_tag(self, tag):
         """Stop watching a tag for updates."""
-        channel_server = self._channel(self.TAG, address)
+        channel_server = self._channel(self.TAG, tag)
         subscriber = yield from self._get_subscriber()
         yield from subscriber.unsubscribe([channel_server])
         log.debug("Unsubscribed from %s", channel_server)
@@ -608,7 +606,7 @@ class AsyncCache:
         self._connection = connection
         self._loop = loop
         self._notifier = None
-        self._active_iq_item = None
+        self._active_iq_item = (None, None)
         self._iq_key = self._key("interesting")
 
     def __repr__(self):
@@ -636,8 +634,9 @@ class AsyncCache:
             encoder=asyncio_redis.encoders.BytesEncoder(),
         )
 
+        # TODO: This isn't actually needed. Just use __enter__ and __exit__.
         @contextlib.contextmanager
-        def cache_context(cache):
+        def cache_context(cache):  # pylint: disable=missing-docstring
             yield cache
             cache.close()
 
@@ -781,10 +780,11 @@ class AsyncCache:
         except PlayersError as exc:
             log.warning("Could not decode players "
                         "JSON object for %s: %s", address, exc)
-        return Status(address, **kwargs)
+        return Status(address, **kwargs)  # pylint: disable=missing-kwoa
 
+    # TODO: This is too large; needs refactoring.
     @asyncio.coroutine
-    def __set(self, status):
+    def __set(self, status):  # pylint: disable=too-many-locals
         """Commit a server status to the cache.
 
         This sets the primary server state HASH key and the tags SET for the
@@ -921,7 +921,7 @@ class AsyncCache:
         status = yield from self.__get(address)
         if status.interest >= interest:
             yield from self.__push_iq(interest, address)
-        self._active_iq_item = None
+        self._active_iq_item = (None, None)
 
     @asyncio.coroutine
     def interesting(self):
@@ -935,10 +935,10 @@ class AsyncCache:
         :raises EmptyQueueError: if the interest queue is empty.
         :return: a :class:`Address` from the interest queue.
         """
-        if self._active_iq_item:
+        if self._active_iq_item != (None, None):
             raise CacheError("There is already an active interest queue item. "
                              "Did you forget to call update_interest_queue?")
-        while self._active_iq_item is None:
+        while self._active_iq_item == (None, None):
             item_raw = yield from self._connection.lpop(self._iq_key)
             if not item_raw:
                 raise EmptyQueueError
@@ -1059,6 +1059,13 @@ class FiniteAsyncQueue(asyncio.Queue):
         self._closed = True
 
     def _check_end_of_queue(self, item):
+        """Check if an object is the special end-of-queue marker.
+
+        :param item: the object to check.
+
+        :raises EndOfQueueError: if the item is the end-of-queue marker.
+        :return: the given ``item``.
+        """
         if item is self._end_of_queue:
             raise EndOfQueueError
         return item
@@ -1104,7 +1111,7 @@ class _Synchronous(type):
     but still call the asynchronous API internally.
     """
 
-    def __new__(meta, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):
         for base in bases:
             mangle_prefix = "_" + base.__name__ + "__"
             for attr, member in inspect.getmembers(base):
@@ -1116,8 +1123,8 @@ class _Synchronous(type):
                             raise TypeError("The class method {!r} from {} "
                                             "must be explicitly overriden in "
                                             "{!r}".format(attr, base, name))
-                        attrs[attr] = meta._make_synchronous(member)
-        return super().__new__(meta, name, bases, attrs)
+                        attrs[attr] = mcs._make_synchronous(member)
+        return super().__new__(mcs, name, bases, attrs)
 
     @staticmethod
     def _make_synchronous(function):
@@ -1134,7 +1141,7 @@ class _Synchronous(type):
         """
 
         @functools.wraps(function)
-        def synchronous(self, *args, **kwargs):
+        def synchronous(self, *args, **kwargs):  # pylint: disable=missing-docstring
             return self.loop.run_until_complete(
                 function(self, *args, **kwargs))
 
@@ -1158,6 +1165,10 @@ class Cache(AsyncCache, metaclass=_Synchronous):
         return loop.run_until_complete(super().connect(url, loop))
 
     def notifier(self):
+        """Notifiers not available for synchronous caches.
+
+        :raises NotImplementedError:
+        """
         raise NotImplementedError(
             "Notifiers not available for synchronous caches.")
 
