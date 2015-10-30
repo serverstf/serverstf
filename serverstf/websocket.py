@@ -96,7 +96,8 @@ class Client:
         self._cache = cache
         self._notifier = notifier
         self._send_queue = asyncio.Queue()
-        self._watched_tags = set()
+        self._include = set()
+        self._exclude = set()
 
     @asyncio.coroutine
     def send(self, type_, entity):
@@ -243,13 +244,14 @@ class Client:
         """
         include = set(entity["include"])
         exclude = set(entity["exclude"])
-        for old_tag in self._watched_tags - include:
+        for old_tag in self._include - include:
             yield from self._notifier.unwatch_tag(old_tag)
-        self._watched_tags = include
+        self._include = include
+        self._exclude = exclude
         for tag in include:
             yield from self._notifier.watch_tag(tag)
         addresses = yield from self._cache.search(
-            include=include, exclude=exclude)
+            include=self._include, exclude=self._exclude)
         for address in addresses:
             yield from self._send_match(address)
 
