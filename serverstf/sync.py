@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def _sync_main_args(parser):
+    """Command line arguments for the 'sync' subcommand."""
     parser.add_argument(
         "url",
         type=serverstf.redis_url,
@@ -33,6 +34,15 @@ def _sync_main_args(parser):
 
 @serverstf.subcommand("sync", _sync_main_args)
 def _sync_main(args):
+    """Synchronise with the master server.
+
+    This will continually poll the master server for new server addresses.
+    These addresses are then added to the cache which is identified by the
+    command line arguments.
+
+    Note that this merely adds the address to the cache. It doesn't poll the
+    individual servers.
+    """
     log.info("Starting master server synchroniser")
     loop = asyncio.get_event_loop()
     with serverstf.cache.Cache.connect(args.url, loop) as cache:
