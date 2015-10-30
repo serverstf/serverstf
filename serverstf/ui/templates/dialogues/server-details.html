@@ -34,7 +34,11 @@
   <div class="svtf-details-latency">
     <div class="svtf-details-latency-location">
       <h3>Server</h3>
-      <div class="svtf-details-latency-location-map"></div>
+      <div class="svtf-details-latency-location-map">
+        <svtf-location-map
+          latitude="controller.server.latitude"
+          longitude="controller.server.longitude"></svtf-location-map>
+      </div>
     </div>
     <div class="svtf-details-latency-metrics">
       <h3>Approximate Latency</h3>

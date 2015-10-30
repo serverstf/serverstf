@@ -65,7 +65,7 @@ define ->
                 server.server.latitude = entity.latitude
                 server.server.longitude = entity.longitude
                 # TODO: remove
-                if server.server.players.current > 0
+                if server.server.hasLocation()
                     Modal.open("ServerDetails", {
                         ip: server.server.ip,
                         port: server.server.port,

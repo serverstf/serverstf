@@ -26,8 +26,8 @@ def _make_application():
     A route and view is added for ``/`` which serves the Angular application.
 
     Static views are added for the ``external``, ``scripts``, ``styles``,
-    ``images`` and ``templates`` directories. These are all served directly
-    from the route. E.g. templates are served from ``/templates/``.
+    ``images``, ``templates`` and ``data`` directories. These are all served
+    directly from the route. E.g. templates are served from ``/templates/``.
 
     :return: a WSGI application.
     """
@@ -38,7 +38,8 @@ def _make_application():
     config.add_jinja2_search_path(__name__ + ":templates/")
     config.add_route("main", "/")
     config.add_view(route_name="main", renderer="main.jinja2")
-    for static in ["external", "scripts", "styles", "images", "templates"]:
+    for static in ["external", "scripts",
+                   "styles", "images", "templates", "data"]:
         config.add_static_view(static, "{}:{}/".format(__name__, static))
     config.commit()
     jinja2_env = config.get_jinja2_environment()
