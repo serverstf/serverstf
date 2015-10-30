@@ -67,14 +67,14 @@
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Score</th>
-            <th>Duration</th>
-            <th>Score / min</th>
+            <th ng-click="controller.sortPlayers('name')">Name</th>
+            <th ng-click="controller.sortPlayers('score')">Score</th>
+            <th ng-click="controller.sortPlayers('duration')">Duration</th>
+            <th ng-click="controller.sortPlayers('rate')">Score / min</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="player in controller.players|orderBy:'-score'">
+          <tr ng-repeat="player in controller.players|orderBy:controller.players_sort">
             <td>{{player.name}}</td>
             <td>{{player.score|number}}</td>
             <td>{{player.duration}}</td>

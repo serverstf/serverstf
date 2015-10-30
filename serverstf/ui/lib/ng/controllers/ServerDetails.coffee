@@ -8,6 +8,7 @@ define ->
                 config = Modal.getConfig()
                 @server = Server.get(config.ip, config.port)
                 @players = []
+                @players_sort = "-score"
                 $scope.$watch(
                     => @server.name
                     (name) -> Modal.title = name
@@ -16,6 +17,12 @@ define ->
                     => @server.players,
                     @_updatePlayers
                 )
+
+            sortPlayers: (field) =>
+                if @players_sort == field
+                    @players_sort = "-#{field}"
+                else
+                    @players_sort = field
 
             _updatePlayers: (players) =>
                 @players.length = 0
