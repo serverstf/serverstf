@@ -157,12 +157,13 @@ def _watch(cache, geoip, all_):
             try:
                 status = poll(tagger, geoip, address)
             except PollError as exc:
-                log.error("Couldn't poll {}: {}".format(address, exc))
+                log.error("Couldn't poll %s: %s", address, exc)
             else:
                 cache.set(status)
 
 
 def _poller_main_args(parser):
+    """Command line arguments for the 'poller' subcommand."""
     parser.add_argument(
         "url",
         type=serverstf.redis_url,
@@ -185,6 +186,14 @@ def _poller_main_args(parser):
 
 @serverstf.subcommand("poller", _poller_main_args)
 def _poller_main(args):
+    """Continuously poll servers from the cache.
+
+    Depending on whether ``--all`` was specified or not this will continuously
+    poll servers from the interest queue or the cache in general. The updated
+    status of each server is written to the cache.
+
+    :raises serverstf.FatalError: if the GeoIP database cannot be loaded.
+    """
     log.info("Starting poller")
     loop = asyncio.get_event_loop()
     try:
@@ -201,6 +210,7 @@ def _poller_main(args):
 
 
 def _poll_main_args(parser):
+    """Command line arguments for the 'poll' subcommand."""
     parser.add_argument(
         "address",
         type=serverstf.cache.Address.parse,
@@ -215,6 +225,11 @@ def _poll_main_args(parser):
 
 @serverstf.subcommand("poll", _poll_main_args)
 def _poll_main(args):
+    """Poll a server once.
+
+    This will poll a given server once and print out its status. The status
+    is *not* written to the cache.
+    """
     geoip = geoip2.database.Reader(str(args.geoip))
     tagger = serverstf.tags.Tagger.scan(__package__)
     try:
@@ -222,7 +237,6 @@ def _poll_main(args):
     except PollError as exc:
         raise serverstf.FatalError from exc
     else:
-        location = geoip.city(str(args.address.ip))
         players = sorted(status.players, key=lambda p: p[1], reverse=True)
         print("\nStatus\n------")
         print()
