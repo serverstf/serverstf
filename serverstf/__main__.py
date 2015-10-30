@@ -1,7 +1,6 @@
 """Serverstf application entry-point."""
 
 import argparse
-import enum
 import logging
 import sys
 import time
@@ -89,7 +88,7 @@ def parse_args(argv=None):
     subparsers.required = True
     scanner = venusian.Scanner(subcommands=[])
     scanner.scan(serverstf, categories=[__package__ + ":subcommand"])
-    for subcommand in scanner.subcommands:
+    for subcommand in scanner.subcommands:  # pylint: disable=no-member
         subparser = subparsers.add_parser(subcommand.name)
         subparser.set_defaults(command_func=subcommand.entry_point)
         if subcommand.arguments:
