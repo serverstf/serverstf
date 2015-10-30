@@ -172,18 +172,3 @@ def tag(tag, dependancies=()):
         return function
 
     return decorator
-
-
-@tag("mge", ["tf2"])
-def mge(info, players, rules, tags):
-    return "tf2" in tags and info["map"].startswith("mge_")
-
-
-@tag("tf2")
-def tf2(info, players, rules, tags):
-    return info["app_id"] == 440
-
-
-@tag("csgo")
-def csgo(info, players, rules, tags):
-    return info["app_id"] == 730
