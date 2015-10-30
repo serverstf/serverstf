@@ -2,6 +2,7 @@ define ->
 
     DIALOGUES =
         "ServerDetails": "templates/dialogues/server-details.html"
+        "SignIn": "templates/dialogues/sign-in.html"
 
     factory = ->
 

@@ -1,0 +1,46 @@
+
+.svtf-sign-in {
+    display: flex;
+
+    .svtf-sign-in-content {
+        position: relative;  // Force box-shadow over <video>
+        flex: 1 0 30%;
+        box-shadow: 5px 0px 10px -3px rgba(0, 0, 0, 0.25);
+
+        h2 {
+            margin: 0.8em 0;
+            padding: 0;
+            padding-top: 0.8em;
+            border-top: 1px dotted;
+            text-align: center;
+        }
+
+        ul {
+            padding-right: 1em;
+            line-height: 1.6em;
+            list-style-type: circle;
+
+            li {
+                margin: 1em 0;
+            }
+        }
+    }
+
+    a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: inherit;
+        text-decoration: none;
+
+        > * {
+            flex: 0;
+            margin: 1em 0;
+        }
+    }
+
+    video {
+        flex: 1 1 70%;
+        object-fit: fill;  // FIXME: This doesn't work for IE/Edge
+    }
+}

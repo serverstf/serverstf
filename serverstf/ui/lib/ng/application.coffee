@@ -9,6 +9,7 @@ define ["angular"], (angular) ->
         "controller": [
             "SearchControl",
             "ServerDetails",
+            "SignIn",
         ]
         "directive": [
             "LocationMap",
