@@ -1,3 +1,11 @@
+"""The :mod:`serverstf` package.
+
+This package implements all the services used in running a SVTF instance.
+This module specifically includes a number of common utilities used for
+defining subcommand entry-points.
+"""
+
+import argparse
 import collections
 import enum
 import functools
@@ -13,7 +21,7 @@ class FatalError(Exception):
 class ExitStatus(enum.IntEnum):
     """Possible exit statuses for :func:`serverstf.main`."""
 
-    OK = 0
+    OK = 0  # pylint: disable=invalid-name
     FATAL_ERROR = 1
     UNEXPECTED_ERROR = 2
 
@@ -52,10 +60,10 @@ def subcommand(command, configure_parser=None):
     :param str command: the name of the subcommand.
     """
 
-    def callback(scanner, name, obj):  # pylint: disable=unused-argument
+    def callback(scanner, name, obj):  # pylint: disable=unused-argument,missing-docstring
 
         @functools.wraps(obj)
-        def wrapper(args):
+        def wrapper(args):  # pylint: disable=missing-docstring
             ret = obj(args)
             if ret is None:
                 return ExitStatus.OK
@@ -65,7 +73,7 @@ def subcommand(command, configure_parser=None):
         scanner.subcommands.append(Subcommand(
             command, wrapper, configure_parser))
 
-    def decorator(function):
+    def decorator(function):  # pylint: disable=missing-docstring
         venusian.attach(function, callback,
                         category=__package__ + ":subcommand")
         return function
