@@ -1,0 +1,764 @@
+# This file contains lists of map creators for numerous Source maps. Ideally
+# this will be continuously expanded on until it covers the majority of maps
+# in active rotation.
+#
+# The structure is fairly simple. The top-level object is a map which maps
+# Steam application IDs to map names. The map names themself relate to a
+# further map which has the following fields:
+#
+# `link`
+#   A URL to the canonical source of the map if applicable otherwise it
+#   should be null.
+#
+# `official`
+#   A boolean indicating whether or not it's an official map.
+#
+# `community`
+#   A boolean indicating whether or not it's a community-made map.
+#
+# `creators`
+#   A list of objects which describes the creators of the map. Each object
+#   has two fields: `name` and `link`. The name is the ... well, name of the
+#   creator. The `link` is an optional URL to the creator; this may be null.
+#
+#   These lists shouldn't be in any particular order.
+#
+# When linking to other sites, either for a creator or the map it self
+# be mindful that these links will be exposed to users. Preferably only link
+# to Valve-controlled or otherwise reputable sites. E.g. for map creators
+# a link to the Steam profile is preferably to a link to their personal
+# website.
+
+440:
+  ctf_2fort:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  ctf_2fort_invasion:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Miguel Melara
+        link: http://steamcommunity.com/id/kooookie
+      -
+        name: Michael Egan
+        link: http://steamcommunity.com/id/pigsareit
+      -
+        name: The Ronin
+        link: http://steamcommunity.com/id/roninsmastermix
+      -
+        name: Martin Ellis
+        link: http://steamcommunity.com/id/hurrkayofantik
+      -
+        name: Ryan Leitao
+        link: http://steamcommunity.com/id/Freeflow
+      -
+        name: James Wright
+        link: http://steamcommunity.com/id/RetroCitrus
+      -
+        name: Aeon Bollig
+        link: http://steamcommunity.com/id/void001
+  ctf_doublecross:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  ctf_sawmill:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  ctf_turbine:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Flobster
+        link: ~
+  ctf_well:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_5gorge:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_badlands:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_coldfront:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Eric Wong
+        link: http://steamcommunity.com/id/icaruswong
+      -
+        name: David Simon
+        link: http://steamcommunity.com/id/selentic
+      -
+        name: Aeon Bollig
+        link: http://steamcommunity.com/id/void001
+  cp_fastlane:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Arttu Mäki
+        link: http://steamcommunity.com/id/skdr
+  cp_foundry:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_freight:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Jamie Manson
+        link: http://steamcommunity.com/id/Fishbus
+  cp_granary:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_gullywash_final1:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Jan Laroy
+        link: http://forums.tf2maps.net/member.php?u=1926
+  cp_powerhouse:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_process_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Ian Cuslidge
+        link: http://forums.tf2maps.net/member.php?u=2208
+  cp_snakewater_final1:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Toivo Sawen
+        link: http://steamcommunity.com/profiles/76561197998577229
+  cp_standin_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Ian Cuslidge
+        link: http://forums.tf2maps.net/member.php?u=2208
+  cp_well:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_yukon_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Patrick Mulholland
+        link: http://steamcommunity.com/id/mangycarface
+      -
+        name: Joachim Holmér
+        link: http://steamcommunity.com/id/Acegikmo
+  cp_degrootkeep:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_dustbowl:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_egypt_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Sean Cutino
+        link: http://steamcommunity.com/id/sean_c
+  cp_gorge:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_gravelpit:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  cp_junction_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Sean Cutino
+        link: http://steamcommunity.com/id/sean_c
+  cp_manor_event:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+      -
+        name: Tim Johnson
+        link: http://steamcommunity.com/id/Y_M
+      -
+        name: Alex Kreeger
+        link: http://steamcommunity.com/id/Emeriastone
+  cp_mountainlab:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+      -
+        name: Valentin Levillain
+        link: http://steamcommunity.com/id/3Dnj
+  cp_snowplow:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Tim Johnson
+        link: http://steamcommunity.com/id/Y_M
+      -
+        name: Joe Radak
+        link: http://steamcommunity.com/id/nightsfrost
+      -
+        name: John Dekker
+        link: http://steamcommunity.com/id/swampsong
+      -
+        name: Zoey Smith
+        link: http://steamcommunity.com/id/SexyRobot
+      -
+        name: Rebbacus
+        link: http://steamcommunity.com/id/rebbacus
+      -
+        name: James McVinnie
+        link: http://steamcommunity.com/id/mcvee
+      -
+        name: Daniel Escobado
+        link: http://steamcommunity.com/id/nwdan
+      -
+        name: Edward Harrison
+        link: http://steamcommunity.com/id/0edit
+  cp_steel:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Jamie Manson
+        link: http://steamcommunity.com/id/Fishbus
+      -
+        name: Dan Merboth
+        link: http://steamcommunity.com/id/irishtaxidriver
+      -
+        name: FLOOR_MASTER
+        link: http://steamcommunity.com/id/FLOOR_MASTER
+  tc_hydro:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pl_badwater:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pl_barnblitz:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pl_borneo:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Sean Cutino
+        link: http://steamcommunity.com/id/sean_c
+      -
+        name: Matt Leahy
+        link: http://steamcommunity.com/id/vhalin
+  pl_cactuscanyon:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pl_frontier_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Patrick Mulholland
+        link: http://steamcommunity.com/id/mangyCarface
+  pl_goldrush:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pl_hoodoo_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Tim Johnson
+        link: http://steamcommunity.com/id/Y_M
+      -
+        name: Jeroen Dessaux
+        link: http://steamcommunity.com/id/snipergen
+      -
+        name: Wade Fabry
+        link: http://steamcommunity.com/id/nineaxis
+      -
+        name: Drew "Oxy" Fletcher
+        link: ~
+  pl_thundermountain:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pl_upward:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  plr_hightower_event:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  plr_hightower:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  plr_nightfall_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Aaron Garcha
+        link: http://steamcommunity.com/id/psyuk
+  plr_pipeline:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  arena_badlands:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  arena_byre:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Ian Spadin
+        link: https://steamcommunity.com/id/idolon
+  arena_granary:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  arena_lumberyard:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  arena_nucleus:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  arena_offblast_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Magnar Jenssen
+        link: ~
+  arena_ravine:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  arena_sawmill:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  arena_watchtower:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Joshua Shiflet
+        link: http://steamcommunity.com/id/JoshuaC
+  arena_well:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  koth_badlands:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  koth_viaduct_event:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  koth_lakeside_event:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  koth_harvest_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Sean Cutino
+        link: http://steamcommunity.com/id/sean_c
+  koth_harvest_event:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Sean Cutino
+        link: http://steamcommunity.com/id/sean_c
+  koth_king:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Valentin Levillain
+        link: http://steamcommunity.com/id/3Dnj
+  koth_lakeside_final:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Valentin Levillain
+        link: http://steamcommunity.com/id/3Dnj
+  koth_nucleus:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  koth_probed:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: UEAKCrash
+        link: http://crash.tf/
+  koth_sawmill:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  koth_suijin:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Freyja
+        link: http://steamcommunity.com/id/ceruleanblue/
+      -
+        name: Kep Pump
+        link: http://steamcommunity.com/id/earkham/
+  koth_viaduct:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  sd_doomsday_event:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  sd_doomsday:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pd_watergate:
+    link: ~
+    official: yes
+    community: yes
+    creators:
+      -
+        name: Michael Egan
+        link: ~
+  mvm_bigrock:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  mvm_coaltown:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  mvm_decoy:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  mvm_ghost_town:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  mvm_mannhattan:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  mvm_mannworks:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  mvm_rottenburg:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  rd_asteroid:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  ctf_foundry:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  ctf_gorge:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  ctf_thundermountain:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+  pass_warehouse:
+    link: ~
+    official: yes
+    community: no
+    creators:
+      -
+        name: Valve
+        link: http://www.valvesoftware.com/
+      -
+        name: Bad Robot
+        link: http://www.badrobot.com/
+      -
+        name: Escalation Studios
+        link: http://www.escalation.com/
