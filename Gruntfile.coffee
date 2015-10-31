@@ -7,9 +7,9 @@ module.exports = (grunt) ->
             scripts:
                 files: ["serverstf/ui/lib/**/*.coffee"]
                 tasks: ["clean:coffee", "coffee", "bowerRequirejs"]
-            data:
-                files: ["serverstf/ui/data/maps.yaml"]
-                tasks: ["yaml:maps"]
+            maps:
+                files: ["serverstf/ui/data/maps*yaml"]
+                tasks: ["maps"]
         less:
             default:
                 options:
@@ -47,8 +47,15 @@ module.exports = (grunt) ->
                 options:
                     space: 0
                 files:
+                    "serverstf/ui/data/maps.schema.json":
+                        "serverstf/ui/data/maps.schema.yaml"
                     "serverstf/ui/data/maps.json":
                         "serverstf/ui/data/maps.yaml"
+        json_schema:
+            default:
+                files:
+                    "serverstf/ui/data/maps.schema.json":
+                        "serverstf/ui/data/maps.json"
     )
     grunt.loadNpmTasks("grunt-autoprefixer")
     grunt.loadNpmTasks("grunt-bower-requirejs")
@@ -56,11 +63,16 @@ module.exports = (grunt) ->
     grunt.loadNpmTasks("grunt-contrib-coffee")
     grunt.loadNpmTasks("grunt-contrib-less")
     grunt.loadNpmTasks("grunt-contrib-watch")
+    grunt.loadNpmTasks("grunt-json-schema")
     grunt.loadNpmTasks("grunt-yaml")
     grunt.registerTask("requirejs-bower", [
         "clean:coffee",
         "coffee",
         "bowerRequirejs",
+    ])
+    grunt.registerTask("maps", [
+        "yaml",
+        "json_schema",
     ])
     grunt.registerTask("default", [
         "clean",
@@ -68,5 +80,5 @@ module.exports = (grunt) ->
         "autoprefixer",
         "coffee",
         "bowerRequirejs",
-        "yaml",
+        "data",
     ])

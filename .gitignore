@@ -6,7 +6,7 @@ node_modules/
 client/external/
 client/styles/*.css
 
-serverstf/ui/data/maps.json
+serverstf/ui/data/maps*json
 serverstf/ui/external/
 serverstf/ui/scripts/
 serverstf/ui/styles/*.css
