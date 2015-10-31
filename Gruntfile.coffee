@@ -80,5 +80,5 @@ module.exports = (grunt) ->
         "autoprefixer",
         "coffee",
         "bowerRequirejs",
-        "data",
+        "maps",
     ])
