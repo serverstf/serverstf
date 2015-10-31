@@ -31,6 +31,10 @@
 
     .svtf-details-map-identity {
         font-family: "Permanent Marker", cursive;
+
+        &:not(:last-child)::after {
+            content: " & ";
+        }
     }
 
     > * {

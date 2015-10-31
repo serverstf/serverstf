@@ -4,7 +4,11 @@
       <div class="svtf-details-map-details">
         <span>{{controller.server.map}}</span>
         <br>
-        <span>by <span class="svtf-details-map-identity">Michael "Mike" Michaelson</span></span>
+        <span ng-if="controller.map_creators.length > 0">by
+          <span
+            class="svtf-details-map-identity"
+            ng-repeat="creator in controller.map_creators">{{creator.name}}</span>
+        </span>
       </div>
       <div class="svtf-details-map-image">
         <span>Image</span>
@@ -35,9 +39,9 @@
     <div class="svtf-details-latency-location">
       <h3>Server</h3>
       <div class="svtf-details-latency-location-map">
-        <svtf-location-map
+        <!-- <svtf-location-map
           latitude="controller.server.latitude"
-          longitude="controller.server.longitude"></svtf-location-map>
+          longitude="controller.server.longitude"></svtf-location-map> -->
       </div>
     </div>
     <div class="svtf-details-latency-metrics">
