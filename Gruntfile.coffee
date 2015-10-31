@@ -7,6 +7,9 @@ module.exports = (grunt) ->
             scripts:
                 files: ["serverstf/ui/lib/**/*.coffee"]
                 tasks: ["clean:coffee", "coffee", "bowerRequirejs"]
+            data:
+                files: ["serverstf/ui/data/maps.yaml"]
+                tasks: ["yaml:maps"]
         less:
             default:
                 options:
@@ -39,6 +42,13 @@ module.exports = (grunt) ->
         bowerRequirejs:
             target:
                 rjsConfig: "serverstf/ui/scripts/config.js"
+        yaml:
+            maps:
+                options:
+                    space: 0
+                files:
+                    "serverstf/ui/data/maps.json":
+                        "serverstf/ui/data/maps.yaml"
     )
     grunt.loadNpmTasks("grunt-autoprefixer")
     grunt.loadNpmTasks("grunt-bower-requirejs")
@@ -46,6 +56,7 @@ module.exports = (grunt) ->
     grunt.loadNpmTasks("grunt-contrib-coffee")
     grunt.loadNpmTasks("grunt-contrib-less")
     grunt.loadNpmTasks("grunt-contrib-watch")
+    grunt.loadNpmTasks("grunt-yaml")
     grunt.registerTask("requirejs-bower", [
         "clean:coffee",
         "coffee",
@@ -57,4 +68,5 @@ module.exports = (grunt) ->
         "autoprefixer",
         "coffee",
         "bowerRequirejs",
+        "yaml",
     ])
