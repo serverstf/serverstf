@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Authentication Complete</title>
+  </head>
+  <body>
+    <a href="[[request.route_path('authenticate-begin')]]">Restart authentication</a>
+    [% if success %]
+    Authenticated as [[request.authenticated_userid]]
+    [% else %]
+    Authentication failed!
+    [% endif %]
+  </body>
+</html>

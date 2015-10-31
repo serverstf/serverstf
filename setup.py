@@ -12,6 +12,7 @@ setuptools.setup(
         "pyramid",
         "pyramid_jinja2",
         "python-valve",
+        "python3-openid",
         "venusian",
         "voluptuous",
         "waitress",
