@@ -17,13 +17,7 @@ log = logging.getLogger(__name__)
 
 
 @serverstf.cli.subcommand("sync")
-@serverstf.cli.argument(
-    "url",
-    type=serverstf.redis_url,
-    nargs="?",
-    default="//localhost",
-    help="The URL of the Redis database to use for the cache and queues."
-)
+@serverstf.cli.redis
 @serverstf.cli.argument(
     "--all",
     action="store_true",
@@ -42,7 +36,7 @@ def _sync_main(args):
     """
     log.info("Starting master server synchroniser")
     loop = asyncio.get_event_loop()
-    with serverstf.cache.Cache.connect(args.url, loop) as cache:
+    with serverstf.cache.Cache.connect(args.redis, loop) as cache:
         while True:
             msq = valve.source.master_server.MasterServerQuerier()
             addresses_total = 0

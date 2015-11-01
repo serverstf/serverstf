@@ -414,7 +414,7 @@ def _websocket_async_main(args, loop):
     """
     log.info("Starting websocket server on port %i", args.port)
     cache_context = \
-        yield from serverstf.cache.AsyncCache.connect(args.url, loop)
+        yield from serverstf.cache.AsyncCache.connect(args.redis, loop)
     with cache_context as cache:
         yield from websockets.serve(
             Service(cache), port=args.port, loop=loop)
@@ -425,17 +425,11 @@ def _websocket_async_main(args, loop):
 
 
 @serverstf.cli.subcommand("websocket")
+@serverstf.cli.redis
 @serverstf.cli.argument(
     "port",
     type=int,
     help="The port the websocket service will listen on.",
-)
-@serverstf.cli.argument(
-    "url",
-    type=serverstf.redis_url,
-    nargs="?",
-    default="//localhost",
-    help="The URL of the Redis database to use for the cache and queues."
 )
 def _websocket_main(args):
     """Start a websocket server."""
