@@ -105,12 +105,19 @@ def subcommand(command):
     return decorator
 
 
-def argument(*args, **kwargs):
-    """Add arguments to a subcommand.
+def _add_argument(function, *args, **kwargs):
+    """Add arguments to a function.
 
-    This decorator can only be applied to functions also decorated by
-    :func:`subcommand`. The arguments are the exact same as one would pass
-    to :meth:`argparse.ArgumentParser.add_argument`.
+    This adds a :mod:`venusian` callback to the given function in the
+    ``serverstf:arguments`` category that, when scanned, will attempt to
+    add the given command line argument to the corresponding subcommand.
+
+    :param function: the function to add the callback to. This function must
+        be decorated by :func:`subcommand`.
+    :param args: passed to :meth:`argparse.ArgumentParser.add_argument`.
+    :param kwargs: passed to :meth:`argparse.ArgumentParser.add_argument`.
+
+    :return: the given ``function``.
     """
 
     def callback(scanner, name, obj):
@@ -121,12 +128,22 @@ def argument(*args, **kwargs):
         for subcommand in subcommands:
             subcommand.arguments.append((args, kwargs))
 
+    # Depth 2 is required so that we can use this from within decorators.
+    venusian.attach(function, callback,
+                    category=__package__ + ":arguments", depth=2)
+    return function
+
+
+def argument(*args, **kwargs):
+    """Add arguments to a subcommand.
+
+    This decorator can only be applied to functions also decorated by
+    :func:`subcommand`. The arguments are the exact same as one would pass
+    to :meth:`argparse.ArgumentParser.add_argument`.
+    """
+
     def decorator(function):
-        # Depth 2 is required so that we can allow other decorators to use
-        # this one.
-        venusian.attach(function, callback,
-                        category=__package__ + ":arguments", depth=2)
-        return function
+        return _add_argument(function, *args, **kwargs)
 
     return decorator
 
@@ -137,11 +154,12 @@ def geoip(function):
     This adds a mandatory ``--geoip`` argument to a subcommand. The given
     argument will be converted to a :class:`pathlib.Path`.
     """
-    return argument(
+    return _add_argument(
+        function,
         "--geoip",
         type=pathlib.Path,
         required=True,
-    )(function)
+    )
 
 
 def _normalise_redis_url(raw_url):
@@ -177,9 +195,10 @@ def redis(function):
 
     The URL will default to ``//localhost`` normalised.
     """
-    return argument(
+    return _add_argument(
+        function,
         "--redis",
         type=_normalise_redis_url,
         default="//localhost",
         help="The URL of the Redis database to use."
-    )(function)
+    )
