@@ -164,20 +164,14 @@ def _watch(cache, geoip, all_):
 
 
 @serverstf.cli.subcommand("poller")
-@serverstf.cli.argument(
-    "url",
-    type=serverstf.redis_url,
-    nargs="?",
-    default="//localhost",
-    help="The URL of the Redis database to use for the cache and queues."
-)
+@serverstf.cli.geoip
+@serverstf.cli.redis
 @serverstf.cli.argument(
     "--all",
     action="store_true",
     help=("When set the poller will poll all servers "
           "in the cache, not only those in the interest queue."),
 )
-@serverstf.cli.geoip
 def _poller_main(args):
     """Continuously poll servers from the cache.
 
@@ -195,7 +189,7 @@ def _poller_main(args):
     except maxminddb.InvalidDatabaseError as exc:
         raise serverstf.FatalError(exc)
     else:
-        with serverstf.cache.Cache.connect(args.url, loop) as cache:
+        with serverstf.cache.Cache.connect(args.redis, loop) as cache:
             _watch(cache, geoip, args.all)
     finally:
         geoip.close()
