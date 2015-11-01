@@ -11,6 +11,7 @@ commonly used arguments are also included.
 import argparse
 import collections
 import functools
+import pathlib
 
 import venusian
 
@@ -125,3 +126,16 @@ def argument(*args, **kwargs):
         return function
 
     return decorator
+
+
+def geoip(function):
+    """Add an argument for a GeoIP database.
+
+    This adds a mandatory ``--geoip`` argument to a subcommand. The given
+    argument will be converted to a :class:`pathlib.Path`.
+    """
+    return argument(
+        "--geoip",
+        type=pathlib.Path,
+        required=True,
+    )(function)

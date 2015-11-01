@@ -177,11 +177,7 @@ def _watch(cache, geoip, all_):
     help=("When set the poller will poll all servers "
           "in the cache, not only those in the interest queue."),
 )
-@serverstf.cli.argument(
-    "--geoip",
-    type=pathlib.Path,
-    required=True,
-)
+@serverstf.cli.geoip
 def _poller_main(args):
     """Continuously poll servers from the cache.
 
@@ -212,11 +208,7 @@ def _poller_main(args):
     type=serverstf.cache.Address.parse,
     help="The address of the server to poll in the <ip>:<port> form."
 )
-@serverstf.cli.argument(
-    "--geoip",
-    type=pathlib.Path,
-    required=True,
-)
+@serverstf.cli.geoip
 def _poll_main(args):
     """Poll a server once.
 
