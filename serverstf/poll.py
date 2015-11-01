@@ -162,29 +162,25 @@ def _watch(cache, geoip, all_):
                 cache.set(status)
 
 
-def _poller_main_args(parser):
-    """Command line arguments for the 'poller' subcommand."""
-    parser.add_argument(
-        "url",
-        type=serverstf.redis_url,
-        nargs="?",
-        default="//localhost",
-        help="The URL of the Redis database to use for the cache and queues."
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help=("When set the poller will poll all servers "
-              "in the cache, not only those in the interest queue."),
-    )
-    parser.add_argument(
-        "--geoip",
-        type=pathlib.Path,
-        required=True,
-    )
-
-
-@serverstf.subcommand("poller", _poller_main_args)
+@serverstf.subcommand("poller")
+@serverstf.argument(
+    "url",
+    type=serverstf.redis_url,
+    nargs="?",
+    default="//localhost",
+    help="The URL of the Redis database to use for the cache and queues."
+)
+@serverstf.argument(
+    "--all",
+    action="store_true",
+    help=("When set the poller will poll all servers "
+          "in the cache, not only those in the interest queue."),
+)
+@serverstf.argument(
+    "--geoip",
+    type=pathlib.Path,
+    required=True,
+)
 def _poller_main(args):
     """Continuously poll servers from the cache.
 
@@ -209,21 +205,17 @@ def _poller_main(args):
     log.info("Stopping poller")
 
 
-def _poll_main_args(parser):
-    """Command line arguments for the 'poll' subcommand."""
-    parser.add_argument(
-        "address",
-        type=serverstf.cache.Address.parse,
-        help="The address of the server to poll in the <ip>:<port> form."
-    )
-    parser.add_argument(
-        "--geoip",
-        type=pathlib.Path,
-        required=True,
-    )
-
-
-@serverstf.subcommand("poll", _poll_main_args)
+@serverstf.subcommand("poll")
+@serverstf.argument(
+    "address",
+    type=serverstf.cache.Address.parse,
+    help="The address of the server to poll in the <ip>:<port> form."
+)
+@serverstf.argument(
+    "--geoip",
+    type=pathlib.Path,
+    required=True,
+)
 def _poll_main(args):
     """Poll a server once.
 

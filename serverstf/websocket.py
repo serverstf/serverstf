@@ -403,22 +403,6 @@ class Service:
         log.debug("Connection closed")
 
 
-def _websocket_args(parser):
-    """Command line arguments for the 'websocket' subcommand."""
-    parser.add_argument(
-        'port',
-        type=int,
-        help="The port the websocket service will listen on.",
-    )
-    parser.add_argument(
-        "url",
-        type=serverstf.redis_url,
-        nargs="?",
-        default="//localhost",
-        help="The URL of the Redis database to use for the cache and queues."
-    )
-
-
 @asyncio.coroutine
 def _websocket_async_main(args, loop):
     """Start a websocket server.
@@ -439,7 +423,19 @@ def _websocket_async_main(args, loop):
     log.info("Stopping websocket server")
 
 
-@serverstf.subcommand("websocket", _websocket_args)
+@serverstf.subcommand("websocket")
+@serverstf.argument(
+    "port",
+    type=int,
+    help="The port the websocket service will listen on.",
+)
+@serverstf.argument(
+    "url",
+    type=serverstf.redis_url,
+    nargs="?",
+    default="//localhost",
+    help="The URL of the Redis database to use for the cache and queues."
+)
 def _websocket_main(args):
     """Start a websocket server."""
     loop = asyncio.get_event_loop()

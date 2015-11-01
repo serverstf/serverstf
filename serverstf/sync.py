@@ -15,24 +15,20 @@ import valve.source.master_server
 log = logging.getLogger(__name__)
 
 
-def _sync_main_args(parser):
-    """Command line arguments for the 'sync' subcommand."""
-    parser.add_argument(
-        "url",
-        type=serverstf.redis_url,
-        nargs="?",
-        default="//localhost",
-        help="The URL of the Redis database to use for the cache and queues."
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help=("When set the poller will poll all servers "
-              "in the cache, not only those in the interest queue."),
-    )
-
-
-@serverstf.subcommand("sync", _sync_main_args)
+@serverstf.subcommand("sync")
+@serverstf.argument(
+    "url",
+    type=serverstf.redis_url,
+    nargs="?",
+    default="//localhost",
+    help="The URL of the Redis database to use for the cache and queues."
+)
+@serverstf.argument(
+    "--all",
+    action="store_true",
+    help=("When set the poller will poll all servers "
+          "in the cache, not only those in the interest queue."),
+)
 def _sync_main(args):
     """Synchronise with the master server.
 

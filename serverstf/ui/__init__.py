@@ -152,22 +152,18 @@ def _make_application():
     return config.make_wsgi_app()
 
 
-def _main_ui_args(parser):
-    """Arguments for the ``ui`` subcommand."""
-    parser.add_argument(
-        "port",
-        type=int,
-        help="The port the UI server will listen on.",
-    )
-    parser.add_argument(
-        "--development",
-        action="store_true",
-        help=("Enable extra debugging features "
-              "which are not safe for production use."),
-    )
-
-
-@serverstf.subcommand("ui", _main_ui_args)
+@serverstf.subcommand("ui")
+@serverstf.argument(
+    "port",
+    type=int,
+    help="The port the UI server will listen on.",
+)
+@serverstf.argument(
+    "--development",
+    action="store_true",
+    help=("Enable extra debugging features "
+          "which are not safe for production use."),
+)
 def _main_ui(args):
     """Run the UI WSGI application.
 

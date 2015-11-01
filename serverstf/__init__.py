@@ -14,8 +14,16 @@ import urllib.parse
 import venusian
 
 
+#: Name of the attribute set to indicate an object is a command entry point
+SUBCOMMANDS = "_subcommands"
+
+
 class FatalError(Exception):
     """Raised for unrecoverable errors."""
+
+
+class CLIError(Exception):
+    """Raised for any issues configuring the command line interface."""
 
 
 class ExitStatus(enum.IntEnum):
@@ -29,14 +37,13 @@ class ExitStatus(enum.IntEnum):
 Subcommand = collections.namedtuple(
     "Subcommand",
     (
-        "name",
         "entry_point",
         "arguments",
     )
 )
 
 
-def subcommand(command, configure_parser=None):
+def subcommand(command):
     """Register a function as an application sub-command.
 
     Each decorated function has a Venusian callback added to the
@@ -70,12 +77,38 @@ def subcommand(command, configure_parser=None):
             else:
                 return ret
 
-        scanner.subcommands.append(Subcommand(
-            command, wrapper, configure_parser))
+        if not hasattr(scanner, "subcommands"):
+            scanner.subcommands = {}
+        subcommand = Subcommand(wrapper, [])
+        if command in scanner.subcommands:
+            raise CLIError("Subcommand {!r} already defined: "
+                           "{}".format(command, scanner.subcommands[command]))
+        scanner.subcommands[command] = subcommand
+        if not hasattr(obj, SUBCOMMANDS):
+            setattr(obj, SUBCOMMANDS, [])
+        getattr(obj, SUBCOMMANDS).append(subcommand)
 
     def decorator(function):  # pylint: disable=missing-docstring
         venusian.attach(function, callback,
                         category=__package__ + ":subcommand")
+        return function
+
+    return decorator
+
+
+def argument(*args, **kwargs):
+
+    def callback(scanner, name, obj):
+        subcommands = getattr(obj, SUBCOMMANDS, None)
+        if not subcommands:
+            raise CLIError("Can't set CLI arugments for "
+                           "{} as it is not a subcommand".format(obj))
+        for subcommand in subcommands:
+            subcommand.arguments.append((args, kwargs))
+
+    def decorator(function):
+        venusian.attach(function, callback,
+                        category=__package__ + ":arguments")
         return function
 
     return decorator
