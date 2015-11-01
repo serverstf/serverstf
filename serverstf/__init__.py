@@ -3,13 +3,7 @@
 This package implements all the services used in running a SVTF instance.
 """
 
-import argparse
-import collections
 import enum
-import functools
-import urllib.parse
-
-import venusian
 
 
 class FatalError(Exception):

@@ -6,7 +6,6 @@ import sys
 import time
 
 import pkg_resources
-import venusian
 
 import serverstf
 import serverstf.cli

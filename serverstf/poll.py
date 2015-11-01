@@ -21,7 +21,6 @@ they're not in the interest queue.
 import asyncio
 import datetime
 import logging
-import pathlib
 
 import geoip2.database
 import maxminddb

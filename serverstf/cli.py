@@ -57,7 +57,7 @@ def scan(package):
         __package__ + ":subcommand",  # first so that _SUBCOMMANDS is set
         __package__ + ":arguments",
     ])
-    return scanner.subcommands
+    return scanner.subcommands  # pylint: disable=no-member
 
 
 def subcommand(command):
@@ -88,7 +88,7 @@ def subcommand(command):
 
         if not hasattr(scanner, "subcommands"):
             scanner.subcommands = {}
-        subcommand = Subcommand(wrapper, [])
+        subcommand = Subcommand(wrapper, [])  # pylint: disable=redefined-outer-name
         if command in scanner.subcommands:
             raise CLIError("Subcommand {!r} already defined: "
                            "{}".format(command, scanner.subcommands[command]))
@@ -120,13 +120,13 @@ def _add_argument(function, *args, **kwargs):
     :return: the given ``function``.
     """
 
-    def callback(scanner, name, obj):
+    def callback(scanner, name, obj):  # pylint: disable=unused-argument,missing-docstring
         subcommands = getattr(obj, _SUBCOMMANDS, None)
         if not subcommands:
             raise CLIError("Can't set CLI arugments for "
                            "{} as it is not a subcommand".format(obj))
-        for subcommand in subcommands:
-            subcommand.arguments.append((args, kwargs))
+        for command in subcommands:
+            command.arguments.append((args, kwargs))
 
     # Depth 2 is required so that we can use this from within decorators.
     venusian.attach(function, callback,
@@ -142,7 +142,7 @@ def argument(*args, **kwargs):
     to :meth:`argparse.ArgumentParser.add_argument`.
     """
 
-    def decorator(function):
+    def decorator(function):  # pylint: disable=missing-docstring
         return _add_argument(function, *args, **kwargs)
 
     return decorator
