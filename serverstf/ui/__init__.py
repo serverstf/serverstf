@@ -12,6 +12,7 @@ import waitress
 import openid.consumer.consumer
 
 import serverstf
+import serverstf.cli
 
 
 log = logging.getLogger(__name__)
@@ -152,13 +153,13 @@ def _make_application():
     return config.make_wsgi_app()
 
 
-@serverstf.subcommand("ui")
-@serverstf.argument(
+@serverstf.cli.subcommand("ui")
+@serverstf.cli.argument(
     "port",
     type=int,
     help="The port the UI server will listen on.",
 )
-@serverstf.argument(
+@serverstf.cli.argument(
     "--development",
     action="store_true",
     help=("Enable extra debugging features "

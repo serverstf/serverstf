@@ -30,6 +30,7 @@ import valve.source.messages
 
 import serverstf
 import serverstf.cache
+import serverstf.cli
 import serverstf.tags
 
 
@@ -162,21 +163,21 @@ def _watch(cache, geoip, all_):
                 cache.set(status)
 
 
-@serverstf.subcommand("poller")
-@serverstf.argument(
+@serverstf.cli.subcommand("poller")
+@serverstf.cli.argument(
     "url",
     type=serverstf.redis_url,
     nargs="?",
     default="//localhost",
     help="The URL of the Redis database to use for the cache and queues."
 )
-@serverstf.argument(
+@serverstf.cli.argument(
     "--all",
     action="store_true",
     help=("When set the poller will poll all servers "
           "in the cache, not only those in the interest queue."),
 )
-@serverstf.argument(
+@serverstf.cli.argument(
     "--geoip",
     type=pathlib.Path,
     required=True,
@@ -205,13 +206,13 @@ def _poller_main(args):
     log.info("Stopping poller")
 
 
-@serverstf.subcommand("poll")
-@serverstf.argument(
+@serverstf.cli.subcommand("poll")
+@serverstf.cli.argument(
     "address",
     type=serverstf.cache.Address.parse,
     help="The address of the server to poll in the <ip>:<port> form."
 )
-@serverstf.argument(
+@serverstf.cli.argument(
     "--geoip",
     type=pathlib.Path,
     required=True,

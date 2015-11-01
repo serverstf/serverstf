@@ -8,6 +8,7 @@ import asyncio
 import logging
 
 import serverstf
+import serverstf.cli
 
 import valve.source.a2s
 import valve.source.master_server
@@ -15,15 +16,15 @@ import valve.source.master_server
 log = logging.getLogger(__name__)
 
 
-@serverstf.subcommand("sync")
-@serverstf.argument(
+@serverstf.cli.subcommand("sync")
+@serverstf.cli.argument(
     "url",
     type=serverstf.redis_url,
     nargs="?",
     default="//localhost",
     help="The URL of the Redis database to use for the cache and queues."
 )
-@serverstf.argument(
+@serverstf.cli.argument(
     "--all",
     action="store_true",
     help=("When set the poller will poll all servers "

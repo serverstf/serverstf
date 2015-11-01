@@ -9,6 +9,7 @@ import pkg_resources
 import venusian
 
 import serverstf
+import serverstf.cli
 
 
 def setup_logging(level):
@@ -86,12 +87,8 @@ def parse_args(argv=None):
     # http://bugs.python.org/issue9253
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
-    scanner = venusian.Scanner()
-    scanner.scan(serverstf, categories=[
-        __package__ + ":subcommand",
-        __package__ + ":arguments",
-    ])
-    for name, subcommand in scanner.subcommands.items():
+    subcommands = serverstf.cli.scan(serverstf)
+    for name, subcommand in subcommands.items():
         subparser = subparsers.add_parser(name)
         subparser.set_defaults(command_func=subcommand.entry_point)
         for args, kwargs in subcommand.arguments:

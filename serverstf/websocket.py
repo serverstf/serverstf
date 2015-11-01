@@ -10,6 +10,7 @@ import voluptuous
 import websockets
 
 import serverstf.cache
+import serverstf.cli
 
 
 log = logging.getLogger(__name__)
@@ -423,13 +424,13 @@ def _websocket_async_main(args, loop):
     log.info("Stopping websocket server")
 
 
-@serverstf.subcommand("websocket")
-@serverstf.argument(
+@serverstf.cli.subcommand("websocket")
+@serverstf.cli.argument(
     "port",
     type=int,
     help="The port the websocket service will listen on.",
 )
-@serverstf.argument(
+@serverstf.cli.argument(
     "url",
     type=serverstf.redis_url,
     nargs="?",
