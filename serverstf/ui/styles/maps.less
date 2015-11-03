@@ -2,10 +2,10 @@
 @tf2: "@{maps}/tf2";
 
 
-.svtf-map(@class, @image) {
+.svtf-map-x(@class, @image) {
     @suffix: ~"@{class}";
 
-    .svtf-map-x {
+    &.svtf-map-x {
         &.svtf-map-x-@{suffix} {
             &.svtf-map-before::before {
                 background-image: url("@{image}");
@@ -23,9 +23,24 @@
 }
 
 
-.svtf-map("440-arena-badlands", "@{tf2}/badlands.jpg");
-.svtf-map("440-cp-badlands", "@{tf2}/badlands.jpg");
-.svtf-map("440-koth-badlands", "@{tf2}/badlands.jpg");
-.svtf-map("440-cp-granary", "@{tf2}/granary.jpg");
-.svtf-map("440-cp-well", "@{tf2}/well.jpg");
-.svtf-map("440-ctf-well", "@{tf2}/well.jpg");
+.svtf-map(@class, @image) {
+    @extension: ".jpg";
+
+    .svtf-map-x(@class, "@{image}@{extension}");
+
+    &.svtf-map-size-350 {
+        .svtf-map-x(@class, "@{image}-350@{extension}");
+    }
+
+    &.svtf-map-size-900 {
+        .svtf-map-x(@class, "@{image}-900@{extension}");
+    }
+}
+
+
+.svtf-map("440-arena-badlands", "@{tf2}/badlands");
+.svtf-map("440-cp-badlands", "@{tf2}/badlands");
+.svtf-map("440-koth-badlands", "@{tf2}/badlands");
+.svtf-map("440-cp-granary", "@{tf2}/granary");
+.svtf-map("440-cp-well", "@{tf2}/well");
+.svtf-map("440-ctf-well", "@{tf2}/well");

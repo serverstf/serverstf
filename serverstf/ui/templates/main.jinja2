@@ -64,7 +64,9 @@
               ng-repeat="server in search.servers"
               svtf-modal-open="['ServerDetails', {ip: server.ip, port: server.port}]">
               <div>
-                <header class="svtf-map-after" svtf-map="server">
+                <header
+                  class="svtf-map-after svtf-map-size-350"
+                  svtf-map="server">
                   <div class="svtf-server-statistics">
                     <div class="svtf-server-rank">#{{$index + 1}}</div>
                     <div class="svtf-server-freshness">0s</div>
