@@ -56,6 +56,40 @@ module.exports = (grunt) ->
                 files:
                     "serverstf/ui/data/maps.schema.json":
                         "serverstf/ui/data/maps.json"
+        image_resize:
+            master:
+                options:
+                    width: "100%"
+                    height: "100%"
+                files: [
+                    expand: true
+                    cwd: "serverstf/ui/images/maps/masters/"
+                    src: ["**/*.jpg"]
+                    dest: "serverstf/ui/images/maps/"
+                    ext: ".jpg"
+                ]
+            350:
+                options:
+                    width: 350
+                    height: 197
+                files: [
+                    expand: true
+                    cwd: "serverstf/ui/images/maps/masters/"
+                    src: ["**/*.jpg"]
+                    dest: "serverstf/ui/images/maps/"
+                    ext: "-350.jpg"
+                ]
+            900:
+                options:
+                    width: 900
+                    height: 506
+                files: [
+                    expand: true
+                    cwd: "serverstf/ui/images/maps/masters/"
+                    src: ["**/*.jpg"]
+                    dest: "serverstf/ui/images/maps/"
+                    ext: "-900.jpg"
+                ]
     )
     grunt.loadNpmTasks("grunt-autoprefixer")
     grunt.loadNpmTasks("grunt-bower-requirejs")
@@ -63,6 +97,7 @@ module.exports = (grunt) ->
     grunt.loadNpmTasks("grunt-contrib-coffee")
     grunt.loadNpmTasks("grunt-contrib-less")
     grunt.loadNpmTasks("grunt-contrib-watch")
+    grunt.loadNpmTasks("grunt-image-resize")
     grunt.loadNpmTasks("grunt-json-schema")
     grunt.loadNpmTasks("grunt-yaml")
     grunt.registerTask("requirejs-bower", [
@@ -81,4 +116,5 @@ module.exports = (grunt) ->
         "coffee",
         "bowerRequirejs",
         "maps",
+        "image_resize",
     ])

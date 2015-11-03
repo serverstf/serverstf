@@ -7,6 +7,8 @@ client/external/
 client/styles/*.css
 
 serverstf/ui/data/maps*json
+serverstf/ui/images/maps/*
+!serverstf/ui/images/maps/masters/
 serverstf/ui/external/
 serverstf/ui/scripts/
 serverstf/ui/styles/*.css
