@@ -43,56 +43,6 @@
       <div class="svtf-view">
         <svtf-modal></svtf-modal>
 
-        <div class="svtf-search" ng-controller="SearchControl as search">
-          <div class="svtf-search-control">
-            <form ng-submit="search.submit()">
-              <input type="text" ng-model="tag">
-            </form>
-            <ol>
-              <li class="svtf-tag" ng-repeat="query in search.query">
-                <div class="svtf-tag-prefix">{{query.mode}}</div>
-                <div class="svtf-tag-name">{{query.tag}}</div>
-              </li>
-            </ol>
-            <div class="svtf-search-results">
-              {{search.servers.length}} servers found
-            </div>
-          </div>
-          <ol class="svtf-server-list">
-            <li
-              class="svtf-server"
-              ng-repeat="server in search.servers"
-              svtf-modal-open="['ServerDetails', {ip: server.ip, port: server.port}]">
-              <div>
-                <header
-                  class="svtf-map-after svtf-map-size-350"
-                  svtf-map="server">
-                  <div class="svtf-server-statistics">
-                    <div class="svtf-server-rank">#{{$index + 1}}</div>
-                    <div class="svtf-server-freshness">0s</div>
-                  </div>
-                  <div class="svtf-server-map">{{server.map}}</div>
-                </header>
-                <div class="svtf-server-name">{{server.name}}</div>
-                <div class="svtf-server-information">
-                  <div>
-                    <div>{{server.players.current}}</div>
-                    <div>Players</div>
-                  </div>
-                  <div>
-                    <div>{{server.country}}</div>
-                    <div>Country</div>
-                  </div>
-                  <div>
-                    <div>{{52}}</div>
-                    <div>Ping</div>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ol>
-        </div>
-
       </div>
 
     </div>
