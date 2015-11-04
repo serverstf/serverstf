@@ -122,6 +122,11 @@ def _make_application():
     well as comments.
 
     A route and view is added for ``/`` which serves the Angular application.
+    A default 'not found' view is also added which also serves the Angular
+    application. This is so that the Angular ``$location`` service can use
+    *HTML5 mode* routing. Because of this there is no guarantee that a matched
+    route will be set for the current request inside the entry point template.
+    E.g. you can't use ``request.current_route_url``.
 
     Static views are added for the ``external``, ``scripts``, ``styles``,
     ``images``, ``templates`` and ``data`` directories. These are all served
@@ -138,6 +143,7 @@ def _make_application():
     config.add_jinja2_search_path(__name__ + ":templates/")
     config.add_route("main", "/")
     config.add_view(route_name="main", renderer="main.jinja2")
+    config.add_notfound_view(renderer="main.jinja2")
     for static in ["external", "scripts",
                    "styles", "images", "templates", "data"]:
         config.add_static_view(static, "{}:{}/".format(__name__, static))
