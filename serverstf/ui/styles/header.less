@@ -4,7 +4,7 @@
 .svtf-header(
   @background-colour,
   @foreground-colour,
-  @border-colour
+  @border-colour,
 ) {
 
 .svtf-header {
@@ -56,8 +56,8 @@
 
 body {
   .svtf-header(
-    #ffffff,
-    #000000,
-    #000000
+    @background-colour: #ffffff,
+    @foreground-colour: #000000,
+    @border-colour: #000000,
   )
 }
