@@ -1,0 +1,27 @@
+# JSON Schema for map-images.yaml
+#
+# This and map-images.yaml are converted to JSON before being validated
+# against this schema.
+
+$schema: http://json-schema.org/draft-04/schema#
+title: SVTF Map Image Metadata
+description: Identifies the contributors of map images.
+type: array
+items:
+  type: object
+  properties:
+    name:
+      type: string
+    link:
+      type:
+        - string
+        - null
+    images:
+      type: array
+      items:
+        type: string
+  required:
+    - link
+    - name
+    - images
+  additionalProperties: false

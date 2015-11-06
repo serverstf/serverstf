@@ -8,7 +8,7 @@ module.exports = (grunt) ->
                 files: ["serverstf/ui/lib/**/*.coffee"]
                 tasks: ["clean:coffee", "coffee", "bowerRequirejs"]
             maps:
-                files: ["serverstf/ui/data/maps*yaml"]
+                files: ["serverstf/ui/data/map*.yaml"]
                 tasks: ["maps"]
         less:
             default:
@@ -51,11 +51,17 @@ module.exports = (grunt) ->
                         "serverstf/ui/data/maps.schema.yaml"
                     "serverstf/ui/data/maps.json":
                         "serverstf/ui/data/maps.yaml"
+                    "serverstf/ui/data/map-images.schema.json":
+                        "serverstf/ui/data/map-images.schema.yaml"
+                    "serverstf/ui/data/map-images.json":
+                        "serverstf/ui/data/map-images.yaml"
         json_schema:
-            default:
+            maps:
                 files:
                     "serverstf/ui/data/maps.schema.json":
                         "serverstf/ui/data/maps.json"
+                    "serverstf/ui/data/map-images.schema.json":
+                        "serverstf/ui/data/map-images.json"
         image_resize:
             master:
                 options:
@@ -106,8 +112,8 @@ module.exports = (grunt) ->
         "bowerRequirejs",
     ])
     grunt.registerTask("maps", [
-        "yaml",
-        "json_schema",
+        "yaml:maps",
+        "json_schema:maps",
     ])
     grunt.registerTask("default", [
         "clean",
