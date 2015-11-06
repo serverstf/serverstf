@@ -72,7 +72,7 @@ module.exports = (grunt) ->
                     cwd: "serverstf/ui/images/maps/masters/"
                     src: ["**/*.jpg"]
                     dest: "serverstf/ui/images/maps/"
-                    ext: ".jpg"
+                    ext: "-master.jpg"
                 ]
             350:
                 options:
