@@ -131,35 +131,43 @@ def _interest_queue_iterator(cache):
             return
 
 
-def _watch(cache, geoip, all_):
+def _watch(r_cache, w_cache, geoip, all_):
     """Poll servers in the cache.
 
     This will poll servers in the cache updating their statuses as it goes.
     Either the interest queue or entire cache is used to determining which
     servers to poll.
 
-    :param serverstf.cache.Cache cache: the server status cache to poll and
-        write updates to.
+    Two separate caches using separate connections must be provided; one for
+    reading addresses and one for writing the updates. This is to work around
+    the fact that publishing updates to a cache creates a MULTI transaction
+    which can interfere with the operations to read addresses from the cache.
+
+    :param serverstf.cache.Cache r_cache: the server status cache to read
+        addresses from.
+    :param serverstf.cache.Cache w_cache: the server status cache to write
+        updates to.
     :param geoip2.database.Reader geoip: the MaxMind GeoIP2 database used to
         determine the geographic location of the servers.
     :param bool all_: if ``True`` then every server in the cache will be
         polled. Otherwise only servers which exist in the internet queue
         will be.
     """
-    log.info("Watching %s; all: %s", cache, all_)
+    log.info("Watching %s; all: %s", r_cache, all_)
+    log.info("Writing to %s", w_cache)
     tagger = serverstf.tags.Tagger.scan(__package__)
     while True:
         if all_:
-            addresses = cache.all_iterator()
+            addresses = r_cache.all_iterator()
         else:
-            addresses = _interest_queue_iterator(cache)
+            addresses = _interest_queue_iterator(r_cache)
         for address in addresses:
             try:
                 status = poll(tagger, geoip, address)
             except PollError as exc:
                 log.error("Couldn't poll %s: %s", address, exc)
             else:
-                cache.set(status)
+                w_cache.set(status)
 
 
 @serverstf.cli.subcommand("poller")
@@ -188,8 +196,9 @@ def _poller_main(args):
     except maxminddb.InvalidDatabaseError as exc:
         raise serverstf.FatalError(exc)
     else:
-        with serverstf.cache.Cache.connect(args.redis, loop) as cache:
-            _watch(cache, geoip, args.all)
+        with serverstf.cache.Cache.connect(args.redis, loop) as r_cache:
+            with serverstf.cache.Cache.connect(args.redis, loop) as w_cache:
+                _watch(r_cache, w_cache, geoip, args.all)
     finally:
         geoip.close()
     log.info("Stopping poller")
