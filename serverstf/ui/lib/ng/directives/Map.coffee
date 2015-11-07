@@ -6,6 +6,8 @@ define ->
         link = (scope, element) ->
             setMapClasses = (map) ->
                 for class_ in element[0].classList
+                    if not class_
+                        continue
                     if class_.slice(0, CLASS_PREFIX.length) == CLASS_PREFIX
                         element.removeClass(class_)
                 if map
