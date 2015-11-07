@@ -20,14 +20,12 @@ define ->
                 $scope.tag = ""
                 Socket.on("match", @_onMatch, $scope)
                 @_removeConnectObservation = ->
-                @addTag("mode:cp", @REQUIRED)
 
             # Handler for `match` socket messages.
             #
             # If the corresponding server is not already in the result list
             # then it will be added.
             _onMatch: ({ip, port}) =>
-                console.log("Match", ip, port)
                 server = Server.get(ip, port)
                 if server not in @servers
                     @servers.push(server)
