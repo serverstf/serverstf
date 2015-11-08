@@ -19,8 +19,10 @@ log = logging.getLogger(__name__)
 @serverstf.cli.subcommand("sync")
 @serverstf.cli.redis
 @serverstf.cli.argument(
-    "--all",
-    action="store_true",
+    "regions",
+    nargs="+",
+    choices=("na-west", "na-east", "na", "sa",
+             "eu", "as", "oc", "af", "rest", "all"),
     help=("When set the poller will poll all servers "
           "in the cache, not only those in the interest queue."),
 )
@@ -42,7 +44,7 @@ def _sync_main(args):
             addresses_total = 0
             addresses_new = 0
             try:
-                for address in msq.find(gamedir="tf"):
+                for address in msq.find(args.regions, gamedir="tf"):
                     addresses_total += 1
                     if cache.ensure(serverstf.cache.Address(*address)):
                         addresses_new += 1
