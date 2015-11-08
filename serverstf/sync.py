@@ -23,8 +23,7 @@ log = logging.getLogger(__name__)
     nargs="+",
     choices=("na-west", "na-east", "na", "sa",
              "eu", "as", "oc", "af", "rest", "all"),
-    help=("When set the poller will poll all servers "
-          "in the cache, not only those in the interest queue."),
+    help="The master server region to synchronise with.",
 )
 def _sync_main(args):
     """Synchronise with the master server.
