@@ -30,27 +30,91 @@
     border-right: 1px solid @border-colour;
     color: @foreground-colour;
 
-    input {
-        width: 100%;
-        padding: 0.25em;
-        box-sizing: border-box;
-        border: 0;
-        background-color: @input-background-colour;
-        color: @input-foreground-colour;
-        font-size: 2.5em;
+    form {
+        position: relative;
 
-        &:focus {
-            outline: 0;
+        input {
+            width: 100%;
+            padding: 0.25em;
+            box-sizing: border-box;
+            border: 0;
+            background-color: @input-background-colour;
+            color: @input-foreground-colour;
+            font-size: 2.5em;
+
+            &:focus {
+                outline: 0;
+            }
+        }
+
+        ol.svtf-search-suggestions {
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            border-top: 1px solid @border-colour;
+            background-color: @input-background-colour;
+            color: @input-foreground-colour;
+            z-index: 3;
+
+            &::after {
+                @taper: 75%;
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 3em;
+                background-color: @input-background-colour;
+                clip-path: polygon(
+                    0 0,
+                    100% 0,
+                    100%  100% - @taper,
+                    50% 100%,
+                    50% 100%,
+                    0 (100% - @taper)
+                );
+            }
+
+            li {
+                margin: 0;
+                padding: 0.5em 1em;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: lighten(@input-background-colour, 5%);
+                }
+
+                &:nth-child(6) ~ li {
+                    display: none;
+                }
+            }
         }
     }
 
     ol {
         flex: 1;
+        margin: 0;
         padding: 0;
         list-style-type: none;
 
         li {
-            margin: 1em;
+            position: relative;
+            margin: 1px 0;
+
+            > .fa {
+                display: none;
+                position: absolute;
+                top: 50%;
+                right: 0;
+                padding: 1em;
+                color: @background-colour;
+                transform: translateY(-50%);
+                cursor: pointer;
+            }
+
+            &:hover > .fa {
+                display: initial;
+            }
         }
     }
 

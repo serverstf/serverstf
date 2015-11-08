@@ -10,7 +10,7 @@ define ["angular"], (angular) ->
             "Routes",
         ]
         "controller": [
-            "SearchControl",
+            "Search",
             "ServerDetails",
             "SignIn",
         ]

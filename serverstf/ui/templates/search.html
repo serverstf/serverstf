@@ -1,22 +1,32 @@
-<div class="svtf-search" ng-controller="SearchControl as search">
+<div class="svtf-search" ng-controller="Search as search">
   <div class="svtf-search-control">
     <form ng-submit="search.submit()">
-      <input type="text" ng-model="tag">
+      <input type="text" ng-model="tag" autofocus>
+      <ol
+        class="svtf-search-suggestions"
+        ng-hide="search.suggestions.length == 0">
+        <li
+          ng-repeat="suggestion in search.suggestions"
+          ng-click="search.submit(suggestion)">{{suggestion}}</li>
+      </ol>
     </form>
     <ol>
-      <li class="svtf-tag" ng-repeat="query in search.query">
-        <div class="svtf-tag-prefix">{{query.mode}}</div>
-        <div class="svtf-tag-name">{{query.tag}}</div>
+      <li ng-repeat="tag in search.tags|orderBy:'tag'">
+        <div class="svtf-tag">
+          <div class="svtf-tag-prefix">{{tag.mode}}</div>
+          <div class="svtf-tag-name">{{tag.tag}}</div>
+        </div>
+        <i class="fa fa-times-circle" ng-click="search.removeTag(tag)"></i>
       </li>
     </ol>
     <div class="svtf-search-results">
-      {{search.servers.length}} servers found
+      {{search.results.length}} servers found
     </div>
   </div>
   <ol class="svtf-server-list">
     <li
       class="svtf-server"
-      ng-repeat="server in search.servers"
+      ng-repeat="server in search.results|orderBy:search.rank:true"
       svtf-modal-open="['ServerDetails', {ip: server.ip, port: server.port}]">
       <div>
         <header
