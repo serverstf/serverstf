@@ -99,8 +99,11 @@ define ->
             # address so that the service starts receiving status updates.
             #
             # This increments the reference count of the server, so the caller
-            # *must* `free` the object once it's finished with it.
-            get: (ip, port) ->
+            # *must* `free` the object once it's finished with it. Alternately
+            # the caller may provide an Angular scope. When the scope is
+            # destroyed the server will be freed. This saves having to
+            # manually free it.
+            get: (ip, port, scope) ->
                 address = @_stringifyAddress(ip, port)
                 if address not of @_servers
                     @_servers[address] =
@@ -112,6 +115,8 @@ define ->
                                 Socket.send("subscribe", {ip: ip, port: port}))
                 server = @_servers[address]
                 server.references += 1
+                if scope
+                    scope.$on("$destroy", server.free)
                 return server.server
 
         return new ServerService()

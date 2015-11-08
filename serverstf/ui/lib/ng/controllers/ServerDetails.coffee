@@ -6,7 +6,7 @@ define ->
 
             constructor: ->
                 config = Modal.getConfig()
-                @server = Server.get(config.ip, config.port)
+                @server = Server.get(config.ip, config.port, $scope)
                 @players = []
                 @players_sort = "-score"
                 @map_creators = []
