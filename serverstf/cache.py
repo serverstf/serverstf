@@ -633,14 +633,13 @@ class AsyncCache:
             loop=loop,
             encoder=asyncio_redis.encoders.BytesEncoder(),
         )
+        return cls(connection, loop)
 
-        # TODO: This isn't actually needed. Just use __enter__ and __exit__.
-        @contextlib.contextmanager
-        def cache_context(cache):  # pylint: disable=missing-docstring
-            yield cache
-            cache.close()
+    def __enter__(self):
+        return self
 
-        return cache_context(cls(connection, loop))
+    def __exit__(self, value, type, trace):
+        self.close()
 
     @property
     def loop(self):
