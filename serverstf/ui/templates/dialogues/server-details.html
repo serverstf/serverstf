@@ -49,10 +49,10 @@
       <div>
         <div class="svtf-details-latency-metrics-metrics">
           <div class="svtf-details-latency-metrics-metrics-ping">
-            52<span>ms</span>
+            {{controller.server|latency:0:-3|number:0}}<span>ms</span>
           </div>
           <div class="svtf-details-latency-metrics-metrics-distance">
-            300<span>km</span>
+            ~{{controller.server|distance:3|number:0}}<span>km</span>
           </div>
         </div>
       </div>

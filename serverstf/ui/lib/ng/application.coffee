@@ -21,6 +21,10 @@ define ["angular"], (angular) ->
             "ModalContent",
             "ModalOpen",
         ]
+        "filter": [
+            "Distance",
+            "Latency",
+        ]
         "service": [
             "Modal",
             "Server",
