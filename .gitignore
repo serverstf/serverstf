@@ -7,9 +7,10 @@ client/external/
 client/styles/*.css
 
 serverstf/ui/data/map*.json
+serverstf/ui/data/latency-curve.json
+serverstf/ui/external/
 serverstf/ui/images/maps/*
 !serverstf/ui/images/maps/masters/
-serverstf/ui/external/
 serverstf/ui/scripts/
 serverstf/ui/styles/*.css
 

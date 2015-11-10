@@ -26,6 +26,7 @@
     "grunt-autoprefixer": "~3.0.3",
     "grunt-yaml": "~0.4.1",
     "grunt-json-schema": "~0.4.0",
-    "grunt-image-resize": "~1.0.0"
+    "grunt-image-resize": "~1.0.0",
+    "grunt-shell": "~1.1.2"
   }
 }

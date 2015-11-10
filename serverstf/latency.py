@@ -13,6 +13,7 @@ import asyncio
 import concurrent.futures
 import contextlib
 import functools
+import json
 import logging
 import math
 import multiprocessing
@@ -137,7 +138,7 @@ def _thread_local_cache(local, redis_url):
     return context
 
 
-@serverstf.cli.subcommand("ping")
+@serverstf.cli.subcommand("latency")
 @serverstf.cli.redis
 @serverstf.cli.argument("longitude", type=float)
 @serverstf.cli.argument("latitude", type=float)
@@ -191,6 +192,27 @@ def _ping_all(args):
                 log.info("Collected %s samples", sample_count_total)
 
 
+def _read_csv(csv_fp):
+    """Read latency CSV data.
+
+    This reads a file containing comma-separated latency data as produced by
+    :func:`_ping_all`. Each row has two fields: the distance in metres and the
+    latency in second; both as floats.
+
+    :param csv_fp: a file-like object open for reading.
+
+    :return: two lists. The former containing the distances and the latter
+        the latencies.
+    """
+    distances = []
+    latencies = []
+    for line in csv_fp:
+        distance, latency = (float(f) for f in line.split(",", 2))
+        distances.append(distance)
+        latencies.append(latency)
+    return distances, latencies
+
+
 def _linear_regression(distances, latencies):
     """Calculate linear regression for latencies.
 
@@ -216,7 +238,37 @@ def _linear_regression(distances, latencies):
     return gradient, intercept
 
 
-@serverstf.cli.subcommand("ping-plot")
+@serverstf.cli.subcommand("latency-curve")
+@serverstf.cli.argument(
+    "data",
+    type=pathlib.Path,
+    help=("A CSV file containing the distance "
+          "and latency data to generate curve for."),
+)
+@serverstf.cli.argument(
+    "--output",
+    type=pathlib.Path,
+    help="A file to write the curve JSON to.",
+)
+def _write_curve(args):
+    """Write a latency curve JSON file.
+
+    This writes a JSON object to an output file. The object has two fields:
+    ``gradient`` and ``intercept`` which is the linear regression of the
+    given latency data.
+    """
+    with args.data.open() as data:
+        distances, latencies = _read_csv(data)
+        with args.output.open("w") as curve:
+            gradient, intercept = _linear_regression(distances, latencies)
+            json.dump({
+                "gradient": gradient,
+                "intercept": intercept,
+            }, curve)
+    log.info("Latency curve written to %s", args.output)
+
+
+@serverstf.cli.subcommand("latency-plot")
 @serverstf.cli.argument(
     "data",
     type=pathlib.Path,
@@ -229,10 +281,9 @@ def _plot_ping(args):
     with tempfile.NamedTemporaryFile(suffix=".html") as output:
         bokeh.plotting.output_file(output.name, title="Latency Curve")
         with args.data.open() as data:
-            for line in data:
-                distance, latency = (float(f) for f in line.split(",", 2))
-                distances.append(distance / 1000.0)
-                latencies.append(latency * 1000.0)
+            distances, latencies = _read_csv(data)
+            distances = [d / 1000.0 for d in distances]
+            latencies = [l * 1000.0 for l in latencies]
         figure = bokeh.plotting.figure(
             title="Latency Curve",
             x_axis_label="Distance (km)",
@@ -246,4 +297,4 @@ def _plot_ping(args):
             [distance_max, (distance_max * gradient) + intercept],
         )
         figure.line(regression_x, regression_y, color="#9d302f")
-        bokeh.plotting.show(figure)
+    bokeh.plotting.show(figure)

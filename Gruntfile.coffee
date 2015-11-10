@@ -96,6 +96,11 @@ module.exports = (grunt) ->
                     dest: "serverstf/ui/images/maps/"
                     ext: "-900.jpg"
                 ]
+        shell:
+            latency:
+                command: "python -m serverstf latency-curve
+                    serverstf/ui/data/latency.csv
+                    --output serverstf/ui/data/latency-curve.json"
     )
     grunt.loadNpmTasks("grunt-autoprefixer")
     grunt.loadNpmTasks("grunt-bower-requirejs")
@@ -105,6 +110,7 @@ module.exports = (grunt) ->
     grunt.loadNpmTasks("grunt-contrib-watch")
     grunt.loadNpmTasks("grunt-image-resize")
     grunt.loadNpmTasks("grunt-json-schema")
+    grunt.loadNpmTasks("grunt-shell")
     grunt.loadNpmTasks("grunt-yaml")
     grunt.registerTask("requirejs-bower", [
         "clean:coffee",
@@ -123,4 +129,5 @@ module.exports = (grunt) ->
         "bowerRequirejs",
         "maps",
         "image_resize",
+        "shell:latency",
     ])

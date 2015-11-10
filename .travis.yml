@@ -11,8 +11,9 @@ script:
     - python -m serverstf poller --help
     - python -m serverstf ui --help
     - python -m serverstf sync --help
+    - python -m serverstf latency --help
+    - python -m serverstf latency-curve --help
+    - python -m serverstf latency-plot --help
     - python -m serverstf websocket --help
-    - python -m serverstf ping --help
-    - python -m serverstf ping-plot --help
     - node_modules/.bin/grunt
     - pylint serverstf
