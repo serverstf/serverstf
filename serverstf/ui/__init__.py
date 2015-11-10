@@ -109,6 +109,10 @@ def _configure_authentication(config):
     )
 
 
+def _location(request):
+    return {"latitude": 0.0, "longitude": 0.0}
+
+
 def _make_application():
     """Construct a Pyramid WSGI application.
 
@@ -147,6 +151,8 @@ def _make_application():
     for static in ["external", "scripts",
                    "styles", "images", "templates", "data"]:
         config.add_static_view(static, "{}:{}/".format(__name__, static))
+    config.add_route("service-location", "/services/location")
+    config.add_view(_location, route_name="service-location", renderer="json")
     _configure_authentication(config)
     config.commit()
     jinja2_env = config.get_jinja2_environment()

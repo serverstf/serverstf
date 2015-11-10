@@ -26,6 +26,7 @@ define ["angular"], (angular) ->
             "Latency",
         ]
         "service": [
+            "Location",
             "Modal",
             "Server",
             "Socket",

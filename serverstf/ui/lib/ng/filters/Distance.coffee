@@ -13,11 +13,11 @@ define ->
     radians = (degrees) ->
         return degrees * (Math.PI / 180.0)
 
-    factory = ->
+    factory = (Location) ->
         EARTH_RADIUS = 6371000  # metres
         return (server, scale_factor) ->
-            u_latitude = radians(USER_LATITUDE)
-            u_longitude = radians(USER_LONGITUDE)
+            u_latitude = radians(Location.coordinates.latitude)
+            u_longitude = radians(Location.coordinates.longitude)
             s_latitude = radians(server.latitude)
             s_longitude = radians(server.longitude)
             scale = Math.pow(10, scale_factor or 0)
@@ -30,4 +30,5 @@ define ->
 
     return _ =
         "name": "distance"
+        "dependencies": ["Location"]
         "filter": factory
