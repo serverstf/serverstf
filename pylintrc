@@ -2,7 +2,7 @@
 disable = locally-disabled,fixme,too-few-public-methods,duplicate-code
 
 [BASIC]
-good-names = i,j,k,_,ip
+good-names = i,j,k,_,x,y,ip
 const-rgx = (([A-Z_][A-Z0-9_]*)|(__.*__)|(log))$
 
 [FORMAT]

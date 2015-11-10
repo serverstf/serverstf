@@ -638,7 +638,7 @@ class AsyncCache:
     def __enter__(self):
         return self
 
-    def __exit__(self, value, type, trace):
+    def __exit__(self, value, type_, trace):
         self.close()
 
     @property

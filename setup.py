@@ -7,6 +7,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         "asyncio-redis",
+        "bokeh",
         "geoip2",
         "iso3166",
         "pyramid",
