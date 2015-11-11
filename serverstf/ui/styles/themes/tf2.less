@@ -6,6 +6,7 @@
 @import (reference) "../tag.less";
 @import (reference) "../modal.less";
 @import (reference) "../details.less";
+@import (reference) "../settings.less";
 
 @tf2-neutral-0: #f6e7de;
 @tf2-neutral-1: #dabdab;
@@ -115,4 +116,20 @@ body.svtf-theme-tf2 {
         @even-row-foreground-colour: darken(@tf2-blu-4, 10%),
     );
 
+    .svtf-settings(
+        @border: @tf2-blu-4,
+        @navigation-background: @tf2-neutral-1,
+        @navigation-foreground: @tf2-blu-4,
+        @navigation-active-background: @tf2-neutral-2,
+        @navigation-active-foreground: @tf2-blu-4,
+    );
+
+    .svtf-settings-x-location(
+        @map-sea: lighten(@tf2-blu-2, 20%),
+        @map-land: @tf2-red-3,
+        @map-primary-background: @tf2-blu-4,
+        @map-primary-foreground: @tf2-neutral-0,
+        @map-secondary-background: @tf2-neutral-0,
+        @map-secondary-foreground: @tf2-blu-4,
+    );
 }

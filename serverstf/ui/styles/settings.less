@@ -1,0 +1,163 @@
+.svtf-settings(
+    @border,
+    @navigation-background,
+    @navigation-foreground,
+    @navigation-active-background,
+    @navigation-active-foreground,
+) {
+
+.svtf-settings {
+    display: flex;
+    height: 500px;
+
+    .svtf-settings-navigation {
+        flex: 0 0 30%;
+        border-right: 1px solid @border;
+        background-color: @navigation-background;
+        color: @navigation-foreground;
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+
+            li {
+                position: relative;
+                padding: 1em;
+                border: 0;
+                border-bottom: 1px solid @border;
+                border-image: linear-gradient(
+                    to right,
+                    transparent 10%,
+                    fade(@border, 50%) 30%,
+                    @border,
+                ) 100% 0;
+                font-size: 1.2em;
+                cursor: pointer;
+
+                &:last-child {
+                    border-bottom: 0;
+                }
+
+                &:hover, &.svtf-settings-navigation-active {
+                    background-color: @navigation-active-background;
+                    background-image: linear-gradient(
+                        90deg,
+                        @navigation-background,
+                        transparent,
+                    );
+                    color: @navigation-active-foreground;
+
+                    &::after {
+                        @arrow-size: 1em;
+                        display: block;
+                        content: "";
+                        position: absolute;
+                        top: 50%;
+                        right: -@arrow-size;
+                        transform: translateY(-50%);
+                        border-left:
+                            @arrow-size solid @navigation-active-background;
+                        border-top: @arrow-size solid transparent;
+                        border-bottom: @arrow-size solid transparent;
+                        z-index: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    .svtf-settings-content {
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+}
+
+}
+
+
+.svtf-settings-x-location(
+    @map-sea,
+    @map-land,
+    @map-primary-background,
+    @map-primary-foreground,
+    @map-secondary-background,
+    @map-secondary-foreground,
+) {
+
+.svtf-settings-x-location {
+    svtf-location-map {
+        display: block;
+        position: relative;
+        height: 12em;
+        background-color: @map-sea;
+
+        .svtf-settings-x-location-coordinates {
+            position: absolute;
+            top: 15%;
+            right: 0;
+
+            div {
+                text-align: right;
+
+                span {
+                    display: inline-block;
+                    padding: 5px 10px;
+                }
+
+                &:first-child span {
+                    background-color: @map-primary-background;
+                    color: @map-primary-foreground;
+                    text-shadow:
+                        0px 1px 0px darken(@map-primary-background, 10%);
+                }
+
+                &:last-child span {
+                    background-color: @map-secondary-background;
+                    color: @map-secondary-foreground;
+                }
+            }
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            background-color: @map-sea;
+
+            path {
+                fill: @map-land;
+            }
+        }
+    }
+
+    .svtf-settings-x-location-control {
+        padding: 1em;
+
+        > p {
+            margin-right: 20%;
+        }
+    }
+}
+
+}
+
+
+body {
+    .svtf-settings(
+        @border: #000000,
+        @navigation-background: #888888,
+        @navigation-foreground: #000000,
+        @navigation-active-background: #000000,
+        @navigation-active-foreground: #ffffff,
+    );
+
+    .svtf-settings-x-location(
+        @map-sea: #888888,
+        @map-land: #000000,
+        @map-primary-background: #ffffff,
+        @map-primary-foreground: #000000,
+        @map-secondary-background: #ffffff,
+        @map-secondary-foreground: #000000,
+    );
+}

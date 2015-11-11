@@ -12,6 +12,7 @@ define ["angular"], (angular) ->
         "controller": [
             "Search",
             "ServerDetails",
+            "SettingsLocation",
             "SignIn",
         ]
         "directive": [
