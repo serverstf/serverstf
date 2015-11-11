@@ -269,6 +269,11 @@ def _write_curve(args):
 
 
 def _medians(distances, latencies):
+    """Calculate median latency for each unique distance.
+
+    :return: list of unique distances and another list of the corresponding
+        median latencies.
+    """
     distance_latencies = {}
     for distance, latency in zip(distances, latencies):
         if distance not in distance_latencies:
