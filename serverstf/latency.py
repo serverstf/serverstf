@@ -289,37 +289,6 @@ def _medians(distances, latencies):
     return median_distances, median_latencies
 
 
-def _band_distances(distances, latencies, band_size):
-    distance_max = max(distances)
-    bands = []
-    bands_latencies = {}
-    for band_start in range(0, math.ceil(distance_max), band_size):
-        band_distance = band_start + (band_size / 2)
-        band_evaluator = (lambda s, e:
-            lambda d:  s <= d and d < e
-        )(band_start, band_start + band_size)
-        band_latencies = []
-        bands_latencies[band_distance] = band_latencies
-        bands.append((band_evaluator, band_latencies))
-    for distance, latency in zip(distances, latencies):
-        for band_evaluator, band_latencies in bands:
-            if band_evaluator(distance):
-                band_latencies.append(latency)
-                continue
-    median_distances = []
-    median_latencies = []
-    for band_distance, band_latencies in bands_latencies.items():
-        if band_latencies:
-            latency = _medians(
-                [band_distance for _ in range(len(band_latencies))],
-                band_latencies,
-            )[1][0]
-            median_distances.append(band_distance)
-            median_latencies.append(latency)
-    return median_distances, median_latencies
-
-
-
 @serverstf.cli.subcommand("latency-plot")
 @serverstf.cli.argument(
     "data",
@@ -336,16 +305,17 @@ def _plot_ping(args):
             distances, latencies = _read_csv(data)
             distances = [d / 1000.0 for d in distances]
             latencies = [l * 1000.0 for l in latencies]
-            distances_band, latencies_band = _band_distances(distances, latencies, 10)
+            distances_median, latencies_median = _medians(distances, latencies)
         figure = bokeh.plotting.figure(
             title="Latency Curve",
             x_axis_label="Distance (km)",
             y_axis_label="Latency (ms)",
         )
         figure.scatter(distances, latencies, color="#5b7a8c", marker="x")
-        figure.scatter(distances_band, latencies_band, color="#f5ad87", marker="o")
-        gradient, intercept = _linear_regression(distances_band, latencies_band)
-        distance_max = max(distances_band)
+        figure.scatter(
+            distances_median, latencies_median, color="#f5ad87", marker="o")
+        gradient, intercept = _linear_regression(distances, latencies)
+        distance_max = max(distances)
         regression_x, regression_y = zip(
             [0, intercept],
             [distance_max, (distance_max * gradient) + intercept],
