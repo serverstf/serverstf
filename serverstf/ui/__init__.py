@@ -9,6 +9,8 @@ import pyramid.security
 import pyramid.session
 import waitress
 
+import geoip2.database
+import geoip2.errors
 import openid.consumer.consumer
 
 import serverstf
@@ -110,10 +112,46 @@ def _configure_authentication(config):
 
 
 def _location(request):
-    return {"latitude": 0.0, "longitude": 0.0}
+    """Get the location of the requester.
+
+    This will attempt to look up the requesting client's IP address in a
+    GeoIP database. Pyramid's ``client_addr`` is used which means if the
+    ``X-Forwarded-For`` header was set the left-most value will be used as
+    the client's IP. Otherwise the WSGI ``REMOVE_ADDR`` variable is used.
+
+    :return: a dictionary containing ``latitude`` and ``longitude`` fields
+        if the look-up was successful. If the look-up is not successful,
+        e.g. because the address was malformed, then the staus code is set
+        to 400 and a stringified exception is returned.
+    """
+    try:
+        location = request.geoip.city(request.client_addr)
+        return {
+            "latitude": location.location.latitude,
+            "longitude": location.location.longitude,
+        }
+    except (ValueError, geoip2.errors.AddressNotFoundError) as exc:
+        request.response.status_code = 400
+        return str(exc)
 
 
-def _make_application():
+def _configure_location(config, geoip):
+    """Configure the location server.
+
+    This adds the ``service-location`` route and corresponding view to the
+    given configurator. A reified request method ``geoip`` is added which
+    returns a database reader for the given GeoIP database.
+
+    :param pathlib.Path geoip: the path to the GeoIP database to use for
+        the location service.
+    """
+    config.add_request_method(
+        lambda r: geoip2.database.Reader(str(geoip)), "geoip", reify=True)
+    config.add_route("service-location", "/services/location")
+    config.add_view(_location, route_name="service-location", renderer="json")
+
+
+def _make_application(geoip):
     """Construct a Pyramid WSGI application.
 
     This creates a central Pyramid configurator then adds all routes, views
@@ -136,7 +174,11 @@ def _make_application():
     ``images``, ``templates`` and ``data`` directories. These are all served
     directly from the route. E.g. templates are served from ``/templates/``.
 
-    The configuration for Steam OpenID authentication is also added.
+    The configuration for Steam OpenID authentication and the location
+    service is added.
+
+    :param pathlib.Path geoip: the path to the GeoIP database to use for
+        the location service.
 
     :return: a WSGI application.
     """
@@ -151,9 +193,8 @@ def _make_application():
     for static in ["external", "scripts",
                    "styles", "images", "templates", "data"]:
         config.add_static_view(static, "{}:{}/".format(__name__, static))
-    config.add_route("service-location", "/services/location")
-    config.add_view(_location, route_name="service-location", renderer="json")
     _configure_authentication(config)
+    _configure_location(config, geoip)
     config.commit()
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.block_start_string = "[%"
@@ -166,6 +207,7 @@ def _make_application():
 
 
 @serverstf.cli.subcommand("ui")
+@serverstf.cli.geoip
 @serverstf.cli.argument(
     "port",
     type=int,
@@ -187,7 +229,7 @@ def _main_ui(args):
     If the command line arguments specified ``--development`` then the
     ``expose_tracebacks`` option will be enabled for Waitress.
     """
-    application = _make_application()
+    application = _make_application(args.geoip)
     kwargs = {
         "port": args.port,
         "threads": 1,
