@@ -59,7 +59,7 @@ define ["d3", "topojson"], (d3, topojson) ->
                             .attr("d", path)
 
             $http.get(
-                "data/world-50m.json", {cache: true}).then(addTopology)
+                "data/world-110m.json", {cache: true}).then(addTopology)
 
         return _ =
             restrict: "E"
