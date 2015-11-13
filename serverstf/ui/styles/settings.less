@@ -125,7 +125,11 @@
             height: 100%;
             background-color: @map-sea;
 
-            path {
+            path.svtf-location-map-land-shadow {
+                fill: lighten(@map-sea, 5%);
+            }
+
+            path.svtf-location-map-land {
                 fill: @map-land;
             }
         }

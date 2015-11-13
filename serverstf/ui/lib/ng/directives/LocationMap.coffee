@@ -25,26 +25,37 @@ define ["d3", "topojson"], (d3, topojson) ->
                         updatePath(TOPOLOGY)
                 )
 
+            last_center = []
             updatePath = (topology) ->
                 canvas_width = element[0].offsetWidth
                 canvas_height = element[0].offsetHeight
                 scale_horizontal = topology.width / canvas_width
                 scale_vertical = topology.height / canvas_height
                 scale = 1 / Math.min(scale_horizontal, scale_vertical)
+                coordinates = [scope.longitude, scope.latitude]
+                if last_center[0] != coordinates[0] and
+                        last_center[1] != coordinates[1]
+                    force_redraw = true
+                else
+                    force_redraw = false
                 projection = d3.geo.mercator()
-                    .center([scope.longitude, scope.latitude])
+                    .center(coordinates)
                     .translate([canvas_width / 2, canvas_height / 2])
                     .scale(scale * 2)
                 path = d3.geo.path().projection(projection)
-                drawPath(topology.topology, path)
+                drawPath(topology.topology, path, force_redraw)
+                last_center = coordinates
 
-            drawPath = (topology, path) ->
+            drawPath = (topology, path, redraw) ->
                 for class_ in ["land-shadow", "land"]
-                    svg.selectAll("path.svtf-location-map-#{class_}")
+                    class_full = "svtf-location-map-#{class_}"
+                    if redraw
+                        svg.selectAll("path.#{class_full}").remove()
+                    svg.selectAll("path.#{class_full}")
                         .data([topology])
                         .enter()
                             .append("path")
-                            .attr("class", "svtf-location-map-#{class_}")
+                            .attr("class", class_full)
                             .attr("d", path)
 
             $http.get(
