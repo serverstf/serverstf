@@ -8,6 +8,7 @@ define ["angular"], (angular) ->
     NG_APPLICATION_SPECIFICATION =
         "config": [
             "Routes",
+            "URLSchemes",
         ]
         "controller": [
             "Search",
@@ -23,6 +24,7 @@ define ["angular"], (angular) ->
             "ModalOpen",
         ]
         "filter": [
+            "Connect",
             "Distance",
             "Latency",
         ]
