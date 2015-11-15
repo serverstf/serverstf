@@ -73,3 +73,26 @@ with a subcommand.
 $ python -m serverstf ui 9000
 $ xdg-open http://localhost:9000/
 ```
+
+
+### Adding Map Images ###
+
+Map images are displayed in search results and in the server details
+dialogue. Which image is displayed depends on the map currently in-play
+by the server. Adding new map images is a relatively simple process; all the
+configuration lives in `serverstf/ui/`:
+
+1. Add the image to `images/maps/masters/` in the directory that corresponds
+    to the game the map is used for and with the extension `.jpg`.
+1. Add appropriate `.svtf-map(...)` entries to `styles/maps.less`.
+1. Add or update an entry in `data/map-images.yaml`.
+1. Run `grunt` to make sure everything works.
+
+Note that each image must be a JPEG with an aspect ratio of 16:9 and no
+smaller than 1920x1080. The images should also only contain the map it self.
+No characters, action or extraneous artefacts which are not native to the
+map it self (e.g. no blood spatters or bullet holes). In addition to this the
+image should be more or less completely unaltered; no colour correction.
+
+Exemptions can be made on a case-by-case basis if they can be justified. For
+example, generic images for game modes.

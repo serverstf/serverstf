@@ -1,3 +1,25 @@
+// Define map images.
+//
+// Each map image is defined using the `.map-svtf()` mixin. This mixin will
+// generate all the classes necessary to display map images in all their
+// various resolutions and locations.
+//
+// The `.svtf-map()` mixin takes two arguments: the CSS class suffix and
+// image path.
+//
+// The class suffix is the lowercase name of the map with underscores
+// replaced by dashes preceded by the Steam application ID for the game
+// the map image relates to. For example, for the TF2 (Steam application
+// ID 440) map MARIO_KART would be: `440-mario-kart`.
+//
+// Note that full map names needn't be used in the class suffix.
+// Continuing  the example from above: anything matched by the class suffix
+// `440-mario-kart` would also be matched by `440-mario` as well as `440`.
+// This is useful for when adding *generic* map images.
+//
+// The second argument to `.svtf-map()` is a path to the image to use
+// relative to this file's location.
+
 @maps: "../images/maps";
 @tf2: "@{maps}/tf2";
 
