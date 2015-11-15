@@ -26,8 +26,14 @@ editable mode into an isolated environment, e.g. using `virtualenv`.
 ```shell
 $ virtualenv -p $(which python3) env
 $ . env/bin/activate
-$ pip install -e .
+$ pip install -e .[development]
 ```
+
+Note that `[development]` will ensure that development dependencies will
+also be installed along side core packages. This includes things like
+[Pylint](http://www.pylint.org/) which can be used to check the Python source.
+Installing these extra packages isn't strictly necessary as long as you're
+certain you won't need them -- e.g. you're just adding a map image.
 
 
 ### Install UI Dependencies ###
@@ -37,14 +43,22 @@ a number of external dependencies. These can be installed using `npm` and
 `bower` with Grunt being used to manage compilation of scripts and
 stylesheets.
 
+In order to scale map images you need to have
+[ImageMagick](http://www.imagemagick.org/) installed and available on your
+`$PATH`. In the following example `apt-get` is used to install ImageMagick,
+adapt for your own platform as necessary.
+
 ```shell
+$ apt-get install imagemagick
 $ npm install
 $ node_modules/.bin/bower install
 $ node_modules/.bin/grunt
 ```
 
 It is advisable to use the `watch` Grunt task when actively working on
-the user interface.
+the user interface. Note that `watch` will not automatically rebuild map
+images for you as it's quite slow. You can do that manually with the
+`image_resize` task.
 
 
 ### Run the User Interface ###

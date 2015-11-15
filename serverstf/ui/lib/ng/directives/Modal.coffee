@@ -9,6 +9,12 @@ define ->
                 else
                     element.removeClass("svtf-modal-open")
         )
+        element.on("click", (event) ->
+            scope.$applyAsync(->
+                if event.target == element[0]
+                    controller.close()
+            )
+        )
 
     factory = ->
         return _ =

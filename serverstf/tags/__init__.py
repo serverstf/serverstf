@@ -2,48 +2,60 @@
 
 Server tags are simple strings that are used to referencing the server's
 configuration. For example, a tag is used to identify the game the server
-is played (e.g. 'tf2' or 'csgo') and the gamemode of the map.
+is played (e.g. 'tf2' or 'csgo') and the game mode of the map.
 """
-
 
 import venusian
 
 
 class TaggerError(Exception):
-    pass
+    """Base exception for all tag-related errors."""
 
 
 class DependancyError(TaggerError):
-    pass
+    """Raised when there's an issue with a tag's depedencies."""
 
 
 class CyclicDependancyError(DependancyError):
-    pass
+    """Raised when there are cyclical dependencies between tags."""
 
 
 class TaggerImplementation:
+    """Wraps a callable that implements a tag."""
 
-    def __init__(self, tag, implementation, dependancies):
-        self.tag = tag
+    def __init__(self, tag_name, implementation, dependancies):
+        self.tag = tag_name
         self._implementation = implementation
         self._named_dependancies = frozenset(dependancies)
         self._dependancies = None
 
     @property
     def dependancies(self):
+        """Get the dependencies as :class:`TaggerImplementation`s.
+
+        :raises AttributeError: if accessed without making a prior call to
+            :meth:`find_dependancies`.
+        """
         if self._dependancies is None:
             raise AttributeError("Dependancies haven't been resolved yet.")
         return self._dependancies
 
     def find_dependancies(self, taggers):
+        """Get the tag implementations for all dependencies.
+
+        :param taggers: an iterable for :class:`TaggerImplementation`s.
+
+        :raises DependancyError: if a dependency doesn't exist in the given
+            ``taggers``.
+        """
         tags = {tagger.tag: tagger for tagger in taggers}
         dependancies = []
         for dep in self._named_dependancies:
             if dep not in tags:
                 raise DependancyError(
                     "Cannot resolve dependancy on {dep!r} for {tag!r} as "
-                    "{dep!r} does not exist".format(dep=dep_tag,
-                                                    tag=tagger.tag))
+                    "{dep!r} does not exist".format(dep=dep,
+                                                    tag=tags[dep].tag))
             dependancies.append(tags[dep])
         self._dependancies = tuple(dependancies)
 
@@ -105,7 +117,7 @@ class Tagger:
         marked = set()
         temp_marked = set()
 
-        def visit(tagger):
+        def visit(tagger):  # pylint: disable=missing-docstring
             if tagger.tag in temp_marked:
                 raise CyclicDependancyError(
                     "{tag!r} has cyclical dependancies".format(tag=tagger.tag))
@@ -124,11 +136,32 @@ class Tagger:
 
     @classmethod
     def scan(cls, package):
+        """Scan a package for tags.
+
+        :param str package: the name of the package to scan.
+
+        :return: a new :class:`Tagger` containing all the tags that were
+            found.
+        """
         scanner = venusian.Scanner(taggers=[])
         scanner.scan(__import__(package), categories=["serverstf.taggers"])
-        return cls(*scanner.taggers)
+        return cls(*scanner.taggers)  # pylint: disable=no-member
 
     def evaluate(self, info, players, rules):
+        """Evaluate a server's status to determine which tags apply.
+
+        The three arguments correspond to the server info, players and rules
+        as returned by a :class:`valve.source.a2s.ServerQuerier`. Each tag
+        implementation is called with these parameters being being passed
+        through with an additional fourth argument which is a frozenset of
+        all currently applied tags.
+
+        If a tag implementation returns ``True`` then tag applies to the
+        server identified by the its info, players and rules.
+
+        :return: a set of all the tags (as strings) that apply to the
+            current server status.
+        """
         tags = set()
         for tagger in self.taggers:
             if tagger(info, players, rules, frozenset(tags)):
@@ -136,7 +169,7 @@ class Tagger:
         return tags
 
 
-def tag(tag, dependancies=()):
+def tag(name, dependancies=()):
     """A decorator for defining tags.
 
     Functions marked with this decorator will be picked up by
@@ -159,26 +192,17 @@ def tag(tag, dependancies=()):
 
     Care must be taken to avoid creating circular dependancies between tags.
 
-    :param str tag: The name of the tag.
+    :param str name: The name of the tag.
     :param dependancies: A sequence off tag names that must be evaluated
         before this *this* one.
     """
 
-    def callback(scanner, name, obj):
-        scanner.taggers.append(TaggerImplementation(tag, obj, dependancies))
+    def callback(scanner, _, obj):  # pylint: disable=missing-docstring
+        scanner.taggers.append(
+            TaggerImplementation(name, obj, dependancies))
 
-    def decorator(function):
+    def decorator(function):  # pylint: disable=missing-docstring
         venusian.attach(function, callback, category="serverstf.taggers")
         return function
 
     return decorator
-
-
-@tag("mge", ["tf2"])
-def mge(info, players, rules, tags):
-    return "tf2" in tags and info["map"].startswith("mge_")
-
-
-@tag("tf2")
-def tf2(info, players, rules, tags):
-    return info["app_id"] == 440

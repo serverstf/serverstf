@@ -1,0 +1,19 @@
+language: python
+python:
+    - "3.4"
+install:
+    - pip install -e .[development]
+    - npm install
+    - node_modules/.bin/bower install
+script:
+    - python -m serverstf --help
+    - python -m serverstf poll --help
+    - python -m serverstf poller --help
+    - python -m serverstf ui --help
+    - python -m serverstf sync --help
+    - python -m serverstf latency --help
+    - python -m serverstf latency-curve --help
+    - python -m serverstf latency-plot --help
+    - python -m serverstf websocket --help
+    - node_modules/.bin/grunt
+    - pylint serverstf

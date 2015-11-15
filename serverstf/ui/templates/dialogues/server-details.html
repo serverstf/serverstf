@@ -1,10 +1,14 @@
 <div class="svtf-details">
-  <header svtf-map="controller.server">
+  <header class="svtf-map-size-900" svtf-map="controller.server">
     <div class="svtf-details-map">
       <div class="svtf-details-map-details">
         <span>{{controller.server.map}}</span>
         <br>
-        <span>by <span class="svtf-details-map-identity">Michael "Mike" Michaelson</span></span>
+        <span ng-if="controller.map_creators.length > 0">by
+          <span
+            class="svtf-details-map-identity"
+            ng-repeat="creator in controller.map_creators">{{creator.name}}</span>
+        </span>
       </div>
       <div class="svtf-details-map-image">
         <span>Image</span>
@@ -17,7 +21,7 @@
         <div>0s</div>
         <div>Updated</div>
       </div>
-      <a class="svtf-details-control-connect" href="#">
+      <a class="svtf-details-control-connect" href="{{controller.server|connect}}">
         <i class="fa fa-steam"></i>
         <div>Connect</div>
       </a>
@@ -34,17 +38,21 @@
   <div class="svtf-details-latency">
     <div class="svtf-details-latency-location">
       <h3>Server</h3>
-      <div class="svtf-details-latency-location-map"></div>
+      <div class="svtf-details-latency-location-map">
+        <svtf-location-map
+          latitude="controller.server.latitude"
+          longitude="controller.server.longitude"></svtf-location-map>
+      </div>
     </div>
     <div class="svtf-details-latency-metrics">
       <h3>Approximate Latency</h3>
       <div>
         <div class="svtf-details-latency-metrics-metrics">
           <div class="svtf-details-latency-metrics-metrics-ping">
-            52<span>ms</span>
+            {{controller.server|latency:0:-3|number:0}}<span>ms</span>
           </div>
           <div class="svtf-details-latency-metrics-metrics-distance">
-            300<span>km</span>
+            ~{{controller.server|distance:3|number:0}}<span>km</span>
           </div>
         </div>
       </div>
@@ -57,24 +65,24 @@
   <div class="svtf-details-players">
     <div>
       <h3>Players</h3>
-      20/14
+      {{controller.server.players.current}}/{{controller.server.players.max}}
     </div>
     <div class="svtf-details-players-table">
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Score</th>
-            <th>Duration</th>
-            <th>Score / min</th>
+            <th ng-click="controller.sortPlayers('name')">Name</th>
+            <th ng-click="controller.sortPlayers('score')">Score</th>
+            <th ng-click="controller.sortPlayers('duration')">Duration</th>
+            <th ng-click="controller.sortPlayers('rate')">Score / min</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="player in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-            <td>Bot {{player}}</td>
-            <td>{{100 - (player * 3.2)|number:0}}</td>
-            <td></td>
-            <td></td>
+          <tr ng-repeat="player in controller.players|orderBy:controller.players_sort">
+            <td>{{player.name}}</td>
+            <td>{{player.score|number}}</td>
+            <td>{{player.duration}}</td>
+            <td>{{player.rate|number}}</td>
           </tr>
         </tbody>
       </table>

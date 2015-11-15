@@ -1,0 +1,41 @@
+<div class="svtf-settings">
+  <nav class="svtf-settings-navigation">
+    <ul>
+      <li>Search</li>
+      <li class="svtf-settings-navigation-active">Location</li>
+      <li>Licenses</li>
+    </ul>
+  </nav>
+  <div class="svtf-settings-content">
+    <!-- START location -->
+    <div class="svtf-settings-x-location">
+      <svtf-location-map
+        latitude="controller.coordinates.latitude"
+        longitude="controller.coordinates.longitude">
+        <div class="svtf-settings-x-location-coordinates">
+          <div><span>Your location</span></div>
+          <div>
+            <span>{{controller.coordinates.latitude|number:2}},
+            {{controller.coordinates.longitude|number:2}}</span>
+          </div>
+        </div>
+      </svtf-location-map>
+      <div class="svtf-settings-x-location-control">
+        <p>
+          <abbr>SVTF</abbr> uses your location in order to estimate the
+          latency you could expect when connected to a server. For the most
+          accurate results it's recomended to enable geolocation.
+        </p>
+        <p>
+          Currently <em>your IP address</em> is being used to determine your
+          location.
+        </p>
+        <form>
+          <label>Enable geolocation</label>
+          <input type="checkbox">
+        </form>
+      </div>
+    </div>
+    <!-- END location -->
+  </div>
+</div>

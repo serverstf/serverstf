@@ -1,6 +1,6 @@
 define ->
 
-    factory = ($rootScope, Socket) ->
+    factory = ($rootScope, Socket, Modal) ->
 
         class Server
 
@@ -13,7 +13,13 @@ define ->
                 @map = ""
                 @tags = []
                 @players = 0
-                @country = ""
+                @country = null
+                @latitude = null
+                @longitude = null
+
+            hasLocation: =>
+                return @country != null and
+                    @latitude != null and @longitude != null
 
         # Access and track server states.
         #
@@ -56,6 +62,9 @@ define ->
                 server.server.tags = entity.tags
                 server.server.players = entity.players
                 server.server.country = entity.country
+                server.server.latitude = entity.latitude
+                server.server.longitude = entity.longitude
+
 
             # Convert an IP address and port number to a string.
             #
@@ -90,8 +99,11 @@ define ->
             # address so that the service starts receiving status updates.
             #
             # This increments the reference count of the server, so the caller
-            # *must* `free` the object once it's finished with it.
-            get: (ip, port) ->
+            # *must* `free` the object once it's finished with it. Alternately
+            # the caller may provide an Angular scope. When the scope is
+            # destroyed the server will be freed. This saves having to
+            # manually free it.
+            get: (ip, port, scope) ->
                 address = @_stringifyAddress(ip, port)
                 if address not of @_servers
                     @_servers[address] =
@@ -103,11 +115,13 @@ define ->
                                 Socket.send("subscribe", {ip: ip, port: port}))
                 server = @_servers[address]
                 server.references += 1
+                if scope
+                    scope.$on("$destroy", server.free)
                 return server.server
 
         return new ServerService()
 
     return _ =
         "name": "Server"
-        "dependencies": ["$rootScope", "Socket"]
+        "dependencies": ["$rootScope", "Socket", "Modal"]
         "service": factory

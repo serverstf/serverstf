@@ -21,7 +21,7 @@ colon-separated IP-port form where the IP address it self is in the dotted
 decimal format. For example: ``0.0.0.0:8000``.
 
 Each key is prefixed by ``serverstf`` in order to act as a kind of namespace.
-Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
+Key *namespaces* are separated by forward slashes.
 
 ``SET serverstf/servers``
     A set containing the addresses of all the servers in the cache. This is
@@ -35,18 +35,29 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 
     * ``name``
     * ``map``
-    * ``app_id``
+    * ``application_id``
     * ``players``
-    * ``bots``
-    * ``max``
-    * ``scores``
 
-    The ``scores`` field tracks the names, connection times and scores of
-    each player currently on the server. As this is a non-trivial structure
-    it is stored as a JSON encoded array (still UTF-8 encoded.) The array
-    itself contains further arrays, one for each player. The inner arrays
-    have 3 elements: the player's display name as a string, their connection
-    duration as a float in seconds and their score as an integer.
+    The ``players`` field tracks the players on the server. Include the
+    current number of players, the maximum allowed, how many are boths and
+    each individual player's name, score and connection time.
+
+    As this is a non-trivial structure it is stored as a JSON object (still
+    UTF-8 encoded.) The object contains four fields:
+
+    ``current``
+        The current number of players.
+
+    ``max``
+        The maximum number of players supported by the server.
+
+    ``bots``
+        The number of players that are bots.
+
+    ``scores``
+        An array of three-item arrays which contains (in the following order)
+        the player name as a string, their score as a number and their
+        connection duration in seconds as a float.
 
     When one of these server status hashes is retrieved from the cache it
     translated to a :class:`Status` object.
@@ -84,6 +95,7 @@ Key *namespaces* are separated by forward slashes. All keys are UTF-8 encoded.
 
 import asyncio
 import contextlib
+import datetime
 import functools
 import inspect
 import ipaddress
@@ -94,8 +106,7 @@ import urllib.parse
 
 import asyncio_redis
 import asyncio_redis.encoders
-
-import serverstf
+import iso3166
 
 
 log = logging.getLogger(__name__)
@@ -103,6 +114,10 @@ log = logging.getLogger(__name__)
 
 class AddressError(ValueError):
     """Exception for all errors related to :class:`Address`es."""
+
+
+class PlayersError(ValueError):
+    """Exception raised for invalid :class:`Players` objects."""
 
 
 class NotifierError(Exception):
@@ -190,7 +205,131 @@ class Address:
         return self._port
 
 
-class Status:
+class Players:
+    """Immutable representation of the server players at a point in time.
+
+    :ivar current: the current number of players as an integer.
+    :ivar max: the maximum number of players supported by the server as an
+        integer.
+    :ivar bots: the current number of players that are bots as an integer.
+
+    :param scores: an iterable of three-item tuples containing the player's
+        name as a string, their score as an integer and their connection
+        duration as a :class:`datetime.timedelta`.
+    """
+
+    def __init__(self, *, current, max_, bots, scores):
+        self._current = int(current)
+        self._max = int(max_)
+        self._bots = int(bots)
+        normalised_scores = []
+        for name, score, duration in scores:
+            name = str(name)
+            score = int(score)
+            if not isinstance(duration, datetime.timedelta):
+                raise PlayersError("Player connection duration must "
+                                   "be a {} object".format(datetime.timedelta))
+            normalised_scores.append((name, score, duration))
+        self._scores = tuple(normalised_scores)
+
+    def __repr__(self):
+        return ("<{0.__class__.__name__} "
+                "{0.current}/{0.max} ({0.bots} bots)>".format(self))
+
+    def __iter__(self):
+        """Iterate over players and scores.
+
+        When iterated on this yields a tuple for each connected player
+        containing their name, score and connection duration. The players
+        themselves should never be considered to be in any particular order.
+
+        .. note::
+            It's possible for the number of players returned by this iterator
+            to be less than or greater than that of the :attr:`current`
+            players.
+        """
+        return iter(self._scores)
+
+    @property
+    def current(self):
+        """Get the current number of players."""
+        return self._current
+
+    @property
+    def max(self):
+        """Get the maximum number of players."""
+        return self._max
+
+    @property
+    def bots(self):
+        """Get the current number of NPC players."""
+        return self._bots
+
+    @classmethod
+    def from_json(cls, encoded):
+        """Parse a JSON-encoded object.
+
+        This is effectively the inverse of :meth:`to_json`.
+
+        :raises PlayersError: if the JSON or the structure of the JSON object
+            is invalid in any way.
+        :return: a new :class:`Players`.
+        """
+        try:
+            decoded = json.loads(encoded)
+        except ValueError as exc:
+            raise PlayersError("Bad JSON: {}".format(exc)) from exc
+        for field in ["current", "max", "bots", "scores"]:
+            if field not in decoded:
+                raise PlayersError("Missing field {!r}".format(field))
+        try:
+            current = int(decoded["current"])
+            max_ = int(decoded["max"])
+            bots = int(decoded["bots"])
+        except (ValueError, TypeError) as exc:
+            raise PlayersError(
+                "Malformed integer fields: {}".format(exc)) from exc
+        else:
+            scores = []
+            for entry in decoded["scores"]:
+                if not isinstance(entry, list) or not len(entry) == 3:
+                    raise PlayersError(
+                        "Malformed scores; expected list "
+                        "of length 3 but got: {!r}".format(entry))
+                if not isinstance(entry[0], str):
+                    raise PlayersError("First item must be a string "
+                                       "for but got: {!r}".format(entry[0]))
+                if not all(isinstance(i, (int, float)) for i in entry[1:]):
+                    raise PlayersError("Last two items must be numbers "
+                                       "but got: {!r}".format(entry[1:]))
+                scores.append((entry[0], entry[1],
+                               datetime.timedelta(seconds=entry[2])))
+            return cls(current=current, max_=max_, bots=bots, scores=scores)
+
+
+    def to_json(self):
+        """Convert the players to a JSON-encoded object.
+
+        The JSON object will have four fields: ``current``, ``max``, ``bots``
+        and ``scores``. The first three are just plain numbers corresponding
+        to the attributes of the same names. ``scores`` is an array of
+        arrays which contain the name, score and duration (in seconds) of
+        each player.
+
+        :return: a string containing the JSON-encoded object.
+        """
+        object_ = {
+            "current": self.current,
+            "max": self.max,
+            "bots": self.bots,
+            "scores": [],
+        }
+        for name, score, duration in self:
+            object_["scores"].append([name, score, duration.total_seconds()])
+        return json.dumps(object_)
+
+
+class Status:  # pylint: disable=too-many-instance-attributes
     """Immutable representation of the state of a server at a point in time.
 
     :ivar address: the :class:`Address` that identifies the server.
@@ -205,19 +344,38 @@ class Status:
         by the server. Note that this is the Steam application ID of the
         game's client not the server. For example, in the case of TF2 it is
         440 not 232250.
+    :ivar players: a :class:`Players` instance containing all the players
+        currently on the server. Defaults to an empty :class:`Players` object
+        if not set.
+    :ivar country: the country of server as an ISO 3166 two-letter
+        country identifier string.
+    :ivar latitude: the latitude for the location of the server as a float.
+    :ivar longitude: the longitude for the location of the server as a float.
     :ivar tags: a frozen set of all the tags applied to the server.
     """
 
     def __init__(self, address, *, interest, name,
-                 map_, application_id, players, tags):
+                 map_, application_id, players,
+                 country, latitude, longitude, tags):
         self._address = address
         self._interest = 0 if interest is None else int(interest)
         self._name = name if name is None else str(name)
         self._map = map_ if map_ is None else str(map_)
         self._application_id = application_id
         if self._application_id is not None:
-            self._application_id =  int(application_id)
+            self._application_id = int(application_id)
+        if players is None:
+            players = Players(current=0, max_=0, bots=0, scores=[])
+        if not isinstance(players, Players):
+            raise TypeError("Status players must be "
+                            "a {} instance or None".format(Players))
         self._players = players
+        if country is not None and country not in iso3166.countries_by_alpha2:
+            raise TypeError("{!r} is not a valid ISO "
+                            "3166 country code".format(country))
+        self._country = country
+        self._latitude = latitude if latitude is None else float(latitude)
+        self._longitude = longitude if longitude is None else float(longitude)
         self.tags = frozenset(tags)
 
     def __repr__(self):
@@ -253,6 +411,21 @@ class Status:
     def players(self):
         """Get the current players."""
         return self._players
+
+    @property
+    def country(self):
+        """Get the country of the server as a ISO 3166 identifier."""
+        return self._country
+
+    @property
+    def latitude(self):
+        """Get the latitude for the server's location."""
+        return self._latitude
+
+    @property
+    def longitude(self):
+        """get the longitude for the server's location."""
+        return self._longitude
 
 
 class Notifier:
@@ -345,7 +518,7 @@ class Notifier:
         if self.watching:
             raise NotifierError(
                 "Notifier in watch mode; cannot send notifications")
-        channel_server = self._channel(self.TAG, address)
+        channel_server = self._channel(self.TAG, tag)
         log.debug("Publish %s", channel_server)
         yield from self._connection.publish(
             channel_server, str(address).encode(self._encoding))
@@ -384,7 +557,7 @@ class Notifier:
     @asyncio.coroutine
     def unwatch_tag(self, tag):
         """Stop watching a tag for updates."""
-        channel_server = self._channel(self.TAG, address)
+        channel_server = self._channel(self.TAG, tag)
         subscriber = yield from self._get_subscriber()
         yield from subscriber.unsubscribe([channel_server])
         log.debug("Unsubscribed from %s", channel_server)
@@ -433,7 +606,7 @@ class AsyncCache:
         self._connection = connection
         self._loop = loop
         self._notifier = None
-        self._active_iq_item = None
+        self._active_iq_item = (None, None)
         self._iq_key = self._key("interesting")
 
     def __repr__(self):
@@ -460,13 +633,13 @@ class AsyncCache:
             loop=loop,
             encoder=asyncio_redis.encoders.BytesEncoder(),
         )
+        return cls(connection, loop)
 
-        @contextlib.contextmanager
-        def cache_context(cache):
-            yield cache
-            cache.close()
+    def __enter__(self):
+        return self
 
-        return cache_context(cls(connection, loop))
+    def __exit__(self, value, type_, trace):
+        self.close()
 
     @property
     def loop(self):
@@ -481,7 +654,7 @@ class AsyncCache:
         """
         self._connection.close()
         # Hack to work around the fact that closing the connection doesn't
-        # clean upt tasks started by asyncio_redis. See:
+        # clean up tasks started by asyncio_redis. See:
         # https://github.com/jonathanslenders/asyncio-redis/issues/56
         if not self._loop.is_running():
             self._loop.run_until_complete(asyncio.sleep(0))
@@ -585,6 +758,9 @@ class AsyncCache:
             "map_": hash_.get("map"),
             "application_id": None,
             "players": None,
+            "country": hash_.get("country"),
+            "latitude": None,
+            "longitude": None,
             "tags": tags,
         }
         try:
@@ -592,10 +768,22 @@ class AsyncCache:
         except (ValueError, TypeError) as exc:
             log.warning("Could not convert application_id "
                         "for %s to int: %s", address, exc)
-        return Status(address, **kwargs)
+        for field in ("latitude", "longitude"):
+            try:
+                kwargs[field] = float(hash_.get(field))
+            except (ValueError, TypeError) as exc:
+                log.warning("Could not convert %s for %s "
+                            "to float: %s", field, address, exc)
+        try:
+            kwargs["players"] = Players.from_json(hash_.get("players", ""))
+        except PlayersError as exc:
+            log.warning("Could not decode players "
+                        "JSON object for %s: %s", address, exc)
+        return Status(address, **kwargs)  # pylint: disable=missing-kwoa
 
+    # TODO: This is too large; needs refactoring.
     @asyncio.coroutine
-    def __set(self, status):
+    def __set(self, status):  # pylint: disable=too-many-locals
         """Commit a server status to the cache.
 
         This sets the primary server state HASH key and the tags SET for the
@@ -621,10 +809,12 @@ class AsyncCache:
         key_hash = self._key("servers", status.address)
         key_tags = self._key("servers", status.address, "tags")
         hash_ = {}
-        for attribute in {"name", "map", "application_id"}:
+        for attribute in {"name", "map", "application_id",
+                          "country", "latitude", "longitude"}:
             value = getattr(status, attribute)
             if value is not None:
                 hash_[attribute] = str(value)
+        hash_["players"] = status.players.to_json()
         hash_ = {key.encode(self.ENCODING):
                  value.encode(self.ENCODING) for key, value in hash_.items()}
         tags = {tag.encode(self.ENCODING) for tag in status.tags}
@@ -730,7 +920,7 @@ class AsyncCache:
         status = yield from self.__get(address)
         if status.interest >= interest:
             yield from self.__push_iq(interest, address)
-        self._active_iq_item = None
+        self._active_iq_item = (None, None)
 
     @asyncio.coroutine
     def interesting(self):
@@ -744,10 +934,10 @@ class AsyncCache:
         :raises EmptyQueueError: if the interest queue is empty.
         :return: a :class:`Address` from the interest queue.
         """
-        if self._active_iq_item:
+        if self._active_iq_item != (None, None):
             raise CacheError("There is already an active interest queue item. "
                              "Did you forget to call update_interest_queue?")
-        while self._active_iq_item is None:
+        while self._active_iq_item == (None, None):
             item_raw = yield from self._connection.lpop(self._iq_key)
             if not item_raw:
                 raise EmptyQueueError
@@ -868,6 +1058,13 @@ class FiniteAsyncQueue(asyncio.Queue):
         self._closed = True
 
     def _check_end_of_queue(self, item):
+        """Check if an object is the special end-of-queue marker.
+
+        :param item: the object to check.
+
+        :raises EndOfQueueError: if the item is the end-of-queue marker.
+        :return: the given ``item``.
+        """
         if item is self._end_of_queue:
             raise EndOfQueueError
         return item
@@ -913,7 +1110,7 @@ class _Synchronous(type):
     but still call the asynchronous API internally.
     """
 
-    def __new__(meta, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):
         for base in bases:
             mangle_prefix = "_" + base.__name__ + "__"
             for attr, member in inspect.getmembers(base):
@@ -925,8 +1122,8 @@ class _Synchronous(type):
                             raise TypeError("The class method {!r} from {} "
                                             "must be explicitly overriden in "
                                             "{!r}".format(attr, base, name))
-                        attrs[attr] = meta._make_synchronous(member)
-        return super().__new__(meta, name, bases, attrs)
+                        attrs[attr] = mcs._make_synchronous(member)
+        return super().__new__(mcs, name, bases, attrs)
 
     @staticmethod
     def _make_synchronous(function):
@@ -943,7 +1140,7 @@ class _Synchronous(type):
         """
 
         @functools.wraps(function)
-        def synchronous(self, *args, **kwargs):
+        def synchronous(self, *args, **kwargs):  # pylint: disable=missing-docstring
             return self.loop.run_until_complete(
                 function(self, *args, **kwargs))
 
@@ -967,6 +1164,10 @@ class Cache(AsyncCache, metaclass=_Synchronous):
         return loop.run_until_complete(super().connect(url, loop))
 
     def notifier(self):
+        """Notifiers not available for synchronous caches.
+
+        :raises NotImplementedError:
+        """
         raise NotImplementedError(
             "Notifiers not available for synchronous caches.")
 

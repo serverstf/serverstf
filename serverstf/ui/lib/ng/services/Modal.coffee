@@ -2,6 +2,8 @@ define ->
 
     DIALOGUES =
         "ServerDetails": "templates/dialogues/server-details.html"
+        "SignIn": "templates/dialogues/sign-in.html"
+        "SettingsLocation": "templates/settings/location.html"
 
     factory = ->
 
@@ -14,6 +16,7 @@ define ->
                     template: null
                 @_configuration = {}
                 @title = ""
+                @open("SettingsLocation")
 
             getDialogue: =>
                 return [@_dialogue.controller, @_dialogue.template]

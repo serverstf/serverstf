@@ -1,3 +1,5 @@
+"""Websocket service to access server statuses."""
+
 import asyncio
 import functools
 import itertools
@@ -8,6 +10,7 @@ import voluptuous
 import websockets
 
 import serverstf.cache
+import serverstf.cli
 
 
 log = logging.getLogger(__name__)
@@ -33,14 +36,14 @@ def validate(schema):
     :param schema: a :mod:`voluptuous` schema specification.
     """
 
-    def decorator(function):
+    def decorator(function):  # pylint: disable=missing-docstring
         if not asyncio.iscoroutinefunction(function):
             raise TypeError(
                 "{!r} is not a coroutine function".format(function))
 
         @asyncio.coroutine
         @functools.wraps(function)
-        def wrapper(self, entity):
+        def wrapper(self, entity):  # pylint: disable=missing-docstring
             try:
                 validated_entity = voluptuous.Schema(schema)(entity)
             except voluptuous.Invalid as exc:
@@ -52,7 +55,7 @@ def validate(schema):
     return decorator
 
 
-def address(value):
+def address_entity(value):
     """Convert a dictionary to a :class:`serverstf.cache.Address`.
 
     The dictionary must have an ``ip`` and ``port`` field which are a
@@ -94,7 +97,8 @@ class Client:
         self._cache = cache
         self._notifier = notifier
         self._send_queue = asyncio.Queue()
-        self._watched_tags = set()
+        self._include = set()
+        self._exclude = set()
 
     @asyncio.coroutine
     def send(self, type_, entity):
@@ -126,33 +130,99 @@ class Client:
 
         ``tags``
             An array of tags currently applied to the server as strings.
+
+        ``players``
+            An object describing the players on the server. This object has
+            four fields of its own:
+
+            ``current``
+                The current number of players as an integer.
+
+            ``max``
+                The maximum number of players as an integer.
+
+            ``bots``
+                The number of players who are bots as an integer.
+
+            ``scores``
+                An array of three-item arrays which contain player names as a
+                string, their score as a number and connection duration as
+                a number in that order.
+
+        ``country``
+            The location of the server as an ISO 3166 two-letter country code.
+
+        ``latitude``
+            The location of the server in terms of latitude as a number.
+
+        ``longitude``
+            The location of the server in terms of longitude as a number.
+
+        If the location of the server is not conclusively known then all
+        location based fields (``country``, ``latitude`` and ``longitude``)
+        are set to ``None``/``null``.
+
+        The location is considered to be conclusively known if all location
+        fields are not ``None``.
         """
         status = yield from self._cache.get(address)
-        yield from self.send("status", {
+        entity = {
             "ip": str(status.address.ip),
             "port": status.address.port,
             "name": status.name or "",
             "map": status.map or "",
-            "players": 0,
             "tags": list(status.tags),
-            "country": "GB",
-        })
+            "players": {
+                "current": status.players.current,
+                "max": status.players.max,
+                "bots": status.players.bots,
+                "scores": list([n, s, d.total_seconds()]
+                               for n, s, d in status.players),
+            },
+            "country": None,
+            "latitude": None,
+            "longitude": None,
+        }
+        if (status.country is not None
+                and status.latitude is not None
+                and status.longitude is not None):
+            entity["country"] = status.country
+            entity["latitude"] = status.latitude
+            entity["longitude"] = status.longitude
+        yield from self.send("status", entity)
 
-    @validate(address)
+    @validate(address_entity)
     @asyncio.coroutine
     def _handle_subscribe(self, address):
+        """Handle ``subscribe`` messages.
+
+        This will begin watching the given address with the notifier so that
+        updates will published to the client. An initial ``status`` is sent
+        as well.
+        """
         log.info("New subscription to address %s", address)
         yield from self._notifier.watch_server(address)
         yield from self._send_status(address)
 
-    @validate(address)
+    @validate(address_entity)
     @asyncio.coroutine
     def _handle_unsubscribe(self, address):
+        """Handle ``unsubscribe`` messages.
+
+        Stop watching the given address with the notifier.
+        """
         log.info("Unsubscribing from address %s", address)
         yield from self._notifier.unwatch_server(address)
 
     @asyncio.coroutine
     def _send_match(self, address):
+        """Notify the client that a server matches its query.
+
+        This sends a message with type ``type``. The accompanying entity
+        is an object with two fields: ``ip`` and ``port``. The ``ip`` is the
+        dot-decimal IP address of the given ``address`` and the ``port`` is
+        just port number as is.
+        """
         yield from self.send(
             "match", {"ip": str(address.ip), "port": address.port})
 
@@ -175,13 +245,14 @@ class Client:
         """
         include = set(entity["include"])
         exclude = set(entity["exclude"])
-        for old_tag in self._watched_tags - include:
+        for old_tag in self._include - include:
             yield from self._notifier.unwatch_tag(old_tag)
-        self._watched_tags = include
+        self._include = include
+        self._exclude = exclude
         for tag in include:
             yield from self._notifier.watch_tag(tag)
         addresses = yield from self._cache.search(
-            include=include, exclude=exclude)
+            include=self._include, exclude=self._exclude)
         for address in addresses:
             yield from self._send_match(address)
 
@@ -230,8 +301,7 @@ class Client:
 
         This will continually attempt to receive messages from the websocket
         and dispatch them to appropriate handlers. When malformed messages
-        are received or there is an unexpected error then the client will
-        be notified.
+        are received then the client will be notified.
 
         If the client disconnects then the coroutine will return.
         """
@@ -244,12 +314,6 @@ class Client:
             except MessageError as exc:
                 log.warning("Received bad message: %s", exc)
                 yield from self.send("error", str(exc))
-            except Exception as exc:
-                log.exception(
-                    "Error handling %r for %s",  received, self._websocket)
-                # Unhandled exception. To be safe we shouldn't blindly send
-                # this error unabridged to the client.
-                # TODO: send notification of internal error
 
     @asyncio.coroutine
     def _write(self):
@@ -297,12 +361,18 @@ class Client:
                 # The task hasn't had chance to cancel yet but that doesn't
                 # really matter.
                 pass
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 log.exception("Error handling %s "
                               "in task %s", self._websocket, task)
 
 
 class Service:
+    """The websocket service entry-point.
+
+    This service spawns individual handlers for each client that connects.
+    Clients must connect with the path ``/`` otherwise the connection is
+    closed immediately.
+    """
 
     #: The path the service is served from
     PATH = "/"
@@ -312,6 +382,16 @@ class Service:
 
     @asyncio.coroutine
     def __call__(self, websocket, path):
+        """Handle a new socket connection.
+
+        This spawns a :class:`Client` to handle the new connection. This
+        handler will have a dedicated :class:`serverstf.cache.Notifier`
+        created for it. When the client completes (either due to graceful
+        disconnect or error) the notifier will be cleaned up.
+
+        If the socket connects on a path other than ``/`` then it is
+        immediately disconnected.
+        """
         if path != self.PATH:
             log.error("Client connected on path %s; dropping connection", path)
             return
@@ -324,26 +404,17 @@ class Service:
         log.debug("Connection closed")
 
 
-def _websocket_args(parser):
-    parser.add_argument(
-        'port',
-        type=int,
-        help="The port the websocket service will listen on.",
-    )
-    parser.add_argument(
-        "url",
-        type=serverstf.redis_url,
-        nargs="?",
-        default="//localhost",
-        help="The URL of the Redis database to use for the cache and queues."
-    )
-
-
 @asyncio.coroutine
 def _websocket_async_main(args, loop):
+    """Start a websocket server.
+
+    This will connect to the cache identified by the command line arguments
+    and start websocket server to host a :class:`Service` instance. It will
+    then let the socket server run indefinately.
+    """
     log.info("Starting websocket server on port %i", args.port)
     cache_context = \
-        yield from serverstf.cache.AsyncCache.connect(args.url, loop)
+        yield from serverstf.cache.AsyncCache.connect(args.redis, loop)
     with cache_context as cache:
         yield from websockets.serve(
             Service(cache), port=args.port, loop=loop)
@@ -353,7 +424,14 @@ def _websocket_async_main(args, loop):
     log.info("Stopping websocket server")
 
 
-@serverstf.subcommand("websocket", _websocket_args)
+@serverstf.cli.subcommand("websocket")
+@serverstf.cli.redis
+@serverstf.cli.argument(
+    "port",
+    type=int,
+    help="The port the websocket service will listen on.",
+)
 def _websocket_main(args):
+    """Start a websocket server."""
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_websocket_async_main(args, loop))

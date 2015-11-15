@@ -26,6 +26,10 @@
         > * {
             flex: 1;
         }
+
+        ng-view {
+            display: flex;
+        }
     }
 }
 
@@ -33,5 +37,7 @@
 
 
 body {
-    .svtf-body(#ffffff);
+    .svtf-body(
+        @background-colour: #ffffff,
+    );
 }

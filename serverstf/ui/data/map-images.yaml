@@ -1,0 +1,26 @@
+# This file contains a list of all those who have contributed images for maps.
+# Ideally when a new map image is added an entry is added or an existing one
+# amended to identify the contributor.
+#
+# Thew top-level object is an array which lists all the contributors.
+# Each item in the array is an object which has three fields:
+#
+# `name`
+#   The name of the contributor. This could be their actual name or a
+#   pseudonym as per their preference.
+#
+# `link`
+#   A URL that pertains to the contributor. For example, their GitHub or
+#   Steam profile.
+#
+# `images`
+#   An array of all the images (by path) contributed by the user as strings.
+#   The paths are relative to the ../images/maps/masters/ directory.
+
+-
+  name: gatsan
+  link: ~
+  images:
+    - tf2/badlands.jpg
+    - tf2/granary.jpg
+    - tf2/well.jpg

@@ -31,6 +31,10 @@
 
     .svtf-details-map-identity {
         font-family: "Permanent Marker", cursive;
+
+        &:not(:last-child)::after {
+            content: " & ";
+        }
     }
 
     > * {
@@ -168,15 +172,25 @@
             position: relative;
             height: 10em;
 
-            &::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                box-shadow:
-                    inset 0px 0px 20px 20px @location-background-colour;
+            // &::before {
+            //     content: "";
+            //     position: absolute;
+            //     top: 0;
+            //     bottom: 0;
+            //     left: 0;
+            //     right: 0;
+            //     box-shadow:
+            //         inset 0px 0px 20px 20px @location-background-colour;
+            // }
+
+            svg {
+                width: 100%;
+                height: 100%;
+                background-color: #2d78de;
+
+                path {
+                    fill: @location-foreground-colour;
+                }
             }
         }
     }

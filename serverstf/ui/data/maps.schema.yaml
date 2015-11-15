@@ -1,0 +1,42 @@
+# JSON Schema for maps.yaml
+#
+# This and maps.yaml are converted to JSON before being validated against
+# this schema.
+
+$schema: http://json-schema.org/draft-04/schema#
+title: SVTF Map Metadata
+description: Identifies the creators of Source maps.
+type: object
+additionalProperties:
+  type: object
+  additionalProperties:
+    type: object
+    properties:
+      link:
+        type:
+          - string
+          - null
+      official:
+        type: boolean
+      community:
+        type: boolean
+      creators:
+        type: array
+        items:
+          type: object
+          properties:
+            link:
+              type:
+                - string
+                - null
+            name:
+              type: string
+          required:
+            - link
+            - name
+    required:
+      - link
+      - official
+      - community
+      - creators
+    additionalProperties: false

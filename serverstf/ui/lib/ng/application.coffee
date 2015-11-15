@@ -6,17 +6,30 @@ define ["angular"], (angular) ->
     # for further details.
     NG_APPLICATION_MODULE_NAME = "serverstf"
     NG_APPLICATION_SPECIFICATION =
+        "config": [
+            "Routes",
+            "URLSchemes",
+        ]
         "controller": [
-            "SearchControl",
+            "Search",
             "ServerDetails",
+            "SettingsLocation",
+            "SignIn",
         ]
         "directive": [
+            "LocationMap",
             "Map",
             "Modal",
             "ModalContent",
             "ModalOpen",
         ]
+        "filter": [
+            "Connect",
+            "Distance",
+            "Latency",
+        ]
         "service": [
+            "Location",
             "Modal",
             "Server",
             "Socket",
@@ -46,8 +59,10 @@ define ["angular"], (angular) ->
             if not service
                 console.warn(
                     "Module #{module.path} doesn't define a #{module.type}")
-            ng_module[module.type](
-                module.name, ng_dependencies.concat(service))
+            parameters = [ng_dependencies.concat(service)]
+            if module.type != "config"
+                parameters.splice(0, 0, module.name)
+            ng_module[module.type](parameters ...)
         angular.bootstrap(document, [NG_APPLICATION_MODULE_NAME])
 
     # Initialise the Angular application.

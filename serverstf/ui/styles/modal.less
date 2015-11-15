@@ -14,6 +14,8 @@ svtf-modal {
     bottom: 0;
     left: 0;
     right: 0;
+    padding: 0 4em;
+    padding-top: 6em;
     background-color: rgba(0, 0, 0, 0.15);
     background-image: url("../images/background-speckle.png");
     z-index: 2;
@@ -30,8 +32,8 @@ svtf-modal {
     }
 
     .svtf-modal-frame {
-        margin: 0 4em;
-        margin-top: 6em;
+        max-width: 900px;
+        margin: 0 auto;
         background-color: @frame-background-colour;
         box-shadow: 0px 0px 30px -10px #000000;
         color: @frame-foreground-colour;

@@ -8,6 +8,7 @@ import asyncio
 import logging
 
 import serverstf
+import serverstf.cli
 
 import valve.source.a2s
 import valve.source.master_server
@@ -15,33 +16,34 @@ import valve.source.master_server
 log = logging.getLogger(__name__)
 
 
-def _sync_main_args(parser):
-    parser.add_argument(
-        "url",
-        type=serverstf.redis_url,
-        nargs="?",
-        default="//localhost",
-        help="The URL of the Redis database to use for the cache and queues."
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help=("When set the poller will poll all servers "
-              "in the cache, not only those in the interest queue."),
-    )
-
-
-@serverstf.subcommand("sync", _sync_main_args)
+@serverstf.cli.subcommand("sync")
+@serverstf.cli.redis
+@serverstf.cli.argument(
+    "regions",
+    nargs="+",
+    choices=("na-west", "na-east", "na", "sa",
+             "eu", "as", "oc", "af", "rest", "all"),
+    help="The master server region to synchronise with.",
+)
 def _sync_main(args):
+    """Synchronise with the master server.
+
+    This will continually poll the master server for new server addresses.
+    These addresses are then added to the cache which is identified by the
+    command line arguments.
+
+    Note that this merely adds the address to the cache. It doesn't poll the
+    individual servers.
+    """
     log.info("Starting master server synchroniser")
     loop = asyncio.get_event_loop()
-    with serverstf.cache.Cache.connect(args.url, loop) as cache:
+    with serverstf.cache.Cache.connect(args.redis, loop) as cache:
         while True:
             msq = valve.source.master_server.MasterServerQuerier()
             addresses_total = 0
             addresses_new = 0
             try:
-                for address in msq.find(gamedir="tf"):
+                for address in msq.find(args.regions, gamedir="tf"):
                     addresses_total += 1
                     if cache.ensure(serverstf.cache.Address(*address)):
                         addresses_new += 1

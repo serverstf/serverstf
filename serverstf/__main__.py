@@ -1,15 +1,14 @@
 """Serverstf application entry-point."""
 
 import argparse
-import enum
 import logging
 import sys
 import time
 
 import pkg_resources
-import venusian
 
 import serverstf
+import serverstf.cli
 
 
 def setup_logging(level):
@@ -87,13 +86,12 @@ def parse_args(argv=None):
     # http://bugs.python.org/issue9253
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
-    scanner = venusian.Scanner(subcommands=[])
-    scanner.scan(serverstf, categories=[__package__ + ":subcommand"])
-    for subcommand in scanner.subcommands:
-        subparser = subparsers.add_parser(subcommand.name)
+    subcommands = serverstf.cli.scan(serverstf)
+    for name, subcommand in subcommands.items():
+        subparser = subparsers.add_parser(name)
         subparser.set_defaults(command_func=subcommand.entry_point)
-        if subcommand.arguments:
-            subcommand.arguments(subparser)
+        for args, kwargs in subcommand.arguments:
+            subparser.add_argument(*args, **kwargs)
     return parser.parse_args(argv)
 
 
