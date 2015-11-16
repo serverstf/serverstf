@@ -2,6 +2,8 @@ define ["angular-route"], (angular_route) ->
 
     ROUTES =
         "/search/": "templates/search.html"
+        "/statistics/": "templates/placeholder.html"
+        "/favourites/": "templates/placeholder.html"
 
     configureRoutes = ($locationProvider, $routeProvider) ->
         $locationProvider.html5Mode(true)
