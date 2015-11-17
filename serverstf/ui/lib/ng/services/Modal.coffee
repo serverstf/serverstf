@@ -16,6 +16,7 @@ define ->
                     template: null
                 @_configuration = {}
                 @title = ""
+                @open("SettingsLocation")
 
             getDialogue: =>
                 return [@_dialogue.controller, @_dialogue.template]
