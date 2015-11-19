@@ -151,6 +151,12 @@ def _configure_location(config, geoip):
     config.add_view(_location, route_name="service-location", renderer="json")
 
 
+def _404(request):
+    """View to set status code to 404."""
+    request.response.status = 404
+    return {}
+
+
 def _make_application(geoip):
     """Construct a Pyramid WSGI application.
 
@@ -189,7 +195,7 @@ def _make_application(geoip):
     config.add_jinja2_search_path(__name__ + ":templates/")
     config.add_route("main", "/")
     config.add_view(route_name="main", renderer="main.jinja2")
-    config.add_notfound_view(renderer="main.jinja2")
+    config.add_notfound_view(_404, renderer="main.jinja2")
     for static in ["external", "scripts",
                    "styles", "images", "templates", "data"]:
         config.add_static_view(static, "{}:{}/".format(__name__, static))
