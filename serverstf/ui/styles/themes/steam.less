@@ -1,0 +1,45 @@
+@import (reference) "../body.less";
+@import (reference) "../header.less";
+@import (reference) "../search.less";
+@import (reference) "../tag.less";
+@import (reference) "../modal.less";
+@import (reference) "../details.less";
+@import (reference) "../settings.less";
+
+body.svtf-theme-steam {
+
+    .svtf-body(#1B2838);
+
+    .svtf-header(
+        @background-colour: #171A21,
+        @foreground-colour: #dedede,
+        @border-colour: darken(#171A21, 5%),
+        @sign-out-background-colour: #739844,
+        @sign-out-foreground-colour: #ffffff,
+    );
+
+    .svtf-search-control(
+        @background-colour: #0D131B,
+        @foreground-colour: #8f989f,
+        @border-colour: darken(#0D131B, 10%),
+        @input-background-colour: lighten(#0D131B, 10%),
+        @input-foreground-colour: #7cc5fb,
+        @results-background-colour: darken(#0D131B, 5%),
+        @results-foreground-colour: #7cc5fb,
+    );
+
+    .svtf-tag(
+        @prefix-background-colour: #739844,
+        @prefix-foreground-colour: #ffffff,
+        @name-background-colour: #dedede,
+        @name-foreground-colour: #000000,
+        @stripe-colour: rgba(0, 0, 0, 0.1),
+    );
+
+    .svtf-server-list(
+        @background-colour: darken(#0D131B, 5%),
+        @foreground-colour: #dedede,
+        @name-background-colour: #0D131B,
+    );
+
+}
