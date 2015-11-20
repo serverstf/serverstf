@@ -5,6 +5,7 @@ import logging
 import pyramid.authentication
 import pyramid.authorization
 import pyramid.config
+import pyramid.response
 import pyramid.security
 import pyramid.session
 import waitress
@@ -68,6 +69,20 @@ def _get_openid_consumer(request):
     return openid.consumer.consumer.Consumer(request.session, None)
 
 
+def _profile(request):
+    """Get the Steam profile for authenticated user.
+
+    Returns a JSON object with a single ``id`` key which is the 64-bit Steam
+    ID of the currently authenticated user as a number.
+
+    If no user is currently authenticated then an empty 403 response is
+    returned.
+    """
+    if request.authenticated_userid is None:
+        return pyramid.response.Response("", 403)
+    return {"id": int(request.authenticated_userid)}
+
+
 def _configure_authentication(config):
     """Configure authentication policies, routes and view.
 
@@ -75,7 +90,7 @@ def _configure_authentication(config):
     configurator. In addition to this it adds a reified request method
     called ``openid_consumer`` -- see :func:`_get_openid_consumer`.
 
-    Two routes are added: ``authenticate-begin`` and
+    For authentication two routes are added: ``authenticate-begin`` and
     ``authentication-complete``. These routes are bound to the views
     :func:`_begin_authentication` and :func:`_complete_authentication`
     respectively.
@@ -85,6 +100,9 @@ def _configure_authentication(config):
 
     Authentication it self is done through Steam's OpenID provision. The
     two views added by this function implement the OpenID flow.
+
+    An additional route ``service-profile`` and corresponding view is added
+    that returns a JSON object that identifies the current user.
     """
     # TODO: DO NOT use this factory in production!
     config.set_session_factory(
@@ -109,6 +127,8 @@ def _configure_authentication(config):
         route_name="authenticate-complete",
         renderer="authentication-complete.jinja2",
     )
+    config.add_route("service-profile", "/services/profile")
+    config.add_view(_profile, route_name="service-profile", renderer="json")
 
 
 def _location(request):
