@@ -5,6 +5,8 @@
   @background-colour,
   @foreground-colour,
   @border-colour,
+  @sign-out-background-colour,
+  @sign-out-foreground-colour,
 ) {
 
 .svtf-header {
@@ -44,6 +46,43 @@
                     margin: 0 1em;
                 }
             }
+
+            &.svtf-header-sign-out {
+                width: 55px;
+                text-align: center;
+                border-left: 2px solid @background-colour;
+
+                &:not(:hover) {
+                    position: relative;
+                    background-image: url("http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/38/387f880d55b3cd3eaaf23b13e8e787c674336ed6_full.jpg");
+                    background-size: cover;
+                    border-color: @border-colour;
+
+                    > * {
+                        display: none;
+                    }
+                }
+
+                &:hover {
+                    background-color: @sign-out-background-colour;
+                    background-image: repeating-linear-gradient(
+                        -45deg,
+                        transparent,
+                        transparent 10px,
+                        lighten(@sign-out-background-colour, 5%) 10px,
+                        lighten(@sign-out-background-colour, 5%) 20px,
+                    );
+                    color: @sign-out-foreground-colour;
+
+                    a {
+                        border-color: transparent;
+                        color: @sign-out-foreground-colour;
+                        text-shadow:
+                            0 1px 0 darken(@sign-out-background-colour, 10%);
+                    }
+                }
+
+            }
         }
     }
 
@@ -59,5 +98,7 @@ body {
     @background-colour: #ffffff,
     @foreground-colour: #000000,
     @border-colour: #000000,
+    @sign-out-background-colour: #000000,
+    @sign-out-foreground-colour: #ffffff,
   )
 }
