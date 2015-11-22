@@ -11,6 +11,7 @@ define ["angular"], (angular) ->
             "URLSchemes",
         ]
         "controller": [
+            "Header",
             "Search",
             "ServerDetails",
             "SettingsLocation",
@@ -34,6 +35,7 @@ define ["angular"], (angular) ->
             "Modal",
             "Server",
             "Socket",
+            "User",
         ]
 
     # Bootstrap the Angular application.

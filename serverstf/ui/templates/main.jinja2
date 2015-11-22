@@ -21,7 +21,7 @@
   <body class="svtf-theme-tf2">
     <div class="svtf-body">
 
-      <header class="svtf-header">
+      <header class="svtf-header" ng-controller="Header as header">
         <nav>
           <ul>
             <li><a href="/">SVTF</a></li>
@@ -36,8 +36,10 @@
             <li><a href="https://github.com/Holiverh/serverstf" target="_blank"><span>Contribute</span><i class="fa fa-github"></i></a></li>
             <li><a href="https://github.com/Holiverh/serverstf/issues/new" target="_blank"><span>Report Bug</span><i class="fa fa-bug"></i></a></li>
             <li><a href="#" svtf-modal-open="['SettingsLocation']"><span>Settings</span><i class="fa fa-cogs"></i></a></li>
-            <li><a href="#" svtf-modal-open="['SignIn']"><span>Sign in</span><i class="fa fa-sign-in"></i></a></li>
-            <li class="svtf-header-sign-out"><a href="#"><i class="fa fa-power-off"></i></a></li>
+            <li ng-if="!header.user.authenticated"><a href="#" svtf-modal-open="['SignIn']"><span>Sign in</span><i class="fa fa-sign-in"></i></a></li>
+            <li ng-if="header.user.authenticated" class="svtf-header-sign-out">
+              <a href="#" ng-click="header.user.signOut()"><i class="fa fa-power-off"></i></a>
+            </li>
           </ul>
         </nav>
       </header>
