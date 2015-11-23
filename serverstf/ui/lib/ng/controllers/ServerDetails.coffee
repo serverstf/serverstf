@@ -1,11 +1,12 @@
 define ->
 
-    factory = ($scope, $http, Modal, Server) ->
+    factory = ($scope, $http, Location, Modal, Server) ->
 
         class ServerDetails
 
             constructor: ->
                 config = Modal.getConfig()
+                @user_coords = Location.coordinates
                 @server = Server.get(config.ip, config.port, $scope)
                 @players = []
                 @players_sort = "-score"
@@ -55,5 +56,5 @@ define ->
 
     return _ =
         "name": "ServerDetails"
-        "dependencies": ["$scope", "$http", "Modal", "Server"]
+        "dependencies": ["$scope", "$http", "Location", "Modal", "Server"]
         "controller": factory
