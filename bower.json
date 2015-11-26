@@ -15,6 +15,7 @@
     "fontawesome": "~4.4.0",
     "d3": "~3.5.6",
     "topojson": "~1.6.19",
-    "angular-route": "~1.4.7"
+    "angular-route": "~1.4.7",
+    "angular-ui-router": "~0.2.15"
   }
 }
