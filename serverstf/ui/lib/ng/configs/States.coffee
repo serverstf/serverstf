@@ -31,7 +31,26 @@ define ["angular-ui-router", "ui-router-extras"], ->
             url: "/settings/"
             views:
                 "modal@":
+                    templateUrl: "templates/settings/settings.html"
+                    controller: ["$state", ($state) ->
+                        if $state.current.name == "modal.settings"
+                            $state.go('.search')
+                    ]
+        "modal.settings.search":
+            url: "search/"
+            views:
+                "settings":
+                    templateUrl: "templates/settings/search.html"
+        "modal.settings.location":
+            url: "location/"
+            views:
+                "settings":
                     templateUrl: "templates/settings/location.html"
+        "modal.settings.licenses":
+            url: "licenses/"
+            views:
+                "settings":
+                    templateUrl: "templates/settings/licenses.html"
         "modal.sign-in":
             url: "/sign-in/"
             views:

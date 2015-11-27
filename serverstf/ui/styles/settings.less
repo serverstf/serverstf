@@ -22,45 +22,51 @@
             list-style-type: none;
 
             li {
-                position: relative;
-                padding: 1em;
-                border: 0;
-                border-bottom: 1px solid @border;
-                border-image: linear-gradient(
-                    to right,
-                    transparent 10%,
-                    fade(@border, 50%) 30%,
-                    @border,
-                ) 100% 0;
-                font-size: 1.2em;
-                cursor: pointer;
+                a {
+                    display: block;
+                    position: relative;
+                    padding: 1em;
+                    border: 0;
+                    border-bottom: 1px solid @border;
+                    border-image: linear-gradient(
+                        to right,
+                        transparent 10%,
+                        fade(@border, 50%) 30%,
+                        @border,
+                    ) 100% 0;
+                    color: @navigation-foreground;
+                    font-size: 1.2em;
+                    text-decoration: none;
+                }
 
-                &:last-child {
+                &:last-child a {
                     border-bottom: 0;
                 }
 
                 &:hover, &.svtf-settings-navigation-active {
-                    background-color: @navigation-active-background;
-                    background-image: linear-gradient(
-                        90deg,
-                        @navigation-background,
-                        transparent,
-                    );
-                    color: @navigation-active-foreground;
+                    a {
+                        background-color: @navigation-active-background;
+                        background-image: linear-gradient(
+                            90deg,
+                            @navigation-background,
+                            transparent,
+                        );
+                        color: @navigation-active-foreground;
 
-                    &::after {
-                        @arrow-size: 1em;
-                        display: block;
-                        content: "";
-                        position: absolute;
-                        top: 50%;
-                        right: -@arrow-size;
-                        transform: translateY(-50%);
-                        border-left:
-                            @arrow-size solid @navigation-active-background;
-                        border-top: @arrow-size solid transparent;
-                        border-bottom: @arrow-size solid transparent;
-                        z-index: 1;
+                        &::after {
+                            @arrow-size: 1em;
+                            display: block;
+                            content: "";
+                            position: absolute;
+                            top: 50%;
+                            right: -@arrow-size;
+                            transform: translateY(-50%);
+                            border-left:
+                                @arrow-size solid @navigation-active-background;
+                            border-top: @arrow-size solid transparent;
+                            border-bottom: @arrow-size solid transparent;
+                            z-index: 1;
+                        }
                     }
                 }
             }
