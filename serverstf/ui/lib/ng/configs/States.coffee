@@ -56,6 +56,11 @@ define ["angular-ui-router", "ui-router-extras"], ->
             views:
                 "modal@":
                     templateUrl: "templates/dialogues/sign-in.html"
+        "modal.server":
+            url: "/servers/{address}/"
+            views:
+                "modal@":
+                    templateUrl: "templates/dialogues/server-details.html"
 
     configureStates = ($locationProvider, $stateProvider) ->
         $locationProvider.html5Mode(true)

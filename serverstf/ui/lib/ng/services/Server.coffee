@@ -12,7 +12,11 @@ define ->
                 @name = ""
                 @map = ""
                 @tags = []
-                @players = 0
+                @players =
+                    scores: []
+                    current: 0
+                    max: 0
+                    bots: 0
                 @country = null
                 @latitude = null
                 @longitude = null
@@ -72,6 +76,21 @@ define ->
             # form.
             _stringifyAddress: (ip, port) ->
                 return "#{ip}:#{port}"
+
+            # Parse a stringified address.
+            #
+            # This takes an address string in the form `<ip>:<port>` and
+            # returns an object with corresponding `ip` and `port` fields.
+            # The `port` will be converted to a number. The `ip` is left in
+            # the IPv4 dotted-decimal form as a string.
+            #
+            # Throws an error if the address cannot be parsed.
+            parseAddress: (string) ->
+                # TODO: Validate and throw
+                [ip, port_string] = string.split(":")
+                return ip: ip, port: parseInt(port_string)
+
+
 
             # Free a reference to a sever.
             #

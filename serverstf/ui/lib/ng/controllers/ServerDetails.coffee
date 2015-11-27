@@ -1,20 +1,16 @@
 define ->
 
-    factory = ($scope, $http, Location, Modal, Server) ->
+    factory = ($scope, $http, $stateParams, Location, Server) ->
 
         class ServerDetails
 
             constructor: ->
-                config = Modal.getConfig()
+                address = Server.parseAddress($stateParams.address)
                 @user_coords = Location.coordinates
-                @server = Server.get(config.ip, config.port, $scope)
+                @server = Server.get(address.ip, address.port, $scope)
                 @players = []
                 @players_sort = "-score"
                 @map_creators = []
-                $scope.$watch(
-                    => @server.name
-                    (name) -> Modal.title = name
-                )
                 $scope.$watch(
                     => @server.players,
                     @_updatePlayers
@@ -56,5 +52,11 @@ define ->
 
     return _ =
         "name": "ServerDetails"
-        "dependencies": ["$scope", "$http", "Location", "Modal", "Server"]
+        "dependencies": [
+            "$scope",
+            "$http",
+            "$stateParams",
+            "Location",
+            "Server",
+        ]
         "controller": factory

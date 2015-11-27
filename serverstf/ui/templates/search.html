@@ -26,9 +26,8 @@
   <ol class="svtf-server-list">
     <li
       class="svtf-server"
-      ng-repeat="server in search.results|orderBy:search.rank:true"
-      svtf-modal-open="['ServerDetails', {ip: server.ip, port: server.port}]">
-      <div>
+      ng-repeat="server in search.results|orderBy:search.rank:true">
+      <a ui-sref="modal.server({address: server.ip + ':' + server.port})">
         <header
           class="svtf-map-after svtf-map-size-350"
           svtf-map="server">
@@ -53,7 +52,7 @@
             <div>Ping</div>
           </div>
         </div>
-      </div>
+      </a>
     </li>
   </ol>
 </div>

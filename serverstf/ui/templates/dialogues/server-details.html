@@ -1,13 +1,13 @@
-<div class="svtf-details">
-  <header class="svtf-map-size-900" svtf-map="controller.server">
+<div class="svtf-details" ng-controller="ServerDetails as details">
+  <header class="svtf-map-size-900" svtf-map="details.server">
     <div class="svtf-details-map">
       <div class="svtf-details-map-details">
-        <span>{{controller.server.map}}</span>
+        <span>{{details.server.map}}</span>
         <br>
-        <span ng-if="controller.map_creators.length > 0">by
+        <span ng-if="details.map_creators.length > 0">by
           <span
             class="svtf-details-map-identity"
-            ng-repeat="creator in controller.map_creators">{{creator.name}}</span>
+            ng-repeat="creator in details.map_creators">{{creator.name}}</span>
         </span>
       </div>
       <div class="svtf-details-map-image">
@@ -16,12 +16,14 @@
         <span>by <span class="svtf-details-map-identity">gatsan</span></span>
       </div>
     </div>
-    <div class="svtf-details-control">
+    <div
+      class="svtf-details-control"
+      svtf-modal-title="details.server.name">
       <div class="svtf-details-control-freshness">
         <div>0s</div>
         <div>Updated</div>
       </div>
-      <a class="svtf-details-control-connect" href="{{controller.server|connect}}">
+      <a class="svtf-details-control-connect" href="{{details.server|connect}}">
         <i class="fa fa-steam"></i>
         <div>Connect</div>
       </a>
@@ -40,8 +42,8 @@
       <h3>Server</h3>
       <div class="svtf-details-latency-location-map">
         <svtf-location-map
-          latitude="controller.server.latitude"
-          longitude="controller.server.longitude"></svtf-location-map>
+          latitude="details.server.latitude"
+          longitude="details.server.longitude"></svtf-location-map>
       </div>
     </div>
     <div class="svtf-details-latency-metrics">
@@ -49,10 +51,10 @@
       <div>
         <div class="svtf-details-latency-metrics-metrics">
           <div class="svtf-details-latency-metrics-metrics-ping">
-            {{controller.server|latency:0:-3|number:0}}<span>ms</span>
+            {{details.server|latency:0:-3|number:0}}<span>ms</span>
           </div>
           <div class="svtf-details-latency-metrics-metrics-distance">
-            ~{{controller.server|distance:3|number:0}}<span>km</span>
+            ~{{details.server|distance:3|number:0}}<span>km</span>
           </div>
         </div>
       </div>
@@ -61,28 +63,28 @@
       <h3>You</h3>
       <div class="svtf-details-latency-location-map">
         <svtf-location-map
-          latitude="controller.user_coords.latitude"
-          longitude="controller.user_coords.longitude"></svtf-location-map>
+          latitude="details.user_coords.latitude"
+          longitude="details.user_coords.longitude"></svtf-location-map>
       </div>
     </div>
   </div>
   <div class="svtf-details-players">
     <div>
       <h3>Players</h3>
-      {{controller.server.players.current}}/{{controller.server.players.max}}
+      {{details.server.players.current}}/{{details.server.players.max}}
     </div>
     <div class="svtf-details-players-table">
       <table>
         <thead>
           <tr>
-            <th ng-click="controller.sortPlayers('name')">Name</th>
-            <th ng-click="controller.sortPlayers('score')">Score</th>
-            <th ng-click="controller.sortPlayers('duration')">Duration</th>
-            <th ng-click="controller.sortPlayers('rate')">Score / min</th>
+            <th ng-click="details.sortPlayers('name')">Name</th>
+            <th ng-click="details.sortPlayers('score')">Score</th>
+            <th ng-click="details.sortPlayers('duration')">Duration</th>
+            <th ng-click="details.sortPlayers('rate')">Score / min</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="player in controller.players|orderBy:controller.players_sort">
+          <tr ng-repeat="player in details.players|orderBy:details.players_sort">
             <td>{{player.name}}</td>
             <td>{{player.score|number}}</td>
             <td>{{player.duration}}</td>
