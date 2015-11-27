@@ -24,11 +24,11 @@
       <header class="svtf-header" ng-controller="Header as header">
         <nav>
           <ul>
-            <li><a href="/">SVTF</a></li>
-            <li><a href="/statistics/"><i class="fa fa-line-chart"></i><span>Stats</span></a></li>
-            <li><a href="/favourites/"><i class="fa fa-star-o"></i><span>Favourites</span></a></li>
-            <li><a href="/search/?tags=!tf2">TF2</a></li>
-            <li><a href="/search/?tags=!gmod">GMOD</a></li>
+            <li><a ui-sref="home">SVTF</a></li>
+            <li><a ui-sref="statistics"><i class="fa fa-line-chart"></i><span>Stats</span></a></li>
+            <li><a ui-sref="favourites"><i class="fa fa-star-o"></i><span>Favourites</span></a></li>
+            <li><a ui-sref="search({tags: '!tf2'})">TF2</a></li>
+            <li><a ui-sref="search({tags: '!gmod'})">GMOD</a></li>
           </ul>
         </nav>
         <nav>
@@ -46,7 +46,7 @@
 
       <div class="svtf-view">
         <svtf-modal></svtf-modal>
-        <ng-view></ng-view>
+        <div ui-view="primary"></div>
       </div>
 
     </div>

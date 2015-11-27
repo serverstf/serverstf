@@ -7,7 +7,7 @@ define ["angular"], (angular) ->
     NG_APPLICATION_MODULE_NAME = "serverstf"
     NG_APPLICATION_SPECIFICATION =
         "config": [
-            "Routes",
+            "States",
             "URLSchemes",
         ]
         "controller": [
