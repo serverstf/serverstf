@@ -1,27 +1,42 @@
-define ["angular-ui-router"], (angular_ui_route) ->
+define ["angular-ui-router", "ui-router-extras"], ->
 
     STATES =
-        home:
+        "home":
             url: "/"
+            sticky: true
             views:
-                primary:
+                "primary":
                     templateUrl: "templates/placeholder.html"
-        search:
+        "search":
             url: "/search/?tags"
+            sticky: true
             reloadOnSearch: false
             views:
-                primary:
+                "primary":
                     templateUrl: "templates/search.html"
-        statistics:
+        "statistics":
             url: "/statistics/"
+            sticky: true
             views:
-                primary:
+                "primary":
                     templateUrl: "templates/placeholder.html"
-        favourites:
+        "favourites":
             url: "/favourites/"
+            sticky: true
             views:
-                primary:
+                "primary":
                     templateUrl: "templates/placeholder.html"
+        "modal": {}
+        "modal.settings":
+            url: "/settings/"
+            views:
+                "modal@":
+                    templateUrl: "templates/settings/location.html"
+        "modal.sign-in":
+            url: "/sign-in/"
+            views:
+                "modal@":
+                    templateUrl: "templates/dialogues/sign-in.html"
 
     configureStates = ($locationProvider, $stateProvider) ->
         $locationProvider.html5Mode(true)
@@ -31,5 +46,5 @@ define ["angular-ui-router"], (angular_ui_route) ->
     return _ =
         "name": "States"
         "dependencies": ["$locationProvider", "$stateProvider"]
-        "modules": ["ui.router"]
+        "modules": ["ui.router", "ct.ui.router.extras"]
         "config": configureStates

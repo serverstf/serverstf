@@ -23,6 +23,7 @@ define ["angular"], (angular) ->
             "Modal",
             "ModalContent",
             "ModalOpen",
+            "ModalTitle",
         ]
         "filter": [
             "Connect",
