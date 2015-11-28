@@ -15,14 +15,11 @@ define ["angular"], (angular) ->
             "Search",
             "ServerDetails",
             "SettingsLocation",
-            "SignIn",
         ]
         "directive": [
             "LocationMap",
             "Map",
             "Modal",
-            "ModalContent",
-            "ModalOpen",
             "ModalTitle",
         ]
         "filter": [
@@ -33,7 +30,6 @@ define ["angular"], (angular) ->
         "service": [
             "Config",
             "Location",
-            "Modal",
             "Server",
             "Socket",
             "User",

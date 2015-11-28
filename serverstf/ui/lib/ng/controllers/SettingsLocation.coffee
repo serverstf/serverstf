@@ -1,11 +1,10 @@
 define ->
 
-    factory = (Config, Location, Modal) ->
+    factory = (Config, Location) ->
 
         class SettingsLocation
 
             constructor: ->
-                Modal.title = "Settings"
                 @coordinates = Location.coordinates
                 Config.observe(
                     "geolocation:enabled",
@@ -21,5 +20,5 @@ define ->
 
     return _ =
         name: "SettingsLocation"
-        dependencies: ["Config", "Location", "Modal"]
+        dependencies: ["Config", "Location"]
         controller: factory

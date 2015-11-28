@@ -1,6 +1,6 @@
 define ->
 
-    factory = ($rootScope, Socket, Modal) ->
+    factory = ($rootScope, Socket) ->
 
         class Server
 
@@ -142,5 +142,5 @@ define ->
 
     return _ =
         "name": "Server"
-        "dependencies": ["$rootScope", "Socket", "Modal"]
+        "dependencies": ["$rootScope", "Socket"]
         "service": factory
