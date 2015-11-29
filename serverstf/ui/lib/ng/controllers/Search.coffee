@@ -13,7 +13,7 @@ define ->
         "population:active",
     ]
 
-    factory = ($scope, $location, Server, Socket) ->
+    factory = ($scope, $location, $state, Server, Socket) ->
 
         # Server search controller.
         #
@@ -33,6 +33,7 @@ define ->
                 @REQUIRED = "!"
                 @OPTIONAL = "~"
                 @EXCLUDED = "-"
+                @_state = $state.current
                 @_removeConnectObservation = ->
                 @results = []
                 @suggestions = []
@@ -44,10 +45,11 @@ define ->
                 @_setQuery()
                 $scope.$watch("tag", @_updateSuggestions)
                 $scope.$on("$locationChangeSuccess", =>
-                    @tags.length = 0
-                    @tags.push(@_parseTagExpression(
-                        $location.search().tags or "") ...)
-                    @_setQuery()
+                    if $state.is(@_state)
+                        @tags.length = 0
+                        @tags.push(@_parseTagExpression(
+                            $location.search().tags or "") ...)
+                        @_setQuery()
                 )
 
             # Handler for `match` socket messages.
@@ -249,5 +251,11 @@ define ->
 
     return _ =
         "name": "Search"
-        "dependencies": ["$scope", "$location", "Server", "Socket"]
+        "dependencies": [
+            "$scope",
+            "$location",
+            "$state",
+            "Server",
+            "Socket",
+        ]
         "controller": factory
