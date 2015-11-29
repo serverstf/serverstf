@@ -13,6 +13,8 @@ define ->
         "population:active",
     ]
 
+    __FILTHY_HACK__ = []
+
     factory = ($scope, $location, $state, Server, Socket) ->
 
         # Server search controller.
@@ -46,10 +48,16 @@ define ->
                 $scope.$watch("tag", @_updateSuggestions)
                 $scope.$on("$locationChangeSuccess", =>
                     if $state.is(@_state)
-                        @tags.length = 0
-                        @tags.push(@_parseTagExpression(
-                            $location.search().tags or "") ...)
+                        tags_parameter = $location.search().tags or ""
+                        if tags_parameter
+                            @tags.length = 0
+                            @tags.push(
+                                @_parseTagExpression(tags_parameter) ...)
+                        else
+                            @tags = __FILTHY_HACK__
                         @_setQuery()
+                    else
+                        __FILTHY_HACK__ = @tags
                 )
 
             # Handler for `match` socket messages.
