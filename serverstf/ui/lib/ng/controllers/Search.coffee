@@ -126,12 +126,39 @@ define ->
                 else
                     @suggestions.length = 0
 
+            # Filter out servers that do not match the query.
+            #
+            # This will check every server in the current results set to
+            # ensure that they all have the required tags and none of the
+            # exlcuded ones. If a server doesn't satify this requirement
+            # then it is removed from the results set and freed.
+            _filter: =>
+                include = []
+                exclude = []
+                for {mode, tag} in @tags
+                    if mode == @REQUIRED
+                        include.push(tag)
+                    else if mode == @EXCLUDED
+                        exclude.push(tag)
+                @results = @results.filter((server) ->
+                    for tag in server.tags
+                        if tag in exclude
+                            return false
+                    for include_tag in include
+                        if include_tag not in server.tags
+                            return false
+                    return true
+                )
+
             # Set current query on the socket.
             #
             # This sends a `query` message to the socket with the current
             # required and excluded tags set. Once the query is set all
             # future received `match` messages will conform to the required
             # and excluded tags.
+            #
+            # The existing resutls set will be filtered to exclude servers
+            # that do not match the new query.
             _setQuery: =>
                 include = []
                 exclude = []
@@ -145,6 +172,7 @@ define ->
                     Socket.send("query", {include: include, exclude: exclude})
                 , $scope)
                 $location.search(tags: @_generateTagExpression())
+                @_filter()
 
             # Add a tag to the list of tags to search.
             #
