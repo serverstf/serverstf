@@ -15,7 +15,6 @@ define ->
 
     factory = ($scope, $location, Server, Socket) ->
 
-
         # Server search controller.
         #
         # This controller maintains a set of tags to search for. Each tag
@@ -23,6 +22,11 @@ define ->
         # The required and excluded modes are used to filter which servers
         # are shown. Optional tags on the other hand are used purely for
         # influencing the ranking of a server in the results.
+        #
+        # Note that this controller watches for $locationChangeSuccess
+        # events so that it can react to users navigating via the likes of
+        # the back button. Because of this it's important that any routing
+        # to this controller has *reload on search* disabled.
         class Search
 
             constructor: ->
@@ -39,6 +43,12 @@ define ->
                     @_parseTagExpression($location.search().tags or "") ...)
                 @_setQuery()
                 $scope.$watch("tag", @_updateSuggestions)
+                $scope.$on("$locationChangeSuccess", =>
+                    @tags.length = 0
+                    @tags.push(@_parseTagExpression(
+                        $location.search().tags or "") ...)
+                    @_setQuery()
+                )
 
             # Handler for `match` socket messages.
             #
@@ -171,8 +181,11 @@ define ->
                 @_removeConnectObservation = Socket.observeConnect(->
                     Socket.send("query", {include: include, exclude: exclude})
                 , $scope)
-                $location.search(tags: @_generateTagExpression())
                 @_filter()
+                # TODO: Work out how this doesn't cause the
+                #       $locationChangeSuccess handler to enter
+                #       an infinite loop.
+                $location.search(tags: @_generateTagExpression())
 
             # Add a tag to the list of tags to search.
             #
