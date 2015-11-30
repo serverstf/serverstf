@@ -106,7 +106,7 @@ import urllib.parse
 
 import asyncio_redis
 import asyncio_redis.encoders
-import iso3166
+import iso3166  # pylint: disable=wrong-import-order
 
 
 log = logging.getLogger(__name__)
@@ -292,7 +292,7 @@ class Players:
         else:
             scores = []
             for entry in decoded["scores"]:
-                if not isinstance(entry, list) or not len(entry) == 3:
+                if not isinstance(entry, list) or len(entry) != 3:
                     raise PlayersError(
                         "Malformed scores; expected list "
                         "of length 3 but got: {!r}".format(entry))

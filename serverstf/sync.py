@@ -7,11 +7,12 @@ master server for new servers so that they can be indexed.
 import asyncio
 import logging
 
+import valve.source.a2s
+import valve.source.master_server
+
 import serverstf
 import serverstf.cli
 
-import valve.source.a2s
-import valve.source.master_server
 
 log = logging.getLogger(__name__)
 
