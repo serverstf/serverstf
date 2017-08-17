@@ -268,14 +268,14 @@ def _write_curve(args):
     log.info("Latency curve written to %s", args.output)
 
 
-def _medians(distances, latencies):
+def _medians(all_distances, all_latencies):
     """Calculate median latency for each unique distance.
 
     :return: list of unique distances and another list of the corresponding
         median latencies.
     """
     distance_latencies = {}
-    for distance, latency in zip(distances, latencies):
+    for distance, latency in zip(all_distances, all_latencies):
         if distance not in distance_latencies:
             distance_latencies[distance] = []
         distance_latencies[distance].append(latency)

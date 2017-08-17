@@ -83,8 +83,7 @@ def subcommand(command):
             ret = obj(args)
             if ret is None:
                 return serverstf.ExitStatus.OK
-            else:
-                return ret
+            return ret
 
         if not hasattr(scanner, "subcommands"):
             scanner.subcommands = {}

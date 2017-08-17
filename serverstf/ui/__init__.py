@@ -56,8 +56,7 @@ def _complete_authentication(request):
         request.response.headers.extend(
             pyramid.security.remember(request, steam_id_64))
         return {"success": True}
-    else:
-        return {"success": False}
+    return {"success": False}
 
 
 def _get_openid_consumer(request):
