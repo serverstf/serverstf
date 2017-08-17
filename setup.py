@@ -24,4 +24,9 @@ setuptools.setup(
             "pylint",
         ],
     },
+    entry_points={
+        'console_scripts': [
+            'serverstf = serverstf.__main__:main',
+        ],
+    },
 )
