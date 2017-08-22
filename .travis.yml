@@ -6,9 +6,6 @@ python:
     - "3.4"
 install:
     - pip install -e .[development]
-    - npm install
-    - node_modules/.bin/bower install
 script:
-    - node_modules/.bin/grunt
     - pylint serverstf
     - docker build --tag serverstf:latest .
