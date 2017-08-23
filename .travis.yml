@@ -14,4 +14,4 @@ script:
     - pylint serverstf
     - docker build --tag serverstf:latest .
 after_success:
-  - docker-push.sh
+  - ./docker-push.sh
