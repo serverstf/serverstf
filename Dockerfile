@@ -9,7 +9,7 @@ RUN virtualenv /opt/serverstf/
 WORKDIR /opt/serverstf/
 COPY . src/
 RUN ls -l src/
-RUN /opt/serverstf/bin/pip install src/
+RUN /opt/serverstf/bin/pip install -e src/
 RUN cd src/ && npm install
 RUN . bin/activate && cd src/ && node_modules/.bin/bower \
     install \
