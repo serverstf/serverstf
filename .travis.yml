@@ -13,3 +13,16 @@ install:
 script:
     - pylint serverstf
     - docker build --tag serverstf:latest .
+after_success:
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      if [ "$TRAVIS_BRANCH" == "master" ]; then
+        VERSION="$TRAVIS_TAG"
+        if [ -z "$VERSION" ]; then
+          VERSION="$TRAVIS_COMMIT"
+        fi
+        TAG="$DOCKER_REPOSITORY/serverstf:$VERSION"
+        docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+        docker tag serverstf:latest "$TAG"
+        docker push "$TAG"
+      fi
+    fi
