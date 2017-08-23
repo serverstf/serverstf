@@ -1,6 +1,10 @@
 sudo: required
 services:
   - docker
+addons:
+  apt:
+    packages:
+      - docker-ce
 language: python
 python:
     - "3.4"
