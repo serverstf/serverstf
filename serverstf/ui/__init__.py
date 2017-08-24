@@ -1,5 +1,6 @@
 """The Pyramid application that serves the user interface."""
 
+import ipaddress
 import logging
 
 import pyramid.authentication
@@ -234,9 +235,16 @@ def _make_application(geoip):
 @serverstf.cli.subcommand("ui")
 @serverstf.cli.geoip
 @serverstf.cli.argument(
-    "port",
+    "--bind-host",
+    type=ipaddress.IPv4Address,
+    required=True,
+    help="Host interface the UI server will listen on.",
+)
+@serverstf.cli.argument(
+    "--bind-port",
     type=int,
-    help="The port the UI server will listen on.",
+    required=True,
+    help="Port number the UI server will listen on.",
 )
 @serverstf.cli.argument(
     "--development",
@@ -256,10 +264,11 @@ def _main_ui(args):
     """
     application = _make_application(args.geoip)
     kwargs = {
-        "port": args.port,
+        "host": str(args.bind_host),
+        "port": args.bind_port,
         "threads": 1,
     }
     if args.development:
         kwargs["expose_tracebacks"] = True
-    log.info("Serving UI on port %i", args.port)
+    log.info("Serving UI on %s:%i", args.bind_host, args.bind_port)
     waitress.serve(application, **kwargs)
