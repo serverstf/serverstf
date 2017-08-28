@@ -2,6 +2,7 @@
 
 import asyncio
 import functools
+import ipaddress
 import itertools
 import json
 import logging
@@ -412,12 +413,17 @@ def _websocket_async_main(args, loop):
     and start websocket server to host a :class:`Service` instance. It will
     then let the socket server run indefinately.
     """
-    log.info("Starting websocket server on port %i", args.port)
+    log.info(
+        "Starting websocket server on %s:%i", args.bind_host, args.bind_port)
     cache_context = \
         yield from serverstf.cache.AsyncCache.connect(args.redis, loop)
     with cache_context as cache:
         yield from websockets.serve(
-            Service(cache), port=args.port, loop=loop)
+            Service(cache),
+            host=str(args.bind_host),
+            port=args.bind_port,
+            loop=loop,
+        )
         # Surely this isn't the correct way to do this!?
         while True:
             yield from asyncio.sleep(1)
@@ -427,9 +433,16 @@ def _websocket_async_main(args, loop):
 @serverstf.cli.subcommand("websocket")
 @serverstf.cli.redis
 @serverstf.cli.argument(
-    "port",
+    "--bind-host",
+    type=ipaddress.IPv4Address,
+    required=True,
+    help="Host interface the UI server will listen on.",
+)
+@serverstf.cli.argument(
+    "--bind-port",
     type=int,
-    help="The port the websocket service will listen on.",
+    required=True,
+    help="Port numberthe websocket service will listen on.",
 )
 def _websocket_main(args):
     """Start a websocket server."""
