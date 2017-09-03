@@ -371,14 +371,12 @@ class Service:
     """The websocket service entry-point.
 
     This service spawns individual handlers for each client that connects.
-    Clients must connect with the path ``/`` otherwise the connection is
-    closed immediately.
+    Clients must connect from the path that service is configured for.
+    Otherwise the connection is closed immediately.
     """
 
-    #: The path the service is served from
-    PATH = "/"
-
-    def __init__(self, cache):
+    def __init__(self, path, cache):
+        self._path = path
         self._cache = cache
 
     @asyncio.coroutine
@@ -393,7 +391,7 @@ class Service:
         If the socket connects on a path other than ``/`` then it is
         immediately disconnected.
         """
-        if path != self.PATH:
+        if path != self._path:
             log.error("Client connected on path %s; dropping connection", path)
             return
         notifier = yield from self._cache.notifier()
@@ -419,7 +417,7 @@ def _websocket_async_main(args, loop):
         yield from serverstf.cache.AsyncCache.connect(args.redis, loop)
     with cache_context as cache:
         yield from websockets.serve(
-            Service(cache),
+            Service(args.path, cache),
             host=str(args.bind_host),
             port=args.bind_port,
             loop=loop,
@@ -442,7 +440,16 @@ def _websocket_async_main(args, loop):
     "--bind-port",
     type=int,
     required=True,
-    help="Port numberthe websocket service will listen on.",
+    help="Port number the websocket service will listen on.",
+)
+@serverstf.cli.argument(
+    "--path",
+    type=str,
+    default="/",
+    help=(
+        "Path to serve the websocket service from. "
+        "Connections from other paths are discarded."
+    ),
 )
 def _websocket_main(args):
     """Start a websocket server."""
