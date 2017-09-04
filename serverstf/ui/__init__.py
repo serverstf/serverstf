@@ -177,7 +177,7 @@ def _404(request):
     return {}
 
 
-def _make_application(geoip):
+def _make_application(*, geoip, socket):
     """Construct a Pyramid WSGI application.
 
     This creates a central Pyramid configurator then adds all routes, views
@@ -205,6 +205,7 @@ def _make_application(geoip):
 
     :param pathlib.Path geoip: the path to the GeoIP database to use for
         the location service.
+    :param str socket: the websocket URL the UI should connect to.
 
     :return: a WSGI application.
     """
@@ -229,6 +230,7 @@ def _make_application(geoip):
     jinja2_env.variable_end_string = "]]"
     jinja2_env.comment_start_string = "[#"
     jinja2_env.comment_end_string = "#]"
+    jinja2_env.globals["socket"] = socket
     return config.make_wsgi_app()
 
 
@@ -252,6 +254,12 @@ def _make_application(geoip):
     help=("Enable extra debugging features "
           "which are not safe for production use."),
 )
+@serverstf.cli.argument(
+    "--socket",
+    type=str,
+    required=True,
+    help="Websocket the UI should connect to."
+)
 def _main_ui(args):
     """Run the UI WSGI application.
 
@@ -262,7 +270,7 @@ def _main_ui(args):
     If the command line arguments specified ``--development`` then the
     ``expose_tracebacks`` option will be enabled for Waitress.
     """
-    application = _make_application(args.geoip)
+    application = _make_application(geoip=args.geoip, socket=args.socket)
     kwargs = {
         "host": str(args.bind_host),
         "port": args.bind_port,

@@ -1,6 +1,6 @@
 define ->
 
-    factory = ($location, $rootScope, $timeout) ->
+    factory = ($window, $rootScope, $timeout) ->
 
         # Communicate over a WebSocket.
         #
@@ -157,7 +157,7 @@ define ->
 
             # Attempt to connect to the server.
             _connect: =>
-                url = "ws://#{$location.host()}:9001/"
+                url = $window._SVTF["socket"];
                 @_socket = new WebSocket(url)
                 @_socket.onopen = @_onOpen
                 @_socket.onmessage = @_onMessage
@@ -168,5 +168,5 @@ define ->
 
     return _ =
         "name": "Socket"
-        "dependencies": ["$location", "$rootScope", "$timeout"]
+        "dependencies": ["$window", "$rootScope", "$timeout"]
         "service": factory

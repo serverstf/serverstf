@@ -14,6 +14,10 @@
     <link
       rel="stylesheet"
       href="[[request.static_path('serverstf.ui:styles/serverstf.css')]]">
+    <script>
+    window._SVTF = {};
+    window._SVTF["socket"] = "[[socket]]";
+    </script>
     <script
       src="[[request.static_path('serverstf.ui:external/requirejs/require.js')]]"
       data-main="scripts/serverstf"></script>
